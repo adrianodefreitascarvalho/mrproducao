@@ -9,13 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSidebar } from "@/components/ui/use-sidebar";
 import { SidebarProvider } from "@/components/ui/use-sidebar";
 
-const SIDEBAR_WIDTH = "16rem";
+void ("16rem"); // SIDEBAR_WIDTH - kept for reference
 const SIDEBAR_WIDTH_MOBILE = "18rem";
-const SIDEBAR_WIDTH_ICON = "3rem";
+void ("3rem"); // SIDEBAR_WIDTH_ICON - kept for reference
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,

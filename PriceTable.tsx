@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Trash2, PlusCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/lib/supabase";
 
 // 1. Definir os schemas de validação para a nova estrutura
 const tableItemSchema = z.object({
@@ -87,24 +88,14 @@ const PriceTable = () => {
   const {
     control,
     register,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: (() => {
-      try {
-        const saved = localStorage.getItem("price-tables");
-        const parsed = saved ? JSON.parse(saved) : null;
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return { tables: parsed };
-        }
-      } catch {
-        // Ignorar erros de parsing e usar valores padrão.
-      }
-      return {
-        tables: [{ id: crypto.randomUUID(), name: "Tabela Padrão", items: [] }],
-      };
-    })(),
+    defaultValues: {
+      tables: [{ id: crypto.randomUUID(), name: "Tabela Padrão", items: [] }],
+    },
   });
 
   const { fields: tableFields, append: appendTable, remove: removeTable } = useFieldArray({
@@ -114,12 +105,21 @@ const PriceTable = () => {
 
   const [activeTab, setActiveTab] = useState(tableFields[0]?.id);
 
-  const tables = useWatch({ control, name: "tables" });
+  // Carregar dados do Supabase ao iniciar
   useEffect(() => {
-    if (tables) {
-      localStorage.setItem("price-tables", JSON.stringify(tables));
-    }
-  }, [tables]);
+    const fetchTables = async () => {
+      const { data, error } = await supabase.from("price_tables").select("*");
+      
+      if (data && data.length > 0) {
+        // Atualiza o formulário com os dados vindos do banco
+        reset({ tables: data });
+        setActiveTab(data[0].id);
+      } else if (error) {
+        console.error("Erro ao buscar tabelas:", error);
+      }
+    };
+    fetchTables();
+  }, [reset]);
 
   const addNewTable = () => {
     const newId = crypto.randomUUID();
@@ -131,9 +131,16 @@ const PriceTable = () => {
     setActiveTab(newId);
   };
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Dados do formulário:", data);
-    alert("Tabelas salvas! Verifique o console para ver os dados.");
+  const onSubmit = async (data: FormValues) => {
+    // Salva (Upsert) todas as tabelas no Supabase
+    const { error } = await supabase.from("price_tables").upsert(data.tables);
+
+    if (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao salvar as tabelas.");
+    } else {
+      alert("Tabelas salvas com sucesso no Supabase!");
+    }
   };
 
   return (

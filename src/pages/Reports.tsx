@@ -8,22 +8,28 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
-import { workstations, sampleOrders } from "@/data/workstations";
-
-const statusData = [
-  { name: "Em Produção", value: 3, color: "hsl(199, 89%, 48%)" },
-  { name: "Concluídas", value: 1, color: "hsl(142, 71%, 45%)" },
-  { name: "Atrasadas", value: 1, color: "hsl(38, 92%, 50%)" },
-  { name: "Pendentes", value: 1, color: "hsl(220, 14%, 70%)" },
-];
-
-const workstationData = workstations.map((ws) => ({
-  name: ws.name,
-  value: sampleOrders.filter((o) => o.currentWorkstation === ws.id).length,
-  color: ws.color,
-})).filter((d) => d.value > 0);
+import { workstations } from "@/data/workstations";
+import { useProductionStore } from "@/lib/store";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Reports() {
+  const navigate = useNavigate();
+  const orders = useProductionStore((state) => state.orders);
+
+  const statusData = [
+    { name: "Em Produção", value: orders.filter(o => o.status === 'in-progress').length, color: "hsl(199, 89%, 48%)" },
+    { name: "Concluídas", value: orders.filter(o => o.status === 'completed').length, color: "hsl(142, 71%, 45%)" },
+    { name: "Atrasadas", value: orders.filter(o => o.status === 'delayed').length, color: "hsl(38, 92%, 50%)" },
+    { name: "Pendentes", value: orders.filter(o => o.status === 'pending').length, color: "hsl(220, 14%, 70%)" },
+  ];
+
+  const workstationData = workstations.map((ws) => ({
+    name: ws.name,
+    value: orders.filter((o) => o.currentWorkstation === ws.id).length,
+    color: ws.color,
+  })).filter((d) => d.value > 0);
   return (
     <div className="flex flex-col h-screen">
       <Header
@@ -32,6 +38,14 @@ export default function Reports() {
       />
 
       <div className="flex-1 overflow-auto p-6 space-y-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/")}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar para Produção
+        </Button>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ProductionChart />
 
@@ -39,7 +53,7 @@ export default function Reports() {
             <h3 className="font-semibold text-foreground mb-4">
               Estado das Ordens
             </h3>
-            <div className="h-[250px]">
+            <div className="h-62.5">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -81,7 +95,7 @@ export default function Reports() {
           <h3 className="font-semibold text-foreground mb-4">
             Ordens por Posto de Trabalho
           </h3>
-          <div className="h-[300px]">
+          <div className="h-75">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie

@@ -3,7 +3,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { WorkstationCard } from "@/components/dashboard/WorkstationCard";
 import { OrdersTable } from "@/components/dashboard/OrdersTable";
 import { ProductionChart } from "@/components/dashboard/ProductionChart";
-import { workstations, sampleOrders } from "@/data/workstations";
+import { workstations } from "@/data/workstations";
 import {
   ClipboardList,
   TrendingUp,
@@ -12,24 +12,26 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useProductionStore } from "@/lib/store";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const orders = useProductionStore((state) => state.orders);
 
   const getActiveOrdersCount = (workstationId: string) => {
-    return sampleOrders.filter(
+    return orders.filter(
       (o) => o.currentWorkstation === workstationId && o.status !== "completed"
     ).length;
   };
 
-  const totalOrders = sampleOrders.length;
-  const inProgressOrders = sampleOrders.filter(
+  const totalOrders = orders.length;
+  const inProgressOrders = orders.filter(
     (o) => o.status === "in-progress"
   ).length;
-  const completedOrders = sampleOrders.filter(
+  const completedOrders = orders.filter(
     (o) => o.status === "completed"
   ).length;
-  const delayedOrders = sampleOrders.filter(
+  const delayedOrders = orders.filter(
     (o) => o.status === "delayed"
   ).length;
 
@@ -119,7 +121,7 @@ export default function Dashboard() {
                 Ver todas
               </button>
             </div>
-            <OrdersTable orders={sampleOrders} limit={4} />
+            <OrdersTable orders={orders} limit={4} />
           </div>
         </div>
       </div>

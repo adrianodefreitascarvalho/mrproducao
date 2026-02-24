@@ -1,65 +1,141 @@
-import { useState } from "react";
 import { Header } from "@/components/layout/Header";
-import { OrdersTable } from "@/components/dashboard/OrdersTable";
-import { sampleOrders, OrderStatus } from "@/data/workstations";
 import { Button } from "@/components/ui/button";
-import { Plus, Filter } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const statusFilters: { value: OrderStatus | "all"; label: string }[] = [
-  { value: "all", label: "Todas" },
-  { value: "pending", label: "Pendentes" },
-  { value: "in-progress", label: "Em Produção" },
-  { value: "completed", label: "Concluídas" },
-  { value: "delayed", label: "Atrasadas" },
-];
+import { PlusCircle, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useProductionStore } from "@/lib/store";
+import { useState } from "react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 export default function Orders() {
-  const [activeFilter, setActiveFilter] = useState<OrderStatus | "all">("all");
+  const navigate = useNavigate();
+  const orders = useProductionStore((state) => state.orders);
+  const removeOrder = useProductionStore((state) => state.removeOrder);
+  const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
-  const filteredOrders =
-    activeFilter === "all"
-      ? sampleOrders
-      : sampleOrders.filter((o) => o.status === activeFilter);
+  const handleNewOrder = () => {
+    navigate("/orders/new");
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedOrders.length === orders.length) {
+      setSelectedOrders([]);
+    } else {
+      setSelectedOrders(orders.map((o) => o.id));
+    }
+  };
+
+  const toggleSelectOrder = (id: string) => {
+    if (selectedOrders.includes(id)) {
+      setSelectedOrders(selectedOrders.filter((oId) => oId !== id));
+    } else {
+      setSelectedOrders([...selectedOrders, id]);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (confirm(`Tem a certeza que pretende eliminar ${selectedOrders.length} ordens?`)) {
+      selectedOrders.forEach((id) => removeOrder(id));
+      setSelectedOrders([]);
+    }
+  };
+
+  type BadgeVariant = 'success' | 'destructive' | 'default' | 'secondary';
+  const getStatusVariant = (status: string): BadgeVariant => {
+    switch (status) {
+      case 'completed': return 'success';
+      case 'delayed': return 'destructive';
+      case 'in-progress': return 'default';
+      default: return 'secondary';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Pendente';
+      case 'in-progress': return 'Em Produção';
+      case 'completed': return 'Concluída';
+      case 'delayed': return 'Atrasada';
+      default: return status;
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
       <Header
         title="Ordens de Produção"
-        subtitle={`${sampleOrders.length} ordens no sistema`}
+        subtitle="Acompanhe todas as ordens de produção"
       />
 
       <div className="flex-1 overflow-auto p-6 space-y-6">
-        {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <div className="flex gap-1">
-              {statusFilters.map((filter) => (
-                <button
-                  key={filter.value}
-                  onClick={() => setActiveFilter(filter.value)}
-                  className={cn(
-                    "px-3 py-1.5 text-sm rounded-md transition-colors",
-                    activeFilter === filter.value
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-muted-foreground hover:bg-muted/80"
-                  )}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
+        <div className="flex justify-end gap-2">
+          {selectedOrders.length > 0 && (
+            <Button variant="destructive" onClick={handleDeleteSelected}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Eliminar ({selectedOrders.length})
+            </Button>
+          )}
+          <Button onClick={handleNewOrder}>
+            <PlusCircle className="mr-2 h-4 w-4" />
             Nova Ordem
           </Button>
         </div>
-
-        {/* Orders Table */}
-        <OrdersTable orders={filteredOrders} />
+        
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12.5">
+                  <Checkbox
+                    checked={orders.length > 0 && selectedOrders.length === orders.length}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </TableHead>
+                <TableHead>Número</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Arma</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Entrega</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedOrders.includes(order.id)}
+                      onCheckedChange={() => toggleSelectOrder(order.id)}
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{order.orderNumber}</TableCell>
+                  <TableCell>{order.client?.name}</TableCell>
+                  <TableCell>{order.weapon?.model}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(order.status)}>
+                      {getStatusLabel(order.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{new Date(order.dueDate).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/orders/${order.id}`)}>
+                      Ver
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {orders.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    Nenhuma ordem encontrada
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </Card>
       </div>
     </div>
   );

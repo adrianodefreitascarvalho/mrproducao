@@ -8,14 +8,29 @@ import {
   Target,
   ChevronLeft,
   ChevronRight,
+  ShoppingCart,
+  Unlock,
+  Package,
+  Tags,
+  Crosshair,
+  TreePine,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Postos de Trabalho", href: "/workstations", icon: Factory },
+  { name: "Início", href: "/", icon: LayoutDashboard },
+  { name: "Dashboard Integrado", href: "/dashboard", icon: BarChart3 },
+  { name: "Armas", href: "/weapons", icon: Crosshair }, 
+  { name: "Clientes", href: "/clients", icon: Users },
+  { name: "Madeiras", href: "/woodstock", icon: TreePine },
+  { name: "Produtos", href: "/products", icon: Package },
+  { name: "Tabelas de Preços", href: "/price-tables", icon: Tags },
+  { name: "Encomendas", href: "/sales-orders", icon: ShoppingCart },
+  { name: "Libertar Encomendas", href: "/release-orders", icon: Unlock },  
   { name: "Ordens de Produção", href: "/orders", icon: ClipboardList },
+  { name: "Postos de Trabalho", href: "/workstations", icon: Factory },
   { name: "Relatórios", href: "/reports", icon: BarChart3 },
 ];
 
@@ -38,7 +53,7 @@ export function Sidebar() {
           </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="font-semibold text-sm">ProduControl</span>
+              <span className="font-semibold text-sm">MR-Gestão</span>
               <span className="text-[10px] text-sidebar-foreground/60">
                 Gestão de Produção
               </span>
@@ -60,7 +75,7 @@ export function Sidebar() {
                 isActive && "sidebar-item-active"
               )}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
+              <item.icon className="w-5 h-5 shrink-0" />
               {!collapsed && <span>{item.name}</span>}
             </NavLink>
           );
@@ -76,7 +91,7 @@ export function Sidebar() {
             location.pathname === "/settings" && "sidebar-item-active"
           )}
         >
-          <Settings className="w-5 h-5 flex-shrink-0" />
+          <Settings className="w-5 h-5 shrink-0" />
           {!collapsed && <span>Definições</span>}
         </NavLink>
         <button

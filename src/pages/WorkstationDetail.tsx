@@ -1,19 +1,19 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
-import { workstations, sampleOrders } from "@/data/workstations";
+import { workstations } from "@/data/workstations";
 import { OrdersTable } from "@/components/dashboard/OrdersTable";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, CheckCircle2, AlertTriangle, ListChecks } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useProductionStore } from "@/lib/store";
 
 export default function WorkstationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const orders = useProductionStore((state) => state.orders);
 
   const workstation = workstations.find((w) => w.id === id);
-  const workstationOrders = sampleOrders.filter(
-    (o) => o.currentWorkstation === id
-  );
+  const workstationOrders = orders.filter((o) => o.currentWorkstation === id);
 
   if (!workstation) {
     return (

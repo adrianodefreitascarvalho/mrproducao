@@ -11,7 +11,7 @@ import {
 import { Workstation } from "@/data/workstations";
 import { Badge } from "@/components/ui/badge";
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   Package,
   Cpu,
   Wrench,

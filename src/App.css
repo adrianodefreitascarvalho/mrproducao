@@ -40,3 +40,18 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Workstation styling with dynamic colors via CSS custom properties */
+.workstation-card {
+  border-left: 4px solid;
+  border-color: var(--workstation-color, #ccc);
+}
+
+.workstation-badge {
+  border-color: var(--workstation-color, #ccc);
+  color: var(--workstation-color, #ccc);
+}
+
+.workstation-badge-filled {
+  background-color: var(--workstation-color, #ccc);
+}

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray, useWatch, Control, UseFormRegister, FieldErrors } from "react-hook-form";
+import { useForm, useFieldArray, Control, UseFormRegister, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Trash2, PlusCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 // 1. Definir os schemas de validação para a nova estrutura
 const tableItemSchema = z.object({
@@ -108,10 +108,9 @@ const PriceTable = () => {
   // Carregar dados do Supabase ao iniciar
   useEffect(() => {
     const fetchTables = async () => {
-      const { data, error } = await supabase.from("price_tables").select("*");
+      const { data, error } = await (supabase as any).from("price_tables").select("*");
       
       if (data && data.length > 0) {
-        // Atualiza o formulário com os dados vindos do banco
         reset({ tables: data });
         setActiveTab(data[0].id);
       } else if (error) {
@@ -132,14 +131,13 @@ const PriceTable = () => {
   };
 
   const onSubmit = async (data: FormValues) => {
-    // Salva (Upsert) todas as tabelas no Supabase
-    const { error } = await supabase.from("price_tables").upsert(data.tables);
+    const { error } = await (supabase as any).from("price_tables").upsert(data.tables);
 
     if (error) {
       console.error("Erro ao salvar:", error);
       alert("Erro ao salvar as tabelas.");
     } else {
-      alert("Tabelas salvas com sucesso no Supabase!");
+      alert("Tabelas salvas com sucesso!");
     }
   };
 

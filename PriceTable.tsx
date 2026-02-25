@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import { useForm, useFieldArray, useWatch, Control, UseFormRegister, FieldErrors } from "react-hook-form";
+import { useEffect, useState, useRef } from "react";
+import { useForm, useFieldArray, Control, UseFormRegister, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Trash2, PlusCircle } from "lucide-react";
+import { Trash2, PlusCircle, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "./src/lib/supabase";
+import * as XLSX from "xlsx";
 
 // 1. Definir os schemas de validação para a nova estrutura
 const tableItemSchema = z.object({
@@ -104,10 +105,13 @@ const PriceTable = () => {
   });
 
   const [activeTab, setActiveTab] = useState(tableFields[0]?.id);
+  const [isLoading, setIsLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Carregar dados do Supabase ao iniciar
   useEffect(() => {
     const fetchTables = async () => {
+      setIsLoading(true);
       const { data, error } = await supabase.from("price_tables").select("*");
       
       if (data && data.length > 0) {
@@ -117,6 +121,7 @@ const PriceTable = () => {
       } else if (error) {
         console.error("Erro ao buscar tabelas:", error);
       }
+      setIsLoading(false);
     };
     fetchTables();
   }, [reset]);
@@ -143,42 +148,120 @@ const PriceTable = () => {
     }
   };
 
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: "array" });
+
+        const importedTables: FormValues["tables"] = [];
+
+        workbook.SheetNames.forEach((sheetName) => {
+          const worksheet = workbook.Sheets[sheetName];
+          const itemsJson = XLSX.utils.sheet_to_json<{
+            "Descrição"?: string;
+            description?: string;
+            "Preço"?: string | number;
+            price?: string | number;
+          }>(worksheet);
+
+          const newItems = itemsJson
+            .map((row) => ({
+              description: row["Descrição"] || row["description"] || "",
+              price: parseFloat(String(row["Preço"] || row["price"] || 0)) || 0,
+            }))
+            .filter((item) => item.description); // Apenas items com descrição
+
+          if (newItems.length > 0) {
+            importedTables.push({
+              id: crypto.randomUUID(),
+              name: sheetName,
+              items: newItems,
+            });
+          }
+        });
+
+        if (importedTables.length > 0) {
+          reset({ tables: importedTables });
+          setActiveTab(importedTables[0].id);
+          alert(`${importedTables.length} tabelas importadas com sucesso! Clique em 'Salvar Alterações' para persistir os dados.`);
+        } else {
+          alert("Nenhuma tabela válida foi encontrada no ficheiro Excel.");
+        }
+      } catch (error) {
+        console.error("Erro ao importar o ficheiro:", error);
+        alert("Ocorreu um erro ao processar o ficheiro. Verifique se o formato está correto.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = ""; // Limpa o input para permitir re-upload
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center border-b">
           <TabsList className="flex-wrap h-auto">
             {tableFields.map((field, index) => (
-              <TabsTrigger key={field.id} value={field.id} className="relative group">
-                <input
-                  {...register(`tables.${index}.name`)}
-                  className="bg-transparent text-center focus:outline-none"
-                />
-                {tableFields.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeTable(index);
-                    }}
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center"
-                    aria-label="Remover tabela"
-                  >
-                    &times;
-                  </button>
-                )}
+              <TabsTrigger key={field.id} value={field.id} className="relative group" asChild>
+                <div>
+                  <input
+                    {...register(`tables.${index}.name`)}
+                    className="bg-transparent text-center focus:outline-none"
+                  />
+                  {tableFields.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeTable(index);
+                      }}
+                      className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 flex items-center justify-center"
+                      aria-label="Remover tabela"
+                    >
+                      &times;
+                    </button>
+                  )}
+                </div>
               </TabsTrigger>
             ))}
           </TabsList>
           <button type="button" onClick={addNewTable} className="ml-4 inline-flex items-center gap-2 rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
             <PlusCircle className="h-4 w-4" /> Nova Tabela
           </button>
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="ml-2 inline-flex items-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700" disabled={isLoading}>
+            <Upload className="h-4 w-4" /> {isLoading ? "A processar..." : "Importar Excel"}
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileImport}
+            className="hidden"
+            accept=".xlsx, .xls"
+            aria-label="Importar ficheiro Excel"
+          />
+          <button type="submit" className="ml-auto inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" disabled={isLoading}>
+            Salvar Alterações
+          </button>
         </div>
-        {tableFields.map((field, index) => (
-          <TabsContent key={field.id} value={field.id}>
-            <TableItems tableIndex={index} control={control} register={register} errors={errors} />
-          </TabsContent>
-        ))}
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <p>A carregar dados...</p>
+          </div>
+        ) : (
+          tableFields.map((field, index) => (
+            <TabsContent key={field.id} value={field.id}>
+              <TableItems tableIndex={index} control={control} register={register} errors={errors} />
+            </TabsContent>
+          ))
+        )}
       </Tabs>
     </form>
   );

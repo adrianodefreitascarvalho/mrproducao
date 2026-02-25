@@ -11,6 +11,28 @@ export default defineConfig(({ mode }: ConfigEnv) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      '/rest/v1': {
+        target: 'https://mrproducao.lovable.app',
+        changeOrigin: true,
+        secure: true,
+      },
+      '/auth/v1': {
+        target: 'https://mrproducao.lovable.app',
+        changeOrigin: true,
+        secure: true,
+      },
+      '/storage/v1': {
+        target: 'https://mrproducao.lovable.app',
+        changeOrigin: true,
+        secure: true,
+      },
+      '/realtime/v1': {
+        target: 'https://mrproducao.lovable.app',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

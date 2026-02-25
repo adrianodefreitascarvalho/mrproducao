@@ -12,25 +12,13 @@ export default defineConfig(({ mode }: ConfigEnv) => ({
       overlay: false,
     },
     proxy: {
-      '/rest/v1': {
-        target: 'https://mrproducao.lovable.app',
+      // Proxy all Supabase API calls to the remote server to avoid CORS issues in development.
+      '^/(auth|rest|storage|realtime)/v1': {
+        target: 'https://orcfirodhgaxfluhryen.supabase.co',
         changeOrigin: true,
         secure: true,
-      },
-      '/auth/v1': {
-        target: 'https://mrproducao.lovable.app',
-        changeOrigin: true,
-        secure: true,
-      },
-      '/storage/v1': {
-        target: 'https://mrproducao.lovable.app',
-        changeOrigin: true,
-        secure: true,
-      },
-      '/realtime/v1': {
-        target: 'https://mrproducao.lovable.app',
-        changeOrigin: true,
-        secure: true,
+        ws: true, // Enable websocket proxying for realtime
+        logLevel: 'debug', // Add detailed logging to debug proxy issues
       },
     },
   },

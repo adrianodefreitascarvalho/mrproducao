@@ -7,7 +7,7 @@ import { workstations } from "@/data/workstations";
 import {
   ClipboardList,
   TrendingUp,
-  Clock,
+  // Clock removed - unused
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";

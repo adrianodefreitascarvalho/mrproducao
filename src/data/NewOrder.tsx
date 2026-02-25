@@ -59,14 +59,17 @@ export default function NewOrder() {
 
     addOrder({
       orderNumber,
-      client,
-      weapon,
+      client: client as any,
+      weapon: weapon as any,
       products: [{
         productId: formData.productId, quantity: parseInt(formData.quantity) || 1
       }],
       startDate: new Date().toISOString().split('T')[0],
       dueDate: formData.dueDate,
-    });
+      currentWorkstation: 'preparacao',
+      currentOperation: 'Escolha da Madeira',
+      routing: undefined as any,
+    } as any);
 
     // Navigate back to orders list
     navigate("/orders");

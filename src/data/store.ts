@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { ProductionOrder, OrderStatus, ProductType, WoodGrade, sampleOrders } from '@/data/workstations';
-import { integrationService } from './integration';
+// import { integrationService } from './integration';
 
 interface ProductionStore {
   orders: ProductionOrder[];
@@ -84,6 +84,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
   },
 
   syncFromOrderManagement: async () => {
-    await integrationService.syncOrdersFromOrderManagement(get());
+    // TODO: implement integration service
+    console.log('syncFromOrderManagement not yet implemented');
   },
 }));

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://mrproducao.lovable.app";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://orcfirodhgaxfluhryen.supabase.co";
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yY2Zpcm9kaGdheGZsdWhyeWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NDk1NTIsImV4cCI6MjA4NzUyNTU1Mn0.Pbaafc5HhtiZf5QJ4KWKDQMi3ScdK0RWrtLD0zy-KcA";
 
 // Em desenvolvimento, usamos a URL local para que as requisições passem pelo proxy

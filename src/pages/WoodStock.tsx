@@ -54,16 +54,16 @@ export default function WoodStock() {
   // Usar localStorage para persistência local, já que a store global parece problemática
   const [items, setItems] = useState<WoodItem[]>(() => {
     try {
-      const saved = localStorage.getItem("wood-stock-items");
+      const saved = sessionStorage.getItem("wood-stock-items");
       return saved ? JSON.parse(saved) : [];
     } catch (e) {
       return [];
     }
   });
 
-  // Persistir alterações
+  // Persistir alterações (sessionStorage clears on browser close)
   useEffect(() => {
-    localStorage.setItem("wood-stock-items", JSON.stringify(items));
+    sessionStorage.setItem("wood-stock-items", JSON.stringify(items));
   }, [items]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);

@@ -268,8 +268,14 @@ export interface Database {
   }
 }
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://orcfirodhgaxfluhryen.supabase.co";
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9yY2Zpcm9kaGdheGZsdWhyeWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NDk1NTIsImV4cCI6MjA4NzUyNTU1Mn0.Pbaafc5HhtiZf5QJ4KWKDQMi3ScdK0RWrtLD0zy-KcA";
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    'Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.'
+  );
+}
 
 // Em desenvolvimento, usamos a URL local para que as requisições passem pelo proxy
 // configurado no vite.config.ts, evitando Erros de CORS.

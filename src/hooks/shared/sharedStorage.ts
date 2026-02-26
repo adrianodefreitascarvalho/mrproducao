@@ -9,14 +9,14 @@ export interface Order {
 const listeners = new Set<(orders: Order[]) => void>();
 let releasedOrdersStore: Order[] = [];
 
-// Load from localStorage if available
+// Load from sessionStorage if available (clears on browser close for security)
 if (typeof window !== 'undefined') {
-  const stored = localStorage.getItem('releasedOrders');
+  const stored = sessionStorage.getItem('releasedOrders');
   if (stored) {
     try {
       releasedOrdersStore = JSON.parse(stored);
     } catch (e) {
-      console.error('[SHARED] Erro ao carregar encomendas do localStorage:', e);
+      console.error('[SHARED] Erro ao carregar encomendas do sessionStorage:', e);
     }
   }
 }
@@ -36,8 +36,8 @@ export function saveReleasedOrder(order: Order): boolean {
 
     releasedOrdersStore.push({ ...order, status: "released" });
     
-    // Persist to localStorage
-    localStorage.setItem('releasedOrders', JSON.stringify(releasedOrdersStore));
+    // Persist to sessionStorage (clears on browser close for security)
+    sessionStorage.setItem('releasedOrders', JSON.stringify(releasedOrdersStore));
     
     console.log(`[SHARED] Encomenda ${order.id} guardada com sucesso!`);
     notifyListeners();
@@ -58,7 +58,7 @@ export function getReleasedOrder(orderId: string): Order | undefined {
 
 export function clearReleasedOrders(): void {
   releasedOrdersStore = [];
-  localStorage.removeItem('releasedOrders');
+  sessionStorage.removeItem('releasedOrders');
   console.log("[SHARED] Armazenamento de encomendas libertadas limpo!");
   notifyListeners();
 }

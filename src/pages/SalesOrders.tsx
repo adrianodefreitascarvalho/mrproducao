@@ -99,18 +99,18 @@ export default function SalesOrders() {
 
   const [orders, setOrders] = useState<SalesOrder[]>(() => {
     try {
-      const saved = localStorage.getItem("sales-orders");
+      const saved = sessionStorage.getItem("sales-orders");
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
 
   useEffect(() => {
-    const savedWood = localStorage.getItem("wood-stock-items");
+    const savedWood = sessionStorage.getItem("wood-stock-items");
     if (savedWood) setWoodStock(JSON.parse(savedWood));
   }, [isFormOpen]);
 
   useEffect(() => {
-    localStorage.setItem("sales-orders", JSON.stringify(orders));
+    sessionStorage.setItem("sales-orders", JSON.stringify(orders));
   }, [orders]);
 
   useEffect(() => {

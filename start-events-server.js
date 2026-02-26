@@ -2,10 +2,23 @@
 import express from "express";
 import cors from "cors";
 
+const ALLOWED_ORIGINS = [
+  'http://localhost:8080',
+  'http://localhost:8082',
+  process.env.PRODUCTION_DOMAIN,
+].filter(Boolean);
+
 const app = express();
 const PORT = 4001;
 
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'), false);
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Health check endpoint

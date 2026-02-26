@@ -1,30 +1,30 @@
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; 
 import { Label } from "@/components/ui/label";
 import { ArrowLeft as ArrowLeftIcon, Pencil, Save, X, Route, Plus, Minus } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useProductionStore } from "@/lib/store";
+import { useNavigate, useParams } from "react-router-dom"; 
+import { useProductionStore, type ProductionOrder, type Product, type Weapon } from "@/lib/store";
 import { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ProductionOrder, OrderProduct, workstations, OrderStatus, Product, Weapon } from "@/data/workstations";
+import { workstations, OrderStatus } from "@/data/workstations";
 
 const weapons: Weapon[] = [
   {
-    id: 'wep-1', brand: 'Beretta', model: '686', serialNumber: 'BER-123456', caliber: '12', dominantHand: 'Direita',
-    sidePlates: 'Inteiras', barrelLength: 76, barrelWeight: 1.520, forendWeight: 450,
-    rib: 'Media', totalWeight: 3.550, discipline: 'Fosso Olímpico', competitionFrequency: 'Frequente'
+    id: 'wep-1', brand: 'Beretta', model: '686', serial_number: 'BER-123456', caliber: '12', dominant_hand: 'Direita',
+    side_plates: 'Inteiras', barrel_length: 76, barrel_weight: 1.520, forend_weight: 450,
+    rib: 'Media', total_weight: 3.550, discipline: 'Fosso Olímpico', competition_frequency: 'Frequente', created_at: ''
   },
   {
-    id: 'wep-2', brand: 'Browning', model: 'Citori', serialNumber: 'BRO-789012', caliber: '12', dominantHand: 'Direita',
-    sidePlates: 'Meias', barrelLength: 81, barrelWeight: 1.580, forendWeight: 470,
-    rib: 'Alta', totalWeight: 3.750, discipline: 'Compak Sporting', competitionFrequency: 'Intensiva'
+    id: 'wep-2', brand: 'Browning', model: 'Citori', serial_number: 'BRO-789012', caliber: '12', dominant_hand: 'Direita',
+    side_plates: 'Meias', barrel_length: 81, barrel_weight: 1.580, forend_weight: 470,
+    rib: 'Alta', total_weight: 3.750, discipline: 'Compak Sporting', competition_frequency: 'Intensiva', created_at: ''
   },
   {
-    id: 'wep-3', brand: 'Benelli', model: '828U', serialNumber: 'BEN-345678', caliber: '20', dominantHand: 'Esquerda',
-    sidePlates: 'Inteiras falsas', barrelLength: 71, barrelWeight: 1.350, forendWeight: 400,
-    rib: 'Rasa', totalWeight: 3.100, discipline: 'Caça', competitionFrequency: 'Não Frequente'
+    id: 'wep-3', brand: 'Benelli', model: '828U', serial_number: 'BEN-345678', caliber: '20', dominant_hand: 'Esquerda',
+    side_plates: 'Inteiras falsas', barrel_length: 71, barrel_weight: 1.350, forend_weight: 400,
+    rib: 'Rasa', total_weight: 3.100, discipline: 'Caça', competition_frequency: 'Não Frequente', created_at: ''
   },
 ];
 
@@ -58,23 +58,23 @@ const defaultFormData = {
 const mapOrderToFormData = (order: ProductionOrder | undefined, products: Product[]) => {
   if (!order) return defaultFormData;
   return {
-    orderNumber: order.orderNumber,
+    orderNumber: order.order_number,
     clientId: order.client?.id || '',
-    weaponId: order.weapon?.id || '',
-    workstationId: order.currentWorkstation || '',
-    operation: order.currentOperation || '',
-    operationProgress: (order.operationProgress ?? 0).toString(),
-    status: order.status || 'pending' as OrderStatus,
-    startDate: order.startDate || '',
-    products: order.products.map((p: OrderProduct) => {
-      const product = products.find((prod) => prod.id === p.productId);
+    weaponId: '', // Weapon is not directly on ProductionOrder in DB
+    workstationId: order.current_workstation || '',
+    operation: order.current_operation || '',
+    operationProgress: (order.progress ?? 0).toString(),
+    status: (order.status as OrderStatus) || 'pending',
+    startDate: order.start_date || '',
+    products: order.products.map((p: { product_id: string; quantity: number }) => {
+      const product = products.find((prod) => prod.id === p.product_id);
       return {
-        productId: p.productId,
-        name: product?.name || p.productId,
+        productId: p.product_id,
+        name: product?.name || p.product_id,
         quantity: p.quantity.toString(),
       };
     }),
-    dueDate: order.dueDate,
+    dueDate: order.due_date,
   };
 };
 
@@ -92,49 +92,46 @@ export default function OrderDetail() {
   const handleSave = () => {
     if (id) {
       const client = clients.find(c => c.id === formData.clientId);
-      const weapon = weapons.find(w => w.id === formData.weaponId);
 
       const updates: Partial<ProductionOrder> = {
-        orderNumber: formData.orderNumber,
+        order_number: formData.orderNumber,
         // currentWorkstation and currentOperation may be overwritten below if operation reaches 100%
-        currentWorkstation: formData.workstationId,
-        currentOperation: formData.operation,
+        current_workstation: formData.workstationId,
+        current_operation: formData.operation,
         status: formData.status as OrderStatus,
         products: formData.products.map((p: FormProduct) => ({
-          productId: p.productId,
+          product_id: p.productId,
           quantity: parseInt(p.quantity) || 0,
         })),
-        dueDate: formData.dueDate,
+        due_date: formData.dueDate,
       };
 
-      if (client) updates.client = client;
-      if (weapon) updates.weapon = weapon;
+      if (client) updates.client = { id: client.id, name: `${client.first_name} ${client.last_name}` };
 
       // Handle operation progress advance
-      const opPercent = parseInt(formData.operationProgress) || 0;
-      if (opPercent < 100) {
-        updates.operationProgress = opPercent;
+       const opPercent = parseInt(formData.operationProgress) || 0;
+       if (opPercent < 100) {
+        updates.progress = opPercent;
       } else {
         // Find current workstation and operation indexes
-        const wsIndex = workstations.findIndex(w => w.id === (formData.workstationId || updates.currentWorkstation));
+        const wsIndex = workstations.findIndex(w => w.id === (formData.workstationId || updates.current_workstation));
         const currentWs = workstations[wsIndex];
-        const opIndex = currentWs ? currentWs.operations.findIndex(op => op.name === (formData.operation || updates.currentOperation)) : -1;
+        const opIndex = currentWs ? currentWs.operations.findIndex(op => op.name === (formData.operation || updates.current_operation)) : -1;
 
         if (currentWs && opIndex >= 0 && opIndex < currentWs.operations.length - 1) {
           // Advance to next operation in same workstation
-          updates.currentOperation = currentWs.operations[opIndex + 1].name;
-          updates.operationProgress = 0;
+          updates.current_operation = currentWs.operations[opIndex + 1].name;
+          updates.progress = 0;
         } else if (wsIndex >= 0 && wsIndex < workstations.length - 1) {
           // Move to next workstation and set to its first operation
           const nextWs = workstations[wsIndex + 1];
-          updates.currentWorkstation = nextWs.id;
-          updates.currentOperation = nextWs.operations[0].name;
-          updates.operationProgress = 0;
+          updates.current_workstation = nextWs.id;
+          updates.current_operation = nextWs.operations[0].name;
+          updates.progress = 0;
         } else {
           // No next operation or workstation -> mark order completed
           updates.status = 'completed';
           updates.progress = 100;
-          updates.operationProgress = 100;
         }
       }
 
@@ -143,9 +140,9 @@ export default function OrderDetail() {
     }
   };
 
-  const order = useMemo(() => orders.find((o: ProductionOrder) => o.id === id), [id, orders]);
+  const order = useMemo(() => orders.find((o) => o.id === id), [id, orders]);
   const clientName = useMemo(() => order?.client?.name || '', [order]);
-  const weaponModel = useMemo(() => order?.weapon ? `${order.weapon.brand} ${order.weapon.model}` : '', [order]);
+  const weaponModel = useMemo(() => weapons.find(w => w.id === formData.weaponId)?.model || '', [formData.weaponId]);
   const isCompleted = order?.status === 'completed';
   const effectiveIsEditing = isEditing && !isCompleted;
 
@@ -267,7 +264,7 @@ export default function OrderDetail() {
                         </SelectTrigger>
                         <SelectContent>
                           {clients.map(client => (
-                            <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                            <SelectItem key={client.id} value={client.id}>{client.first_name} {client.last_name}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

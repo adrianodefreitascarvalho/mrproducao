@@ -16,6 +16,6 @@ export function handleEvent(event: OrderCreatedEvent) {
   if (event.type === "OrderCreated") {
     useProductionStore
       .getState()
-      .createProductionFromOrder(event.payload);
+      .createReleaseOrder(event.payload);
   }
 }

@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useProductionStore } from "@/lib/store";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -13,12 +15,9 @@ import NewOrder from "./pages/NewOrder";
 import OrderDetail from "./pages/OrderDetail.tsx";
 import ProductionRouting from "./pages/ProductionRouting.tsx";
 import ReleaseOrders from "./pages/ReleaseOrders.tsx";
-import EditProduct from "./pages/EditProduct.tsx";
 import Weapons from "./pages/Weapons.tsx";
 import NewWeapon from "./pages/NewWeapon.tsx";
 import EditWeapon from "./pages/EditWeapon.tsx";
-import NewProduct from "./pages/NewProduct.tsx";
-import Products from "./pages/Products.tsx";
 import Clients from "./pages/Clients";
 import NewClient from "./pages/NewClient";
 import EditClient from "./pages/EditClient";
@@ -32,27 +31,22 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // // Initialize production store and set up periodic sync
-  // useEffect(() => {
-  //   // Initialize store from API/localStorage on app startup
-  //   const initializeStore = async () => {
-  //     await integrationService.initializeProductionStore(productionStore);
-  //   };
+  const fetchOrders = useProductionStore((state) => state.fetchOrders);
+  const fetchProducts = useProductionStore((state) => state.fetchProducts);
+  const fetchWorkstations = useProductionStore((state) => state.fetchWorkstations);
+  const fetchReleaseOrders = useProductionStore((state) => state.fetchReleaseOrders);
+  const fetchClients = useProductionStore((state) => state.fetchClients);
+  const fetchWeapons = useProductionStore((state) => state.fetchWeapons);
 
-  //   initializeStore();
-
-  //   // Start periodic sync to check for new orders
-  //   const stopSync = integrationService.startPeriodicSync(productionStore, 60000); // Sync every minute
-
-  //   return () => {
-  //     stopSync(); // Cleanup on unmount
-  //   };
-  // }, [productionStore]);
-
-  // // Log when userProductions change
-  // useEffect(() => {
-  //   console.log("[App] userProductions atualizado:", userProductions.length);
-  // }, [userProductions]);
+  useEffect(() => {
+    // Carrega os dados iniciais da base de dados
+    fetchProducts();
+    fetchOrders();
+    fetchWorkstations();
+    fetchReleaseOrders();
+    fetchClients();
+    fetchWeapons();
+  }, [fetchProducts, fetchOrders, fetchWorkstations, fetchReleaseOrders, fetchClients, fetchWeapons]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -74,9 +68,6 @@ const App = () => {
               <Route path="/weapons" element={<Weapons />} />
               <Route path="/weapons/new" element={<NewWeapon />} />
               <Route path="/weapons/edit/:id" element={<EditWeapon />} />
-              <Route path="/products/edit/:id" element={<EditProduct />} />
-              <Route path="/products/new" element={<NewProduct />} />
-              <Route path="/products" element={<Products />} />
               <Route path="/clients" element={<Clients />} />
               <Route path="/clients/new" element={<NewClient />} />
               <Route path="/clients/edit/:id" element={<EditClient />} />

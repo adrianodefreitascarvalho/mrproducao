@@ -39,22 +39,22 @@ const NewWeapon = () => {
     if (!brand.trim() || !model.trim() || !serialNumber.trim()) {
       return;
     }
-    addWeapon({
+    addWeapon( {
       brand: brand.trim(),
-      model: model.trim(),
-      serialNumber: serialNumber.trim(),
+      model: model.trim(), 
+      serial_number: serialNumber.trim(),
       caliber,
-      dominantHand,
-      sidePlates,
-      barrelLength: Number(barrelLength),
-      barrelWeight: Number(barrelWeight),
-      forendWeight: Number(forendWeight),
+      dominant_hand: dominantHand,
+      side_plates: sidePlates,
+      barrel_length: Number(barrelLength),
+      barrel_weight: Number(barrelWeight),
+      forend_weight: Number(forendWeight), 
       rib,
-      totalWeight: Number(totalWeight),
+      total_weight: Number(totalWeight),
       discipline: discipline.trim(),
-      competitionFrequency,
+      competition_frequency: competitionFrequency, 
     });
-    navigate("/weapons");
+    navigate("/weapons"); 
   };
 
   return (

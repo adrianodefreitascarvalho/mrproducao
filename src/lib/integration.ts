@@ -1,8 +1,8 @@
-import { ProductionOrder, generateDefaultRouting } from '@/data/workstations';
-import { PRODUCTION_ROUTING } from '@/config';
+import type { ProductionOrder } from './store';
 
 interface ProductionStoreActions {
-  addOrder: (order: Omit<ProductionOrder, 'id' | 'status' | 'progress'>) => void;
+  // Using 'any' to avoid complex type definition that would require more refactoring
+  addOrder: (order: Omit<ProductionOrder, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_workstation' | 'current_operation'>) => Promise<void>;
   loadOrdersFromStorage: (orders: ProductionOrder[]) => void;
   orders: ProductionOrder[];
 }
@@ -39,22 +39,6 @@ export interface OrderManagementOrderLine {
   };
 }
 
-// Interface for orders stored in localStorage
-interface StoredProductionOrder {
-  id: string;
-  orderNumber: string;
-  client: string;
-  product: string;
-  quantity: number;
-  startDate: string;
-  dueDate: string;
-  status: string;
-  progress: number;
-  currentWorkstation: string;
-  currentOperation: string;
-  createdAt: string;
-}
-
 // Mock API service to simulate communication with order management system
 class OrderManagementAPI {
   private baseUrl = 'http://localhost:3001/api'; // Order management system URL
@@ -76,47 +60,10 @@ class OrderManagementAPI {
       }
       
       // API unavailable, fall back to localStorage
-      console.warn('Order Management API unavailable, using localStorage fallback');
-      return this.getOrdersFromLocalStorageFallback();
+      console.warn('Order Management API unavailable');
+      return [];
     } catch (error) {
-      console.warn('Failed to fetch orders from API, using localStorage fallback:', error);
-      return this.getOrdersFromLocalStorageFallback();
-    }
-  }
-
-  /**
-   * Fallback method: Get orders from localStorage
-   * This is only used when the API is unavailable
-   */
-  private getOrdersFromLocalStorageFallback(): OrderManagementOrder[] {
-    try {
-      const pendingOrders = JSON.parse(localStorage.getItem('pendingProductionOrders') || '[]');
-
-      return pendingOrders.map((order: StoredProductionOrder) => ({
-        id: order.orderNumber.replace('ENC-', '').replace('OM-', ''),
-        clientId: 'client-1',
-        lines: [{
-          id: 'line-1',
-          productId: order.product,
-          quantity: order.quantity,
-          product: {
-            name: order.product,
-            category: 'coronha',
-          }
-        }],
-        status: 'in-production',
-        priority: 'medium',
-        notes: '',
-        createdAt: new Date(order.createdAt || order.startDate),
-        estimatedCompletion: new Date(order.dueDate),
-        client: {
-          firstName: order.client.split(' ')[0] || 'Cliente',
-          lastName: order.client.split(' ').slice(1).join(' ') || 'Desconhecido',
-          email: 'cliente@email.com'
-        }
-      }));
-    } catch (error) {
-      console.error('Failed to parse localStorage fallback:', error);
+      console.warn('Failed to fetch orders from API:', error);
       return [];
     }
   }
@@ -150,24 +97,21 @@ export class IntegrationService {
   /**
    * Convert order management order to production order format
    */
-  private convertToProductionOrder(order: OrderManagementOrder): Omit<ProductionOrder, 'id' | 'status' | 'progress'> {
+  private convertToProductionOrder(order: OrderManagementOrder): Omit<ProductionOrder, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_workstation' | 'current_operation'> {
     const clientName = order.client ? `${order.client.firstName} ${order.client.lastName}` : 'Cliente Desconhecido';
     const products = order.lines.map(line => ({
-      name: line.product?.name || 'Produto Personalizado',
+      product_id: line.productId,
       quantity: line.quantity
     }));
 
     return {
-      orderNumber: `OM-${order.id.slice(-6)}`,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      client: clientName as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      products: products as any,
-      startDate: new Date().toISOString().split('T')[0],
-      dueDate: order.estimatedCompletion.toISOString().split('T')[0],
-      routing: generateDefaultRouting(),
-      currentWorkstation: PRODUCTION_ROUTING.DEFAULT_WORKSTATION,
-      currentOperation: PRODUCTION_ROUTING.DEFAULT_OPERATION,
+      order_number: `OM-${order.id.slice(-6)}`,
+      related_order_id: order.id,
+      client: { id: order.clientId, name: clientName },
+      products: products,
+      start_date: new Date().toISOString().split('T')[0],
+      due_date: order.estimatedCompletion.toISOString().split('T')[0],
+      routing: null,
     };
   }
 
@@ -188,16 +132,18 @@ export class IntegrationService {
         
         // Convert to production orders
         const productionOrders: ProductionOrder[] = apiOrders
-          .filter(order => !productionStore.orders.some(po => po.orderNumber === `OM-${order.id.slice(-6)}`))
-          .map(order => {
+          .filter(order => !productionStore.orders.some(po => po.order_number === `OM-${order.id.slice(-6)}`))
+          .map((order): ProductionOrder => {
             const baseOrder = this.convertToProductionOrder(order);
             return {
               ...baseOrder,
               id: Date.now().toString() + Math.random(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
               status: 'in-progress' as const,
               progress: 0,
-              currentWorkstation: 'preparacao',
-              currentOperation: 'Escolha da Madeira',
+              current_workstation: 'preparacao',
+              current_operation: 'Escolha da Madeira',
             };
           });
 
@@ -228,48 +174,19 @@ export class IntegrationService {
       // Filter out orders that already exist in the production store
       const newOrders = apiOrders.filter(apiOrder => 
         !productionStore.orders.some(
-          storeOrder => storeOrder.orderNumber === `OM-${apiOrder.id.slice(-6)}`
+          storeOrder => storeOrder.order_number === `OM-${apiOrder.id.slice(-6)}`
         )
       );
 
       // Add new orders to the store
       for (const order of newOrders) {
         const productionOrder = this.convertToProductionOrder(order);
-        productionStore.addOrder(productionOrder);
-        console.log(`✅ Synced new order: ${productionOrder.orderNumber}`);
-      }
-
-      // Clean up localStorage after successful sync (only remove processed orders)
-      if (newOrders.length > 0) {
-        await this.cleanupLocalStorageFallback(newOrders);
+        await productionStore.addOrder(productionOrder);
+        console.log(`✅ Synced new order: ${productionOrder.order_number}`);
       }
     } catch (error) {
       console.error('❌ Failed to sync orders from order management system:', error);
       // Don't throw - periodic sync should continue even if one attempt fails
-    }
-  }
-
-  /**
-   * Remove processed orders from localStorage fallback
-   * Keep unprocessed orders in case AppStore is lost
-   */
-  private async cleanupLocalStorageFallback(processedOrders: OrderManagementOrder[]): Promise<void> {
-    try {
-      const storedOrders = JSON.parse(localStorage.getItem('pendingProductionOrders') || '[]');
-      const processedOrderIds = processedOrders.map(o => o.id);
-      
-      // Keep only orders that haven't been processed yet
-      const remainingOrders = storedOrders.filter((order: StoredProductionOrder) => 
-        !processedOrderIds.includes(order.orderNumber.replace('OM-', '').replace('ENC-', ''))
-      );
-
-      if (remainingOrders.length < storedOrders.length) {
-        localStorage.setItem('pendingProductionOrders', JSON.stringify(remainingOrders));
-        console.log(`🧹 Cleaned up ${storedOrders.length - remainingOrders.length} processed orders from localStorage`);
-      }
-    } catch (error) {
-      console.error('Failed to cleanup localStorage:', error);
-      // Non-critical failure, continue
     }
   }
 

@@ -1,22 +1,23 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { ProductionOrder, OrderStatus, ProductType, WoodGrade, WoodSpecies, Product, sampleProducts, generateDefaultRouting, workstations, Weapon, weapons as sampleWeapons, woodSpecies as sampleWoodSpecies, Client, clients as sampleClients } from '@/data/workstations';
+import { toast } from 'sonner';
+import { OrderStatus, ProductType, WoodGrade, WoodSpecies, woodSpecies as sampleWoodSpecies } from '@/data/workstations';
 import { integrationService } from './integration';
 import { PRODUCTION_ROUTING } from '@/config';
+import { supabase, type Database, type Json } from './supabase';
+export type Product = Database['public']['Tables']['products']['Row'];
+export type { Json };
 
+// Define Operation and Workstation types based on the database schema
+export type Operation = Database['public']['Tables']['operations']['Row'];
+export type Workstation = Database['public']['Tables']['workstations']['Row'] & { operations: Operation[] };
+export type ReleaseOrder = Database['public']['Tables']['release_orders']['Row'];
+export type Client = Database['public']['Tables']['clients']['Row'];
+export type Weapon = Database['public']['Tables']['weapons']['Row'];
+
+// Define ProductionOrder type based on the database schema for use within the app
+export type ProductionOrder = Database['public']['Tables']['production_orders']['Row'];
 export type OrderPayload = {
   orderId: string;
-  createdAt: string;
-  items: Array<{
-    sku: string;
-    quantity: number;
-  }>;
-};
-
-export type UserProductionOrder = {
-  id: string;
-  externalOrderId: string;
-  status: "BLOCKED" | "RELEASED";
   createdAt: string;
   items: Array<{
     sku: string;
@@ -29,34 +30,47 @@ interface ProductionStore {
   productTypes: ProductType[];
   woodGrades: WoodGrade[];
   woodSpecies: WoodSpecies[];
+  workstations: Workstation[];
   products: Product[];
+  isLoadingProducts: boolean;
+  isLoadingOrders: boolean;
+  isLoadingWorkstations: boolean;
+  releaseOrders: ReleaseOrder[];
+  isLoadingReleaseOrders: boolean;
+  isLoadingClients: boolean;
+  isLoadingWeapons: boolean;
   clients: Client[];
   weapons: Weapon[];
-  productions: UserProductionOrder[];
-  addOrder: (order: Omit<ProductionOrder, 'id' | 'status' | 'progress'>) => void;
+  fetchWorkstations: () => Promise<void>;
+  fetchReleaseOrders: () => Promise<void>;
+  fetchOrders: () => Promise<void>;
+  fetchClients: () => Promise<void>;
+  fetchWeapons: () => Promise<void>;
   updateOrder: (id: string, updates: Partial<ProductionOrder>) => void;
+  addOrder: (order: Omit<ProductionOrder, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_workstation' | 'current_operation'>) => Promise<void>;
   removeOrder: (id: string) => void;
-  addProduct: (product: Product) => void;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
+  addProduct: (product: Database['public']['Tables']['products']['Insert']) => Promise<void>;
+  updateProduct: (id: string, updates: Database['public']['Tables']['products']['Update']) => Promise<void>;
   removeProduct: (productId: string) => void;
-  addWeapon: (weapon: Omit<Weapon, 'id'>) => void;
-  updateWeapon: (id: string, updates: Partial<Weapon>) => void;
-  removeWeapon: (weaponId: string) => void;
-  addClient: (client: Omit<Client, 'id'>) => void;
-  updateClient: (id: string, updates: Partial<Client>) => void;
-  removeClient: (clientId: string) => void;
+  addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert']) => Promise<void>;
+  updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update']) => Promise<void>;
+  removeWeapon: (weaponId: string) => Promise<void>;
+  addClient: (client: Database['public']['Tables']['clients']['Insert']) => Promise<void>;
+  updateClient: (id: string, updates: Database['public']['Tables']['clients']['Update']) => Promise<void>;
+  removeClient: (clientId: string) => Promise<void>;
   moveOrderToNextWorkstation: (orderId: string) => void;
   getOrdersByWorkstation: (workstationId: string) => ProductionOrder[];
   getOrdersByStatus: (status: OrderStatus) => ProductionOrder[];
+  fetchProducts: () => Promise<void>;
+  generateDefaultRouting: () => Json;
   syncFromOrderManagement: () => Promise<void>;
   loadOrdersFromStorage: (orders: ProductionOrder[]) => void;
-  createProductionFromOrder: (order: OrderPayload) => void;
-  releaseProduction: (id: string) => void;
+  createReleaseOrder: (order: OrderPayload) => Promise<void>;
+  releaseOrder: (id: string) => Promise<void>;
   releaseProductionByOrderId: (orderId: string) => void;
 }
 
 export const useProductionStore = create<ProductionStore>()(
-  persist(
     (set, get) => ({
       productTypes: [
         { id: 'coronha', name: 'Coronha' },
@@ -71,105 +85,303 @@ export const useProductionStore = create<ProductionStore>()(
         { id: 'exhibition', name: 'Exhibition' },
       ],
       woodSpecies: sampleWoodSpecies,
-      products: sampleProducts,
-      clients: sampleClients,
-      weapons: sampleWeapons,
+      workstations: [],
+      products: [],
+      isLoadingProducts: false,
+      clients: [],
+      weapons: [],
       orders: [],
-      productions: [],
+      isLoadingOrders: true,
+      isLoadingWorkstations: true,
+      releaseOrders: [],
+      isLoadingReleaseOrders: true,
+      isLoadingClients: false,
+      isLoadingWeapons: false,
 
-  addProduct: (product) =>
-    set((state) => ({
-      products: [...state.products, product],
-    })),
+      fetchWorkstations: async () => {
+        set({ isLoadingWorkstations: true });
+        const { data, error } = await supabase
+          .from('workstations')
+          .select('*, operations(*)')
+          .order('name', { ascending: true })
+          .order('sequence', { foreignTable: 'operations', ascending: true });
 
-  removeProduct: (productId) =>
-    set((state) => ({
-      products: state.products.filter((p) => p.id !== productId),
-    })),
+        if (error) {
+          console.error('Erro ao buscar postos de trabalho:', error);
+          set({ isLoadingWorkstations: false });
+          return;
+        }
+        set({ workstations: data as Workstation[] || [], isLoadingWorkstations: false });
+      },
 
-  updateProduct: (id, updates) => {
-    set((state) => ({
-      products: state.products.map((product) =>
-        product.id === id ? { ...product, ...updates } : product
-      ),
-    }));
+      fetchOrders: async () => {
+        set({ isLoadingOrders: true });
+        const { data, error } = await supabase
+          .from('production_orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Erro ao buscar ordens de produção:', error);
+          set({ isLoadingOrders: false });
+          return;
+        }
+        set({ orders: (data as ProductionOrder[]) || [], isLoadingOrders: false });
+      },
+
+      fetchReleaseOrders: async () => {
+        set({ isLoadingReleaseOrders: true });
+        const { data, error } = await supabase
+          .from('release_orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) {
+          console.error('Erro ao buscar encomendas para liberação:', error);
+          set({ isLoadingReleaseOrders: false });
+          return;
+        }
+        set({ releaseOrders: (data as ReleaseOrder[]) || [], isLoadingReleaseOrders: false });
+      },
+
+      fetchProducts: async () => {
+        set({ isLoadingProducts: true });
+        const { data, error } = await supabase.from('products').select('*').order('name');
+        if (error) {
+          console.error('Error fetching products:', error);
+          set({ isLoadingProducts: false });
+          return;
+        }
+        set({ products: (data as Product[]) || [], isLoadingProducts: false });
+      },
+
+      fetchClients: async () => {
+        set({ isLoadingClients: true });
+        const { data, error } = await supabase.from('clients').select('*').order('first_name');
+        if (error) {
+          console.error('Error fetching clients:', error);
+          toast.error('Erro ao carregar clientes');
+          set({ isLoadingClients: false });
+          return;
+        }
+        set({ clients: (data as Client[]) || [], isLoadingClients: false });
+      },
+
+      fetchWeapons: async () => {
+        set({ isLoadingWeapons: true });
+        const { data, error } = await supabase.from('weapons').select('*').order('brand');
+        if (error) {
+          console.error('Error fetching weapons:', error);
+          toast.error('Erro ao carregar armas');
+          set({ isLoadingWeapons: false });
+          return;
+        }
+        // Mapear os campos snake_case do banco para camelCase se necessário, 
+        // mas aqui vamos assumir que o resto da app será atualizado para usar os tipos do banco.
+        set({ weapons: (data as Weapon[]) || [], isLoadingWeapons: false });
+      },
+
+      addProduct: async (productData: Database['public']['Tables']['products']['Insert']) => {
+        // Remove id se estiver vazio ou indefinido para deixar o Supabase gerar o UUID
+        const payload = { ...productData };
+        if (!payload.id) {
+          delete payload.id;
+        }
+
+        const { data, error } = await supabase.from('products').insert(payload).select().single();
+        if (error) {
+          console.error('Error adding product:', error);
+          toast.error('Erro ao criar o produto', {
+            description: error.message,
+          });
+          return;
+        }
+        if (data) {
+          set((state) => ({
+            products: [...state.products, data as Product].sort((a, b) => a.name.localeCompare(b.name)),
+          }));
+          toast.success('Produto criado com sucesso!');
+        }
+      },
+
+      updateProduct: async (id: string, updates: Database['public']['Tables']['products']['Update']) => {
+        const { data, error } = await supabase.from('products').update(updates).eq('id', id).select().single();
+        if (error) {
+          console.error('Error updating product:', error);
+          toast.error('Erro ao atualizar o produto', {
+            description: error.message,
+          });
+          return;
+        }
+        if (data) {
+          set((state) => ({
+            products: state.products.map((p) => (p.id === id ? (data as Product) : p)),
+          }));
+          toast.success('Produto atualizado com sucesso!');
+        }
+      },
+
+      removeProduct: async (productId) => {
+        const { error } = await supabase.from('products').delete().eq('id', productId);
+        if (error) {
+          console.error('Error removing product:', error);
+          toast.error('Erro ao remover o produto.', { description: error.message });
+        } else {
+          set((state) => ({ products: state.products.filter((p) => p.id !== productId) }));
+          toast.success('Produto removido com sucesso.');
+        }
+      },
+
+      addWeapon: async (weaponData) => {
+        const payload = { ...weaponData };
+        if (!payload.id) delete payload.id;
+
+        const { data, error } = await supabase.from('weapons').insert(payload).select().single();
+        if (error) {
+          console.error('Error adding weapon:', error);
+          toast.error('Erro ao adicionar arma', { description: error.message });
+          return;
+        }
+        if (data) {
+          set((state) => ({ weapons: [...state.weapons, data as Weapon] }));
+          toast.success('Arma adicionada com sucesso!');
+        }
+      },
+
+      updateWeapon: async (id, updates) => {
+        const { data, error } = await supabase.from('weapons').update(updates).eq('id', id).select().single();
+        if (error) {
+          console.error('Error updating weapon:', error);
+          toast.error('Erro ao atualizar arma', { description: error.message });
+          return;
+        }
+        if (data) {
+          set((state) => ({
+            weapons: state.weapons.map((w) => (w.id === id ? (data as Weapon) : w)),
+          }));
+          toast.success('Arma atualizada com sucesso!');
+        }
+      },
+
+      removeWeapon: async (weaponId) => {
+        const { error } = await supabase.from('weapons').delete().eq('id', weaponId);
+        if (error) {
+          console.error('Error removing weapon:', error);
+          toast.error('Erro ao remover arma', { description: error.message });
+        } else {
+          set((state) => ({ weapons: state.weapons.filter((w) => w.id !== weaponId) }));
+          toast.success('Arma removida com sucesso.');
+        }
+      },
+
+      addClient: async (clientData) => {
+        const payload = { ...clientData };
+        if (!payload.id) delete payload.id;
+
+        const { data, error } = await supabase.from('clients').insert(payload).select().single();
+        if (error) {
+          console.error('Error adding client:', error);
+          toast.error('Erro ao adicionar cliente', { description: error.message });
+          return;
+        }
+        if (data) {
+          set((state) => ({ clients: [...state.clients, data as Client] }));
+          toast.success('Cliente adicionado com sucesso!');
+        }
+      },
+
+      updateClient: async (id, updates) => {
+        const { data, error } = await supabase.from('clients').update(updates).eq('id', id).select().single();
+        if (error) {
+          console.error('Error updating client:', error);
+          toast.error('Erro ao atualizar cliente', { description: error.message });
+          return;
+        }
+        if (data) {
+          set((state) => ({
+            clients: state.clients.map((c) => (c.id === id ? (data as Client) : c)),
+          }));
+          toast.success('Cliente atualizado com sucesso!');
+        }
+      },
+
+      removeClient: async (clientId) => {
+        const { error } = await supabase.from('clients').delete().eq('id', clientId);
+        if (error) {
+          console.error('Error removing client:', error);
+          toast.error('Erro ao remover cliente', { description: error.message });
+        } else {
+          set((state) => ({ clients: state.clients.filter((c) => c.id !== clientId) }));
+          toast.success('Cliente removido com sucesso.');
+        }
+      },
+
+  generateDefaultRouting: () => {
+    const workstations = get().workstations;
+    const steps = workstations.flatMap(ws =>
+      ws.operations.map(op => ({
+        workstationId: ws.id,
+        operationId: op.id,
+        name: op.name,
+        status: 'pending',
+      }))
+    );
+    return { steps };
   },
 
-  addWeapon: (weaponData) => {
-    const newWeapon: Weapon = {
-        id: crypto.randomUUID(),
-        ...weaponData
-    };
-    set((state) => ({
-        weapons: [...state.weapons, newWeapon],
-    }));
-  },
+  addOrder: async (orderData) => {
+    const routing = orderData.routing ?? get().generateDefaultRouting();
+    const firstStep = (routing as { steps?: { workstationId: string, name: string }[] })?.steps?.[0];
 
-  updateWeapon: (id, updates) => {
-    set((state) => ({
-      weapons: state.weapons.map((weapon) =>
-        weapon.id === id ? { ...weapon, ...updates } : weapon
-      ),
-    }));
-  },
-
-  removeWeapon: (weaponId) =>
-    set((state) => ({ weapons: state.weapons.filter((w) => w.id !== weaponId) })),
-
-  addClient: (clientData) => {
-    const newClient: Client = {
-      id: crypto.randomUUID(),
-      ...clientData
-    };
-    set((state) => ({
-      clients: [...state.clients, newClient],
-    }));
-  },
-
-  updateClient: (id, updates) => {
-    set((state) => ({
-      clients: state.clients.map((client) =>
-        client.id === id ? { ...client, ...updates } : client
-      ),
-    }));
-  },
-
-  removeClient: (clientId) =>
-    set((state) => ({ clients: state.clients.filter((c) => c.id !== clientId) })),
-
-  addOrder: (orderData: Omit<ProductionOrder, 'id' | 'status' | 'progress'>) => {
-    const routing = orderData.routing || generateDefaultRouting();
-    const firstStep = routing.steps[0];
-    const firstWorkstation = workstations.find(ws => ws.id === firstStep?.workstationId);
-    const firstOperation = firstWorkstation?.operations[0];
-    
-    const newOrder: ProductionOrder = {
-      ...orderData,
+    const orderToInsert: Database['public']['Tables']['production_orders']['Insert'] = {
+      ...orderData, // Assumes orderData is already snake_case
       routing,
-      id: Date.now().toString(),
       status: 'in-progress',
       progress: 0,
-      currentWorkstation: firstStep?.workstationId || PRODUCTION_ROUTING.DEFAULT_WORKSTATION,
-      currentOperation: firstOperation?.name || PRODUCTION_ROUTING.DEFAULT_OPERATION,
+      current_workstation: firstStep?.workstationId || PRODUCTION_ROUTING.DEFAULT_WORKSTATION,
+      current_operation: firstStep?.name || PRODUCTION_ROUTING.DEFAULT_OPERATION,
     };
 
-    set((state) => ({
-      orders: [...state.orders, newOrder],
-    }));
+    const { data, error } = await supabase
+      .from('production_orders')
+      .insert(orderToInsert)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao adicionar ordem de produção:', error);
+      // TODO: Adicionar feedback de erro para o utilizador
+      return;
+    }
+    if (data) {
+      set((state) => ({
+        orders: [data as ProductionOrder, ...state.orders],
+      }));
+    }
   },
 
-  updateOrder: (id, updates) => {
-    set((state) => ({
-      orders: state.orders.map((order) =>
-        order.id === id ? { ...order, ...updates } : order
-      ),
-    }));
+  updateOrder: async (id, updates) => {
+    const { data, error } = await supabase
+      .from('production_orders')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao atualizar ordem de produção:', error);
+      return;
+    }
+    if (data) {
+      set((state) => ({
+        orders: state.orders.map((order) => (order.id === id ? (data as ProductionOrder) : order)),
+      }));
+    }
   },
 
-  removeOrder: (id) => {
-    set((state) => ({
-      orders: state.orders.filter((order) => order.id !== id),
-    }));
+  removeOrder: async (id) => {
+    const { error } = await supabase.from('production_orders').delete().eq('id', id);
+    if (error) console.error('Erro ao remover ordem de produção:', error);
+    else set((state) => ({ orders: state.orders.filter((order) => order.id !== id) }));
   },
 
   moveOrderToNextWorkstation: (orderId) => {
@@ -189,7 +401,7 @@ export const useProductionStore = create<ProductionStore>()(
   },
 
   getOrdersByWorkstation: (workstationId) => {
-    return get().orders.filter(order => order.currentWorkstation === workstationId);
+    return get().orders.filter(order => order.current_workstation === workstationId && order.status !== 'completed');
   },
 
   getOrdersByStatus: (status) => {
@@ -204,73 +416,65 @@ export const useProductionStore = create<ProductionStore>()(
     set({ orders });
   },
 
-  createProductionFromOrder: (order) => {
-    const exists = get().productions.some(
-      (p) => p.externalOrderId === order.orderId
+  createReleaseOrder: async (order) => {
+    const exists = get().releaseOrders.some(
+      (p) => p.external_order_id === order.orderId
     );
     if (exists) return;
 
-    set((state) => ({
-      productions: [
-        ...state.productions,
-        {
-          id: crypto.randomUUID(),
-          externalOrderId: order.orderId,
-          status: "BLOCKED",
-          createdAt: new Date().toISOString(),
-          items: order.items,
-        },
-      ],
-    }));
+    const { data, error } = await supabase
+      .from('release_orders')
+      .insert({
+        external_order_id: order.orderId,
+        items: order.items,
+        status: 'blocked'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erro ao criar encomenda para liberação:', error);
+      return;
+    }
+    set((state) => ({ releaseOrders: [data as ReleaseOrder, ...state.releaseOrders] }));
   },
 
-  releaseProduction: (id) => {
-    const production = get().productions.find((p) => p.id === id);
-    if (!production) return;
+  releaseOrder: async (id: string) => {
+    const orderToRelease = get().releaseOrders.find((p) => p.id === id);
+    if (!orderToRelease || orderToRelease.status !== 'blocked') return;
 
-    // Update status in current store
-    set((state) => ({
-      productions: state.productions.map((p) =>
-        p.id === id ? { ...p, status: "RELEASED" } : p
-      ),
-    }));
-
-    // Sync to production orders
-    const existingOrder = get().orders.find(
-      (o) => o.orderNumber === `OM-${production.externalOrderId}`
-    );
-
-    if (!existingOrder) {
-      get().addOrder({
-        orderNumber: `OM-${production.externalOrderId}`,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        client: `Cliente ${production.externalOrderId}` as any,
-        products: production.items.map((item) => ({
-          name: item.sku,
+    try {
+      // 1. Create the production order
+      await get().addOrder({
+        order_number: `OM-${orderToRelease.external_order_id}`,
+        related_order_id: orderToRelease.external_order_id,
+        client: { id: 'unknown', name: `Cliente ${orderToRelease.external_order_id}` },
+        products: ((orderToRelease.items || []) as OrderPayload['items']).map((item) => ({
+          product_id: item.sku,
           quantity: item.quantity,
-        })) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-        startDate: new Date().toISOString().split('T')[0],
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0],
-        routing: generateDefaultRouting(),
-        currentWorkstation: PRODUCTION_ROUTING.DEFAULT_WORKSTATION,
-        currentOperation: PRODUCTION_ROUTING.DEFAULT_OPERATION,
+        })),
+        start_date: new Date().toISOString().split('T')[0],
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        routing: get().generateDefaultRouting(),
       });
+
+      // 2. Update the release order status
+      const { data, error } = await supabase.from('release_orders').update({ status: 'released' }).eq('id', id).select().single();
+      if (error) throw error;
+
+      // 3. Update local state
+      set((state) => ({
+        releaseOrders: state.releaseOrders.map((p) => (p.id === id ? (data as ReleaseOrder) : p)),
+      }));
+    } catch (error) {
+      console.error('Erro ao liberar encomenda para produção:', error);
+      // TODO: Add user feedback for the error
     }
   },
 
   releaseProductionByOrderId: (orderId) => {
-    const production = get().productions.find((p) => p.externalOrderId === orderId);
-    if (production) get().releaseProduction(production.id);
+    const orderToRelease = get().releaseOrders.find((p) => p.external_order_id === orderId);
+    if (orderToRelease) get().releaseOrder(orderToRelease.id);
   },
-    }),
-    {
-      name: 'production-store',
-      partialize: (state) => ({
-        orders: state.orders,
-        productions: state.productions,
-      }),
-    }
-  )
+    })
 );

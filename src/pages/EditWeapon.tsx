@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useProductionStore } from "@/lib/store";
-import type { Weapon, Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
+import { useProductionStore, type Weapon } from "@/lib/store";
+import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,18 +24,18 @@ interface WeaponFormProps {
 
 const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
   const [brand, setBrand] = useState(weapon.brand);
-  const [model, setModel] = useState(weapon.model);
-  const [serialNumber, setSerialNumber] = useState(weapon.serialNumber);
-  const [caliber, setCaliber] = useState<Caliber>(weapon.caliber);
-  const [dominantHand, setDominantHand] = useState<DominantHand>(weapon.dominantHand);
-  const [sidePlates, setSidePlates] = useState<SidePlates>(weapon.sidePlates);
-  const [barrelLength, setBarrelLength] = useState(weapon.barrelLength.toString());
-  const [barrelWeight, setBarrelWeight] = useState(weapon.barrelWeight.toString());
-  const [forendWeight, setForendWeight] = useState(weapon.forendWeight.toString());
-  const [rib, setRib] = useState<Rib>(weapon.rib);
-  const [totalWeight, setTotalWeight] = useState(weapon.totalWeight.toString());
-  const [discipline, setDiscipline] = useState(weapon.discipline);
-  const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency>(weapon.competitionFrequency);
+  const [model, setModel] = useState(weapon.model); 
+  const [serialNumber, setSerialNumber] = useState(weapon.serial_number); 
+  const [caliber, setCaliber] = useState<Caliber>(weapon.caliber as Caliber);
+  const [dominantHand, setDominantHand] = useState<DominantHand>(weapon.dominant_hand as DominantHand);
+  const [sidePlates, setSidePlates] = useState<SidePlates>(weapon.side_plates as SidePlates);
+  const [barrelLength, setBarrelLength] = useState(weapon.barrel_length.toString());
+  const [barrelWeight, setBarrelWeight] = useState(weapon.barrel_weight.toString());
+  const [forendWeight, setForendWeight] = useState(weapon.forend_weight.toString());
+  const [rib, setRib] = useState<Rib>(weapon.rib as Rib);
+  const [totalWeight, setTotalWeight] = useState(weapon.total_weight.toString());
+  const [discipline, setDiscipline] = useState(weapon.discipline); 
+  const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency>(weapon.competition_frequency as CompetitionFrequency);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,17 +43,18 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
     onSave({
       brand: brand.trim(),
       model: model.trim(),
-      serialNumber: serialNumber.trim(),
+      serial_number: serialNumber.trim(),
       caliber,
-      dominantHand,
-      sidePlates,
-      barrelLength: Number(barrelLength),
-      barrelWeight: Number(barrelWeight),
-      forendWeight: Number(forendWeight),
+      dominant_hand: dominantHand,
+      side_plates: sidePlates,
+      barrel_length: Number(barrelLength),
+      barrel_weight: Number(barrelWeight),
+      forend_weight: Number(forendWeight),
       rib,
-      totalWeight: Number(totalWeight),
+      total_weight: Number(totalWeight),
       discipline: discipline.trim(),
-      competitionFrequency,
+      competition_frequency: competitionFrequency,
+      created_at: weapon.created_at,
     });
   };
 

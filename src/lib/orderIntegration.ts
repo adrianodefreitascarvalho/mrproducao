@@ -3,6 +3,7 @@
  * Dispara eventos quando encomendas são libertadas para produção
  */
 
+import { supabase, type Database } from './supabase';
 const EVENTS_SERVER_URL = 'http://localhost:4001/events';
 
 export interface OrderReleasePayload {
@@ -49,33 +50,40 @@ export async function fireOrderReleaseEvent(payload: OrderReleasePayload): Promi
 }
 
 /**
- * Versão síncrona com fallback para localStorage
- * Se o servidor de eventos não estiver disponível, armazena em localStorage
+ * Versão com fallback para Supabase
+ * Se o servidor de eventos não estiver disponível, armazena em Supabase.
  */
-export function fireOrderReleaseEventWithFallback(payload: OrderReleasePayload): void {
-  fireOrderReleaseEvent(payload)
-    .then((success) => {
-      if (!success) {
-        // Fallback para localStorage
-        const pendingOrders = JSON.parse(
-          localStorage.getItem('pendingProductionOrders') || '[]'
-        );
-        pendingOrders.push({
-          id: payload.orderId,
-          orderNumber: `ENC-${payload.orderId}`,
-          client: 'Cliente Desconhecido',
-          product: payload.items[0]?.sku || 'Produto',
-          quantity: payload.items[0]?.quantity || 0,
-          startDate: payload.createdAt,
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'pending',
-          progress: 0,
-          currentWorkstation: 'preparacao',
-          currentOperation: 'Escolha da Madeira',
-          createdAt: payload.createdAt,
-        });
-        localStorage.setItem('pendingProductionOrders', JSON.stringify(pendingOrders));
-        console.log('💾 Encomenda armazenada localmente (fallback)');
-      }
+export async function fireOrderReleaseEventWithFallback(payload: OrderReleasePayload): Promise<void> {
+  const success = await fireOrderReleaseEvent(payload);
+
+  if (success) {
+    return;
+  }
+
+  // Fallback para Supabase
+  console.log('Servidor de eventos indisponível. A gravar diretamente na base de dados (fallback).');
+
+  // O fallback insere na tabela release_orders, imitando o fluxo do evento.
+  type ReleaseOrderInsert = Database['public']['Tables']['release_orders']['Insert'];
+
+  const orderToInsert: ReleaseOrderInsert = {
+    external_order_id: payload.orderId,
+    items: payload.items,
+    status: 'blocked',
+  };
+
+  try {
+    // Usar upsert para evitar erros de duplicados se o fallback for acionado várias vezes para a mesma encomenda.
+    const { error } = await supabase.from('release_orders').upsert(orderToInsert, {
+      onConflict: 'external_order_id',
     });
+
+    if (error) {
+      console.error('Erro ao inserir encomenda no Supabase (fallback):', error);
+    } else {
+      console.log('💾 Encomenda para liberação armazenada no Supabase com sucesso (fallback).');
+    }
+  } catch (error) {
+    console.error('Erro inesperado ao comunicar com Supabase (fallback):', error);
+  }
 }

@@ -5,34 +5,32 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, CheckCircle2, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useUserProductionStore } from "@/lib/UserProductionStore";
-import { useProductionStore } from "@/lib/store";
+import { useProductionStore, type OrderPayload } from "@/lib/store";
 import { useEffect, useState } from "react";
 
 export default function ReleaseOrders() {
   const navigate = useNavigate();
-  const productions = useUserProductionStore((state) => state.productions);
-  const releaseProduction = useUserProductionStore((state) => state.releaseProduction);
+  const releaseOrders = useProductionStore((state) => state.releaseOrders);
+  const releaseOrder = useProductionStore((state) => state.releaseOrder); 
   const productionOrders = useProductionStore((state) => state.orders);
   const [, setRefresh] = useState(0);
 
   // Force re-render when productions change to ensure UI updates
   useEffect(() => {
-    console.log("[ReleaseOrders] Produções carregadas:", productions.length);
-  }, [productions]);
+    console.log("[ReleaseOrders] Produções carregadas:", releaseOrders.length); 
+  }, [releaseOrders]);
 
   const handleRelease = (id: string) => {
-    releaseProduction(id);
-    // Force refresh
+    releaseOrder(id);
     setRefresh((prev) => prev + 1);
   };
 
   const getReleasedOrderCount = () => {
-    return productions.filter((p) => p.status === "RELEASED").length;
+    return releaseOrders.filter((p) => p.status === "released").length;
   };
 
   const getProductionOrdersFromReleased = () => {
-    return productionOrders.filter((o) => o.orderNumber.startsWith("OM-"));
+    return productionOrders.filter((o) => o.order_number.startsWith("OM-"));
   };
 
   return (
@@ -61,7 +59,7 @@ export default function ReleaseOrders() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{productions.length}</div>
+              <div className="text-2xl font-bold">{releaseOrders.length}</div>
             </CardContent>
           </Card>
 
@@ -73,7 +71,7 @@ export default function ReleaseOrders() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
-                {productions.filter((p) => p.status === "BLOCKED").length}
+                {releaseOrders.filter((p) => p.status === "blocked").length}
               </div>
             </CardContent>
           </Card>
@@ -101,7 +99,7 @@ export default function ReleaseOrders() {
                 <CardTitle>Encomendas Pendentes</CardTitle>
               </CardHeader>
               <CardContent>
-                {productions.length === 0 ? (
+                {releaseOrders.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     Nenhuma encomenda pendente
                   </div>
@@ -118,16 +116,16 @@ export default function ReleaseOrders() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {productions.map((prod) => (
+                        {releaseOrders.map((prod) => (
                           <TableRow key={prod.id}>
                             <TableCell className="font-mono text-sm">
-                              {prod.externalOrderId.slice(-6)}
+                              {prod.external_order_id.slice(-6)}
                             </TableCell>
                             <TableCell>
-                              {prod.status === "BLOCKED" ? (
+                             {prod.status === "blocked" ? (
                                 <Badge variant="destructive" className="flex w-fit items-center gap-1">
                                   <Lock className="h-3 w-3" />
-                                  Bloqueada
+                                 Bloqueada
                                 </Badge>
                               ) : (
                                 <Badge variant="default" className="flex w-fit items-center gap-1">
@@ -136,12 +134,12 @@ export default function ReleaseOrders() {
                                 </Badge>
                               )}
                             </TableCell>
-                            <TableCell>{prod.items.length}</TableCell>
+                            <TableCell>{((prod.items as unknown) as OrderPayload['items'])?.length || 0}</TableCell>
                             <TableCell className="text-sm text-muted-foreground">
-                              {new Date(prod.createdAt).toLocaleDateString("pt-PT")}
+                              {new Date(prod.created_at).toLocaleDateString("pt-PT")}
                             </TableCell>
                             <TableCell>
-                              {prod.status === "BLOCKED" ? (
+                              {prod.status === "blocked" ? (
                                 <Button
                                   size="sm"
                                   onClick={() => handleRelease(prod.id)}
@@ -191,9 +189,9 @@ export default function ReleaseOrders() {
                           key={order.id}
                           className="text-xs p-2 bg-green-50 rounded border border-green-200"
                         >
-                          <div className="font-mono font-medium">{order.orderNumber}</div>
+                          <div className="font-mono font-medium">{order.order_number}</div>
                           <div className="text-muted-foreground">
-                            {typeof order.client === 'string' ? order.client : `${order.client?.name || 'Cliente'}`}
+                            {order.client?.name || 'Cliente'}
                           </div>
                         </div>
                       ))}

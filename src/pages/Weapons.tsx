@@ -71,8 +71,8 @@ const Weapons = () => {
                   <TableRow key={weapon.id}>
                     <TableCell className="font-medium">{weapon.brand}</TableCell>
                     <TableCell>{weapon.model}</TableCell>
-                    <TableCell>{weapon.caliber}</TableCell>
-                    <TableCell>{weapon.dominantHand}</TableCell>
+                    <TableCell>{weapon.caliber}</TableCell> 
+                    <TableCell>{weapon.dominant_hand}</TableCell>
                     <TableCell>{weapon.discipline}</TableCell>
                     <TableCell className="text-right">
                       <Button

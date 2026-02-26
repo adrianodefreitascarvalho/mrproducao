@@ -13,8 +13,21 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const ALLOWED_ORIGINS = [
+  'http://localhost:8080',
+  'http://localhost:8082',
+  process.env.PRODUCTION_DOMAIN,
+].filter(Boolean) as string[];
+
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'), false);
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 const EventSchema = z.object({

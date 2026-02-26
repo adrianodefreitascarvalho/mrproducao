@@ -12,6 +12,7 @@ import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RefreshCw, Pencil, Trash2, Plus, Save, X, Minus, AlertCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
+import { SalesOrderSchema, sanitizeText } from "@/lib/validation";
 import { useProductionStore } from "@/lib/store";
 
 // Type definitions
@@ -200,17 +201,32 @@ export default function SalesOrders() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.items.length === 0) { setFormError("A encomenda deve ter pelo menos um item."); return; }
+    setFormError(null);
+
+    // Sanitize text inputs
+    const sanitizedData = {
+      ...formData,
+      observations: sanitizeText(formData.observations || ''),
+      clientName: sanitizeText(formData.clientName || ''),
+      shippingAddress: sanitizeText(formData.shippingAddress || ''),
+    };
+
+    // Validate with Zod schema
+    const result = SalesOrderSchema.safeParse(sanitizedData);
+    if (!result.success) {
+      setFormError(result.error.issues[0]?.message || 'Dados inválidos.');
+      return;
+    }
 
     if (editingId) {
-      setOrders(orders.map(order => order.id === editingId ? { ...order, ...formData, id: editingId } : order));
+      setOrders(orders.map(order => order.id === editingId ? { ...order, ...sanitizedData, id: editingId } : order));
     } else {
       const now = new Date();
       const prefix = `E${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
       const currentSequences = orders.filter(o => o.orderNumber.startsWith(prefix)).map(o => { const seq = parseInt(o.orderNumber.slice(7)); return isNaN(seq) ? 0 : seq; });
       const nextSequence = currentSequences.length > 0 ? Math.max(...currentSequences) + 1 : 1;
       const newOrderNumber = `${prefix}${String(nextSequence).padStart(5, '0')}`;
-      const newOrder: SalesOrder = { ...formData, id: crypto.randomUUID(), createdAt: new Date().toISOString(), orderNumber: newOrderNumber };
+      const newOrder: SalesOrder = { ...sanitizedData, id: crypto.randomUUID(), createdAt: new Date().toISOString(), orderNumber: newOrderNumber };
       setOrders([...orders, newOrder]);
     }
     resetForm();

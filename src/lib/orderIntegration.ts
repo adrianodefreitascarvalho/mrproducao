@@ -3,8 +3,10 @@
  * Dispara eventos quando encomendas são libertadas para produção
  */
 
+import { getAuthHeaders } from './authHeaders';
 import { supabase, type Database } from './supabase';
-const EVENTS_SERVER_URL = 'http://localhost:4001/events';
+
+const EVENTS_SERVER_URL = import.meta.env.VITE_EVENTS_SERVER_URL || 'http://localhost:4001/events';
 
 export interface OrderReleasePayload {
   orderId: string;
@@ -28,11 +30,10 @@ export async function fireOrderReleaseEvent(payload: OrderReleasePayload): Promi
 
     console.log('📤 Disparando evento OrderCreated:', event);
 
+    const headers = await getAuthHeaders();
     const response = await fetch(EVENTS_SERVER_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(event),
     });
 

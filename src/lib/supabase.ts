@@ -288,12 +288,13 @@ const clientUrl = isLocal && typeof window !== 'undefined'
   ? window.location.origin 
   : (isLocal ? "http://localhost:8082" : supabaseUrl);
 
-console.log("Supabase Config:", {
-  isLocal,
-  clientUrl,
-  hasKey: !!supabaseKey, // Verifica se a chave existe (true/false)
-  targetUrl: supabaseUrl // Para verificar se a variável de ambiente está carregada
-});
+if (import.meta.env.DEV) {
+  console.log("Supabase Config:", {
+    isLocal,
+    clientUrl,
+    hasKey: !!supabaseKey,
+  });
+}
 
 // Singleton para evitar múltiplas instâncias durante o desenvolvimento (HMR)
 let client: SupabaseClient<Database>;

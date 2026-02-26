@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { getSafeAuthErrorMessage } from "@/lib/authErrors";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -31,7 +32,7 @@ export default function ResetPassword() {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro", description: getSafeAuthErrorMessage(error), variant: "destructive" });
     } else {
       toast({ title: "Sucesso", description: "Palavra-passe atualizada com sucesso." });
       navigate("/");

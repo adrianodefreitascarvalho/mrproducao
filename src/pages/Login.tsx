@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, UserPlus, KeyRound } from "lucide-react";
+import { getSafeAuthErrorMessage } from "@/lib/authErrors";
 
 type AuthView = "login" | "signup" | "forgot-password";
 
@@ -22,7 +23,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
-      toast({ title: "Erro ao entrar", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao entrar", description: getSafeAuthErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -40,7 +41,7 @@ export default function Login() {
     });
     setLoading(false);
     if (error) {
-      toast({ title: "Erro ao registar", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao registar", description: getSafeAuthErrorMessage(error), variant: "destructive" });
     } else {
       toast({ title: "Registo efetuado", description: "Verifique o seu email para confirmar a conta." });
       setView("login");
@@ -59,7 +60,7 @@ export default function Login() {
     });
     setLoading(false);
     if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+      toast({ title: "Erro", description: getSafeAuthErrorMessage(error), variant: "destructive" });
     } else {
       toast({ title: "Email enviado", description: "Verifique o seu email para redefinir a palavra-passe." });
       setView("login");

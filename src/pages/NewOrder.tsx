@@ -17,7 +17,7 @@ export default function NewOrder() {
   const storeProducts = useProductionStore((state) => state.products);
   const orders = useProductionStore((state) => state.orders);
   const clients = useProductionStore((state) => state.clients);
-  const _storeWeapons = useProductionStore((state) => state.weapons);
+
 
   const [formData, setFormData] = useState({
     orderNumber: '',
@@ -85,8 +85,6 @@ export default function NewOrder() {
     addOrder({
       order_number: formData.orderNumber,
       client: { id: client.id, name: clientName } as any,
-      current_workstation: formData.workstationId || 'preparacao',
-      current_operation: formData.operation || 'Escolha da Madeira',
       routing: null,
       products: formData.products.map(p => ({ 
         product_id: p.productId,
@@ -95,7 +93,7 @@ export default function NewOrder() {
       start_date: new Date().toISOString().split('T')[0],
       due_date: formData.dueDate,
       related_order_id: null,
-    });
+    } as any);
 
     navigate("/orders");
   };

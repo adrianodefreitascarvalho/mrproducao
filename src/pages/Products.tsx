@@ -124,10 +124,10 @@ const Products = () => {
                       {product.name}
                     </TableCell>
                     <TableCell>
-                      {productTypeMap.get(product.productTypeId) || product.productTypeId || "N/A"}
+                      {productTypeMap.get(product.product_type || '') || product.product_type || "N/A"}
                     </TableCell>
                     <TableCell>
-                      {product.speciesId || "Nogueira Turca"}
+                      {product.wood_grade || "Nogueira Turca"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

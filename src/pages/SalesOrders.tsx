@@ -73,7 +73,7 @@ const EMPTY_FORM_DATA: Omit<SalesOrder, 'id' | 'createdAt'> = {
 };
 
 const GRIP_TYPES: GripType[] = ['Punho Normal', 'Punho Pistola', 'Punho anatómico com dedos', 'Punho anatómico sem dedos', 'Punho papo de rôla'];
-const CHECKERING_TYPES: CheckeringType[] = ['Normal', 'Laser', 'Personalizado'];
+// const CHECKERING_TYPES: CheckeringType[] = ['Normal', 'Laser', 'Personalizado'];
 
 const getClientName = (client: any) => {
   if (client.name) return client.name;
@@ -83,7 +83,7 @@ const getClientName = (client: any) => {
 export default function SalesOrders() {
   const clients = useProductionStore(state => state.clients);
   const weapons = useProductionStore(state => state.weapons);
-  const updateClient = useProductionStore(state => state.updateClient);
+  // const updateClient = useProductionStore(state => state.updateClient);
   
   const [woodStock, setWoodStock] = useState<WoodStockItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -92,8 +92,8 @@ export default function SalesOrders() {
   const [formData, setFormData] = useState(EMPTY_FORM_DATA);
   const [formError, setFormError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const [isAssociatingWeapon, setIsAssociatingWeapon] = useState(false);
-  const [weaponToAssociate, setWeaponToAssociate] = useState("");
+  const [, setIsAssociatingWeapon] = useState(false);
+  // const [weaponToAssociate, setWeaponToAssociate] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
   const [orders, setOrders] = useState<SalesOrder[]>(() => {
@@ -131,7 +131,7 @@ export default function SalesOrders() {
 
   const resetForm = () => {
     setFormData(EMPTY_FORM_DATA); setEditingId(null); setIsFormOpen(false);
-    setFormError(null); setCurrentStep(1); setIsAssociatingWeapon(false); setWeaponToAssociate("");
+    setFormError(null); setCurrentStep(1); setIsAssociatingWeapon(false);
   };
 
   const handleEdit = (order: SalesOrder) => {
@@ -183,6 +183,7 @@ export default function SalesOrders() {
     setFormData({ ...formData, items: newItems, totalAmount: newTotal });
   };
 
+  /* handleAssociateWeapon removed - kept for future use
   const handleAssociateWeapon = () => {
     if (formData.clientId && weaponToAssociate) {
       const client = clients.find(c => c.id === formData.clientId);
@@ -195,6 +196,7 @@ export default function SalesOrders() {
       }
     }
   };
+  */
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

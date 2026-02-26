@@ -116,8 +116,9 @@ const PriceTable = () => {
       
       if (data && data.length > 0) {
         // Atualiza o formulário com os dados vindos do banco
-        reset({ tables: data });
-        setActiveTab(data[0].id);
+        const tables = data.map((d: any) => ({ id: d.id, name: d.name, items: (d.items as any[]) || [] }));
+        reset({ tables });
+        setActiveTab(tables[0].id);
       } else if (error) {
         console.error("Erro ao buscar tabelas:", error);
       }
@@ -138,7 +139,7 @@ const PriceTable = () => {
 
   const onSubmit = async (data: FormValues) => {
     // Salva (Upsert) todas as tabelas no Supabase
-    const { error } = await supabase.from("price_tables").upsert(data.tables);
+    const { error } = await supabase.from("price_tables").upsert(data.tables as any);
 
     if (error) {
       console.error("Erro ao salvar:", error);

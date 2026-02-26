@@ -1,7 +1,17 @@
 import express from "express";
 import cors from "cors";
 import { z } from "zod";
+import { createClient } from "@supabase/supabase-js";
 import { handleEvent } from "./handleEvent";
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 const PORT = 4001;
@@ -39,16 +49,21 @@ app.get("/health", (_req, res) => {
 });
 
 // Events endpoint
-app.post("/events", (req, res): void => {
+app.post("/events", async (req, res): Promise<void> => {
   try {
-    // Validate auth token
     const token = req.headers.authorization?.replace("Bearer ", "");
     if (!token) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
-    // Validate input
+    // Verify JWT with Supabase
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      res.status(401).json({ error: "Invalid token" });
+      return;
+    }
+
     const result = EventSchema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ error: "Invalid event data" });

@@ -1,21 +1,26 @@
 import { useProductionStore } from "./store";
 
-type OrderCreatedEvent = {
-  type: "OrderCreated";
+type OrderEvent = {
+  type: "OrderCreated" | "OrderReleased";
   payload: {
     orderId: string;
-    createdAt: string;
-    items: Array<{
+    createdAt?: string;
+    items?: Array<{
       sku: string;
       quantity: number;
     }>;
   };
 };
 
-export function handleEvent(event: OrderCreatedEvent) {
-  if (event.type === "OrderCreated") {
+export function handleEvent(event: OrderEvent) {
+  if (event.type === "OrderCreated" || event.type === "OrderReleased") {
+    const payload = {
+      orderId: event.payload.orderId,
+      createdAt: event.payload.createdAt || new Date().toISOString(),
+      items: event.payload.items || [],
+    };
     useProductionStore
       .getState()
-      .createReleaseOrder(event.payload);
+      .createReleaseOrder(payload);
   }
 }

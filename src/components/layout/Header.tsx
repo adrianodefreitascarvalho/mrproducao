@@ -1,6 +1,7 @@
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HeaderProps {
   title: string;
@@ -33,6 +34,10 @@ export function Header({ title, subtitle }: HeaderProps) {
 
         <Button variant="ghost" size="icon">
           <User className="w-5 h-5" />
+        </Button>
+
+        <Button variant="ghost" size="icon" onClick={() => supabase.auth.signOut()} title="Sair">
+          <LogOut className="w-5 h-5" />
         </Button>
       </div>
     </header>

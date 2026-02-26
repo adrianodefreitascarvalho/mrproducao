@@ -1,8 +1,8 @@
-import { ProductionOrder, workstations } from "@/data/workstations";
+import { workstations } from "@/data/workstations";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { useProductionStore } from "@/lib/store";
+import { useProductionStore, type ProductionOrder } from "@/lib/store";
 
 interface OrdersTableProps {
   orders: ProductionOrder[];
@@ -32,7 +32,6 @@ export function OrdersTable({ orders, limit }: OrdersTableProps) {
             <tr className="table-header">
               <th className="px-4 py-3 text-left">Ordem</th>
               <th className="px-4 py-3 text-left">Cliente</th>
-              <th className="px-4 py-3 text-left">Arma</th>
               <th className="px-4 py-3 text-left">Produto</th>
               <th className="px-4 py-3 text-left">Posto Atual</th>
               <th className="px-4 py-3 text-left">Estado</th>
@@ -50,20 +49,17 @@ export function OrdersTable({ orders, limit }: OrdersTableProps) {
                     to={`/orders/${order.id}`}
                     className="font-medium text-sm text-foreground hover:text-primary"
                   >
-                    {order.orderNumber}
+                    {order.order_number}
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-sm text-muted-foreground">
-                  {order.client?.name}
-                </td>
-                <td className="px-4 py-3 text-sm text-muted-foreground">
-                  {order.weapon?.model || '—'}
+                  {(order.client as any)?.name || '—'}
                 </td>
                 <td className="px-4 py-3">
                   <div>
-                    {order.products.map((product, index) => (
+                    {((order.products as any[]) || []).map((product: any, index: number) => (
                       <div key={index}>
-                        <p className="text-sm text-foreground">{products.find(p => p.id === product.productId)?.name || 'Produto desconhecido'}</p>
+                        <p className="text-sm text-foreground">{products.find(p => p.id === product.product_id)?.name || 'Produto desconhecido'}</p>
                         <p className="text-xs text-muted-foreground">
                           Qty: {product.quantity}
                         </p>
@@ -74,10 +70,10 @@ export function OrdersTable({ orders, limit }: OrdersTableProps) {
                 <td className="px-4 py-3">
                   <div>
                     <p className="text-sm text-foreground">
-                      {getWorkstationName(order.currentWorkstation)}
+                      {getWorkstationName(order.current_workstation || '')}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {order.currentOperation}
+                      {order.current_operation}
                     </p>
                   </div>
                 </td>
@@ -96,9 +92,9 @@ export function OrdersTable({ orders, limit }: OrdersTableProps) {
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2 min-w-30">
-                    <Progress value={order.progress} className="h-2 flex-1" />
+                    <Progress value={order.progress ?? 0} className="h-2 flex-1" />
                     <span className="text-xs text-muted-foreground w-10">
-                      {order.progress}%
+                      {order.progress ?? 0}%
                     </span>
                   </div>
                 </td>

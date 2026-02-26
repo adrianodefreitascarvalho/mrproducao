@@ -22,7 +22,7 @@ export default function ProductionRouting() {
   };
 
   const [routing, setRouting] = useState<ProductionRouting>(
-    order?.routing || generateDefaultRouting()
+    (order?.routing as unknown as ProductionRouting) || generateDefaultRouting()
   );
   const [selectedWorkstations, setSelectedWorkstations] = useState<string[]>(
     routing.steps.map((step) => step.workstationId)
@@ -75,7 +75,7 @@ export default function ProductionRouting() {
 
   const handleSaveRouting = () => {
     // Save the current routing state which includes specific operation selections
-    updateOrder(order.id, { routing });
+    updateOrder(order.id, { routing: routing as any });
     // Optional: Navigate back or show success toast
   };
 
@@ -105,7 +105,7 @@ export default function ProductionRouting() {
     <div className="flex flex-col h-screen">
       <Header
         title="Roteiro de Produção"
-        subtitle={`Ordem: ${order.orderNumber} - ${order.client.name}`}
+        subtitle={`Ordem: ${order.order_number} - ${(order.client as any)?.name || ''}`}
       />
 
       <div className="flex-1 overflow-auto p-6 space-y-6">

@@ -16,24 +16,14 @@ export default function Orders() {
   const products = useProductionStore((state) => state.products);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
-  const handleNewOrder = () => {
-    navigate("/orders/new");
-  };
+  const handleNewOrder = () => navigate("/orders/new");
 
   const toggleSelectAll = () => {
-    if (selectedOrders.length === orders.length) {
-      setSelectedOrders([]);
-    } else {
-      setSelectedOrders(orders.map((o) => o.id));
-    }
+    setSelectedOrders(selectedOrders.length === orders.length ? [] : orders.map((o) => o.id));
   };
 
   const toggleSelectOrder = (id: string) => {
-    if (selectedOrders.includes(id)) {
-      setSelectedOrders(selectedOrders.filter((oId) => oId !== id));
-    } else {
-      setSelectedOrders([...selectedOrders, id]);
-    }
+    setSelectedOrders(prev => prev.includes(id) ? prev.filter((oId) => oId !== id) : [...prev, id]);
   };
 
   const handleDeleteSelected = () => {
@@ -65,22 +55,16 @@ export default function Orders() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header
-        title="Ordens de Produção"
-        subtitle="Acompanhe todas as ordens de produção"
-      />
-
+      <Header title="Ordens de Produção" subtitle="Acompanhe todas as ordens de produção" />
       <div className="flex-1 overflow-auto p-6 space-y-6">
         <div className="flex justify-end gap-2">
           {selectedOrders.length > 0 && (
             <Button variant="destructive" onClick={handleDeleteSelected}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar ({selectedOrders.length})
+              <Trash2 className="mr-2 h-4 w-4" /> Eliminar ({selectedOrders.length})
             </Button>
           )}
           <Button onClick={handleNewOrder}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nova Ordem
+            <PlusCircle className="mr-2 h-4 w-4" /> Nova Ordem
           </Button>
         </div>
         
@@ -89,15 +73,11 @@ export default function Orders() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12.5">
-                  <Checkbox
-                    checked={orders.length > 0 && selectedOrders.length === orders.length}
-                    onCheckedChange={toggleSelectAll}
-                  />
+                  <Checkbox checked={orders.length > 0 && selectedOrders.length === orders.length} onCheckedChange={toggleSelectAll} />
                 </TableHead>
                 <TableHead>Número</TableHead>
                 <TableHead>Cliente</TableHead>
                 <TableHead>Produto</TableHead>
-                <TableHead>Arma</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Entrega</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -107,35 +87,25 @@ export default function Orders() {
               {orders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell>
-                    <Checkbox
-                      checked={selectedOrders.includes(order.id)}
-                      onCheckedChange={() => toggleSelectOrder(order.id)}
-                    />
+                    <Checkbox checked={selectedOrders.includes(order.id)} onCheckedChange={() => toggleSelectOrder(order.id)} />
                   </TableCell>
-                  <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                  <TableCell>{order.client?.name}</TableCell>
+                  <TableCell className="font-medium">{order.order_number}</TableCell>
+                  <TableCell>{(order.client as any)?.name || '—'}</TableCell>
                   <TableCell>
-                    {order.products.map((p) => products.find(prod => prod.id === p.productId)?.name || 'Produto desconhecido').join(', ')}
+                    {((order.products as any[]) || []).map((p: any) => products.find(prod => prod.id === p.product_id)?.name || 'Produto desconhecido').join(', ')}
                   </TableCell>
-                  <TableCell>{order.weapon?.model}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(order.status)}>
-                      {getStatusLabel(order.status)}
-                    </Badge>
+                    <Badge variant={getStatusVariant(order.status)}>{getStatusLabel(order.status)}</Badge>
                   </TableCell>
-                  <TableCell>{new Date(order.dueDate).toLocaleDateString()}</TableCell>
+                  <TableCell>{order.due_date ? new Date(order.due_date).toLocaleDateString() : '—'}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/orders/${order.id}`)}>
-                      Ver
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/orders/${order.id}`)}>Ver</Button>
                   </TableCell>
                 </TableRow>
               ))}
               {orders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    Nenhuma ordem encontrada
-                  </TableCell>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma ordem encontrada</TableCell>
                 </TableRow>
               )}
             </TableBody>

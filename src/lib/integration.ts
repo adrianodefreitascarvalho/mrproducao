@@ -1,4 +1,5 @@
 import type { ProductionOrder } from './store';
+import { getAuthHeaders } from './authHeaders';
 
 interface ProductionStoreActions {
   // Using 'any' to avoid complex type definition that would require more refactoring
@@ -50,9 +51,10 @@ class OrderManagementAPI {
   async getOrdersInProduction(): Promise<OrderManagementOrder[]> {
     try {
       // Try to fetch from actual API first
+      const headers = await getAuthHeaders();
       const response = await fetch(`${this.baseUrl}/orders/in-production`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
       });
 
       if (response.ok) {
@@ -70,9 +72,10 @@ class OrderManagementAPI {
 
   async updateOrderStatus(orderId: string, status: string): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/orders/${orderId}/status`, {
+      const headers = await getAuthHeaders();
+      const response = await fetch(`${this.baseUrl}/orders/${encodeURIComponent(orderId)}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ status }),
       });
 

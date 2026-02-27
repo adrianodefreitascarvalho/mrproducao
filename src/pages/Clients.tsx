@@ -26,8 +26,9 @@ const Clients = () => {
     navigate(`/clients/edit/${id}`);
   };
 
-  const handleDeleteClient = (id: string, name: string) => {
-    if (confirm(`Tem a certeza que pretende eliminar o cliente "${name}"?`)) {
+  const handleDeleteClient = (id: string, firstName: string | null, lastName: string | null) => {
+    const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+    if (confirm(`Tem a certeza que pretende eliminar o cliente "${fullName}"?`)) {
       removeClient(id);
     }
   };
@@ -54,7 +55,6 @@ const Clients = () => {
                 <TableHead>Nome</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Telefone</TableHead>
-                <TableHead>NIF</TableHead>
                 <TableHead className="text-right w-25">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -68,10 +68,9 @@ const Clients = () => {
               ) : (
                 clients.map((client) => (
                   <TableRow key={client.id}>
-                    <TableCell className="font-medium">{client.name}</TableCell>
+                    <TableCell className="font-medium">{client.first_name} {client.last_name}</TableCell>
                     <TableCell>{client.email}</TableCell>
                     <TableCell>{client.phone}</TableCell>
-                    <TableCell>{client.nif}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -84,7 +83,7 @@ const Clients = () => {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteClient(client.id, client.name)}
+                        onClick={() => handleDeleteClient(client.id, client.first_name, client.last_name)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

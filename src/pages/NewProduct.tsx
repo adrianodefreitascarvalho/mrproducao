@@ -22,29 +22,18 @@ const NewProduct = () => {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [productTypeId, setProductTypeId] = useState("");
-  const [speciesId] = useState("Nogueira Turca");
+  const [productType, setProductType] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !productTypeId || !speciesId) {
+    if (!name.trim() || !productType) {
       return;
     }
-    addProduct({
-      id: crypto.randomUUID(),
+    await addProduct({
       name: name.trim(),
       sku: "",
       description: description.trim(),
-      frontPhoto: "",
-      backPhoto: "",
-      productTypeId,
-      speciesId,
-      woodGradeId: "",
-      length: 0,
-      width: 0,
-      thickness: 0,
-      weight: 0,
-      salePrice: 0,
+      product_type: productType,
     });
     navigate("/products");
   };
@@ -89,7 +78,7 @@ const NewProduct = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="product-type">Tipo de Produto</Label>
-                    <Select onValueChange={setProductTypeId} value={productTypeId} required>
+                    <Select onValueChange={setProductType} value={productType} required>
                       <SelectTrigger id="product-type">
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
@@ -101,10 +90,6 @@ const NewProduct = () => {
                         <SelectItem value="Punho Glove">Punho Glove</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="wood-species">Espécie da Madeira</Label>
-                    <Input id="wood-species" value="Nogueira Turca" readOnly className="bg-muted" />
                   </div>
                 </div>
 

@@ -5,28 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft as ArrowLeftIcon, Pencil, Save, X, Route, Plus, Minus } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom"; 
-import { useProductionStore, type ProductionOrder, type Product, type Weapon } from "@/lib/store";
+import { useProductionStore, type ProductionOrder, type Product } from "@/lib/store";
 import { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { workstations, OrderStatus } from "@/data/workstations";
-
-const weapons: Weapon[] = [
-  {
-    id: 'wep-1', brand: 'Beretta', model: '686', serial_number: 'BER-123456', caliber: '12', dominant_hand: 'Direita',
-    side_plates: 'Inteiras', barrel_length: 76, barrel_weight: 1.520, forend_weight: 450,
-    rib: 'Media', total_weight: 3.550, discipline: 'Fosso Olímpico', competition_frequency: 'Frequente', created_at: ''
-  },
-  {
-    id: 'wep-2', brand: 'Browning', model: 'Citori', serial_number: 'BRO-789012', caliber: '12', dominant_hand: 'Direita',
-    side_plates: 'Meias', barrel_length: 81, barrel_weight: 1.580, forend_weight: 470,
-    rib: 'Alta', total_weight: 3.750, discipline: 'Compak Sporting', competition_frequency: 'Intensiva', created_at: ''
-  },
-  {
-    id: 'wep-3', brand: 'Benelli', model: '828U', serial_number: 'BEN-345678', caliber: '20', dominant_hand: 'Esquerda',
-    side_plates: 'Inteiras falsas', barrel_length: 71, barrel_weight: 1.350, forend_weight: 400,
-    rib: 'Rasa', total_weight: 3.100, discipline: 'Caça', competition_frequency: 'Não Frequente', created_at: ''
-  },
-];
 
 const statusLabels: Record<string, string> = {
   pending: 'Pendente',
@@ -85,6 +67,7 @@ export default function OrderDetail() {
   const updateOrder = useProductionStore((state) => state.updateOrder);
   const products = useProductionStore((state) => state.products);
   const clients = useProductionStore((state) => state.clients);
+  const weapons = useProductionStore((state) => state.weapons);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(defaultFormData);
@@ -142,7 +125,7 @@ export default function OrderDetail() {
 
   const order = useMemo(() => orders.find((o) => o.id === id), [id, orders]);
   const clientName = useMemo(() => order?.client?.name || '', [order]);
-  const weaponModel = useMemo(() => weapons.find(w => w.id === formData.weaponId)?.model || '', [formData.weaponId]);
+  const weaponModel = useMemo(() => weapons.find(w => w.id === formData.weaponId)?.model || '', [formData.weaponId, weapons]);
   const isCompleted = order?.status === 'completed';
   const effectiveIsEditing = isEditing && !isCompleted;
 

@@ -10,25 +10,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useProductionStore } from "@/lib/store";
-import { PlusCircle, Trash2, Pencil } from "lucide-react";
-import { useMemo, useState } from "react";
+import { PlusCircle, Trash2, Pencil, Download } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const Products = () => {
   const navigate = useNavigate();
   const products = useProductionStore((state) => state.products);
+  const isLoadingProducts = useProductionStore((state) => state.isLoadingProducts);
   const removeProduct = useProductionStore((state) => state.removeProduct);
-  const productTypes = useProductionStore((state) => state.productTypes);
+  const importProductsFromPriceTables = useProductionStore((state) => state.importProductsFromPriceTables);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-
-  const productTypeMap = useMemo(() => new Map<string, string>([
-    ['GE-Espingarda de Caça', 'Espingarda de Caça'],
-    ['SA-Semi-Automática', 'Semi-Automática'],
-    ['CA-Carabina', 'Carabina'],
-    ['PO-Punho Glove', 'Punho Glove'],
-    ...productTypes.map((pt) => [pt.id, pt.name] as [string, string])
-  ]), [productTypes]);
 
   const handleNewProduct = () => {
     navigate("/products/new");
@@ -67,6 +60,12 @@ const Products = () => {
     }
   };
 
+  const handleImport = () => {
+    if (confirm("Tem a certeza que deseja importar todos os itens das tabelas de preços para o catálogo de produtos?")) {
+      importProductsFromPriceTables();
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <Header
@@ -82,6 +81,10 @@ const Products = () => {
               Eliminar ({selectedProducts.length})
             </Button>
           )}
+          <Button variant="outline" onClick={handleImport} disabled={isLoadingProducts}>
+            <Download className="mr-2 h-4 w-4" />
+            Importar Preços
+          </Button>
           <Button onClick={handleNewProduct}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Novo Produto
@@ -100,14 +103,13 @@ const Products = () => {
                 </TableHead>
                 <TableHead>Nome do Produto</TableHead>
                 <TableHead>Tipo</TableHead>
-                <TableHead>Espécie</TableHead>
                 <TableHead className="text-right w-25">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {products.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center">
                     Nenhum produto encontrado.
                   </TableCell>
                 </TableRow>
@@ -124,10 +126,7 @@ const Products = () => {
                       {product.name}
                     </TableCell>
                     <TableCell>
-                      {productTypeMap.get(product.productTypeId) || product.productTypeId || "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      {product.speciesId || "Nogueira Turca"}
+                      {product.product_type || "N/A"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

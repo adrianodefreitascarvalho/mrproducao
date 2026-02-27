@@ -11,8 +11,10 @@ export type { Json };
 export type Operation = Database['public']['Tables']['operations']['Row'];
 export type Workstation = Database['public']['Tables']['workstations']['Row'] & { operations: Operation[] };
 export type ReleaseOrder = Database['public']['Tables']['release_orders']['Row'];
+export type PriceTable = Database['public']['Tables']['price_tables']['Row'];
 export type Client = Database['public']['Tables']['clients']['Row'];
 export type Weapon = Database['public']['Tables']['weapons']['Row'];
+export type ClientWeapon = Database['public']['Tables']['client_weapons']['Row'];
 
 // Define ProductionOrder type based on the database schema for use within the app
 export type ProductionOrder = Database['public']['Tables']['production_orders']['Row'];
@@ -39,6 +41,8 @@ interface ProductionStore {
   isLoadingReleaseOrders: boolean;
   isLoadingClients: boolean;
   isLoadingWeapons: boolean;
+  priceTables: PriceTable[];
+  isLoadingPriceTables: boolean;
   clients: Client[];
   weapons: Weapon[];
   fetchWorkstations: () => Promise<void>;
@@ -46,6 +50,8 @@ interface ProductionStore {
   fetchOrders: () => Promise<void>;
   fetchClients: () => Promise<void>;
   fetchWeapons: () => Promise<void>;
+  fetchPriceTables: () => Promise<void>;
+  importProductsFromPriceTables: () => Promise<void>;
   updateOrder: (id: string, updates: Partial<ProductionOrder>) => void;
   addOrder: (order: Omit<ProductionOrder, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_workstation' | 'current_operation'>) => Promise<void>;
   removeOrder: (id: string) => void;
@@ -55,7 +61,7 @@ interface ProductionStore {
   addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert']) => Promise<void>;
   updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update']) => Promise<void>;
   removeWeapon: (weaponId: string) => Promise<void>;
-  addClient: (client: Database['public']['Tables']['clients']['Insert']) => Promise<void>;
+  addClient: (client: Database['public']['Tables']['clients']['Insert'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<void>;
   updateClient: (id: string, updates: Database['public']['Tables']['clients']['Update']) => Promise<void>;
   removeClient: (clientId: string) => Promise<void>;
   moveOrderToNextWorkstation: (orderId: string) => void;
@@ -97,6 +103,8 @@ export const useProductionStore = create<ProductionStore>()(
       isLoadingReleaseOrders: true,
       isLoadingClients: false,
       isLoadingWeapons: false,
+      priceTables: [],
+      isLoadingPriceTables: false,
 
       fetchWorkstations: async () => {
         set({ isLoadingWorkstations: true });
@@ -178,6 +186,69 @@ export const useProductionStore = create<ProductionStore>()(
         // Mapear os campos snake_case do banco para camelCase se necessário, 
         // mas aqui vamos assumir que o resto da app será atualizado para usar os tipos do banco.
         set({ weapons: (data as Weapon[]) || [], isLoadingWeapons: false });
+      },
+
+      fetchPriceTables: async () => {
+        set({ isLoadingPriceTables: true });
+        // Adicionado `count: 'exact'` para depuração.
+        const { data, error, count } = await supabase.from('price_tables').select('*', { count: 'exact' }).order('name');
+
+        if (error) {
+          console.error('Error fetching price tables:', error);
+          toast.error('Erro ao carregar tabelas de preços', {
+            description: `[${error.code}] ${error.message}`
+          });
+          set({ isLoadingPriceTables: false });
+          return;
+        }
+        console.log(`[store] Tabelas de preços carregadas: ${data?.length ?? 0} (Contagem da base de dados: ${count})`);
+        set({ priceTables: (data as PriceTable[]) || [], isLoadingPriceTables: false });
+      },
+
+      importProductsFromPriceTables: async () => {
+        set({ isLoadingProducts: true });
+        try {
+          const { data: priceTables, error: ptError } = await supabase.from('price_tables').select('*');
+          if (ptError) throw ptError;
+
+          if (!priceTables || priceTables.length === 0) {
+            toast.info('Nenhuma tabela de preços encontrada.');
+            set({ isLoadingProducts: false });
+            return;
+          }
+
+          const productsToInsert: Database['public']['Tables']['products']['Insert'][] = [];
+
+          (priceTables as PriceTable[]).forEach((pt) => {
+            const items = pt.items as { description: string; price: number }[] | null;
+            if (Array.isArray(items)) {
+              items.forEach((item) => {
+                productsToInsert.push({
+                  name: item.description,
+                  sku: `IMP-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`,
+                  description: `Importado de ${pt.name}. Preço Base: ${item.price}€`,
+                  product_type: 'Outro',
+                });
+              });
+            }
+          });
+
+          if (productsToInsert.length === 0) {
+            toast.info('Nenhum item encontrado para importar.');
+            set({ isLoadingProducts: false });
+            return;
+          }
+
+          const { error: insertError } = await supabase.from('products').insert(productsToInsert);
+          if (insertError) throw insertError;
+
+          toast.success(`${productsToInsert.length} produtos importados com sucesso!`);
+          await get().fetchProducts();
+        } catch (error) {
+          console.error('Erro ao importar produtos:', error);
+          toast.error('Erro ao importar produtos das tabelas de preços.');
+          set({ isLoadingProducts: false });
+        }
       },
 
       addProduct: async (productData: Database['public']['Tables']['products']['Insert']) => {
@@ -273,18 +344,33 @@ export const useProductionStore = create<ProductionStore>()(
         }
       },
 
-      addClient: async (clientData) => {
+      addClient: async (clientData, weapons = []) => {
         const payload = { ...clientData };
         if (!payload.id) delete payload.id;
 
-        const { data, error } = await supabase.from('clients').insert(payload).select().single();
+        const { data: client, error } = await supabase.from('clients').insert(payload).select().single();
         if (error) {
           console.error('Error adding client:', error);
           toast.error('Erro ao adicionar cliente', { description: error.message });
           return;
         }
-        if (data) {
-          set((state) => ({ clients: [...state.clients, data as Client] }));
+
+        if (client && weapons.length > 0) {
+          const clientWeapons = weapons.map(w => ({
+            client_id: (client as Client).id,
+            weapon_id: w.weapon_id,
+            identification_number: w.identification_number
+          }));
+
+          const { error: weaponsError } = await supabase.from('client_weapons').insert(clientWeapons);
+          if (weaponsError) {
+            console.error('Error adding client weapons:', weaponsError);
+            toast.error('Cliente criado, mas erro ao associar armas', { description: weaponsError.message });
+          }
+        }
+
+        if (client) {
+          set((state) => ({ clients: [...state.clients, client as Client] }));
           toast.success('Cliente adicionado com sucesso!');
         }
       },

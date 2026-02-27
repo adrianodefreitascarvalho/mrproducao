@@ -34,12 +34,12 @@ const NewWeapon = () => {
   const [discipline, setDiscipline] = useState('');
   const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency>('Não Frequente');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brand.trim() || !model.trim() || !serialNumber.trim()) {
       return;
     }
-    addWeapon( {
+    await addWeapon( {
       brand: brand.trim(),
       model: model.trim(), 
       serial_number: serialNumber.trim(),

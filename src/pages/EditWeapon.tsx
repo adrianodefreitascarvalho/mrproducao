@@ -185,9 +185,9 @@ const EditWeapon = () => {
     }
   }, [weaponToEdit, navigate]);
 
-  const handleSave = (data: Omit<Weapon, 'id'>) => {
+  const handleSave = async (data: Omit<Weapon, 'id'>) => {
     if (id) {
-      updateWeapon(id, data);
+      await updateWeapon(id, data);
       navigate("/weapons");
     }
   };

@@ -37,7 +37,7 @@ export default function ReleaseOrders() {
     <div className="flex flex-col h-screen">
       <Header
         title="Libertar Encomendas para Produção"
-        subtitle="Gerencie encomendas bloqueadas e liberte-as para produção"
+        subtitle="Gira encomendas bloqueadas e liberte-as para produção"
       />
 
       <div className="flex-1 overflow-auto p-6 space-y-6">

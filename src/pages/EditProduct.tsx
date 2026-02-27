@@ -11,60 +11,31 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useProductionStore } from "@/lib/store";
-import type { Product } from "@/data/workstations";
+import { useProductionStore, type Product } from "@/lib/store";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface ProductFormProps {
-  product: {
-    id: string;
-    name: string;
-    description: string;
-    sku: string;
-    frontPhoto: string;
-    backPhoto: string;
-    productTypeId: string;
-    speciesId: string;
-    woodGradeId: string;
-    length: number;
-    width: number;
-    thickness: number;
-    weight: number;
-    salePrice?: number;
-  };
-  onSave: (data: Omit<Product, 'id'>) => void;
+  product: Product;
+  onSave: (data: Partial<Product>) => void;
   onCancel: () => void;
 }
 
 const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
   const [name, setName] = useState(product.name);
-  const [description, setDescription] = useState(product.description);
-  const [frontPhoto] = useState(product.frontPhoto);
-  const [backPhoto] = useState(product.backPhoto);
-  const [productTypeId, setProductTypeId] = useState(product.productTypeId);
-  const [speciesId] = useState(product.speciesId);
+  const [description, setDescription] = useState(product.description || '');
+  const [productType, setProductType] = useState(product.product_type || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !productTypeId || !speciesId) {
+    if (!name.trim() || !productType) {
       return;
     }
     onSave({
       name: name.trim(),
-      sku: "",
       description: description.trim(),
-      frontPhoto,
-      backPhoto,
-      productTypeId,
-      speciesId,
-      woodGradeId: "",
-      length: 0,
-      width: 0,
-      thickness: 0,
-      weight: 0,
-      salePrice: 0
+      product_type: productType,
     });
   };
 
@@ -90,7 +61,7 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="product-type">Tipo de Produto</Label>
-              <Select onValueChange={setProductTypeId} value={productTypeId} required>
+              <Select onValueChange={setProductType} value={productType} required>
                 <SelectTrigger id="product-type">
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
@@ -102,10 +73,6 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
                   <SelectItem value="Punho Glove">Punho Glove</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="wood-species">Espécie da Madeira</Label>
-              <Input id="wood-species" value="Nogueira Turca" readOnly className="bg-muted" />
             </div>
           </div>
 
@@ -139,9 +106,9 @@ const EditProduct = () => {
     }
   }, [productToEdit, navigate]);
 
-  const handleSave = (data: Omit<Product, 'id'>) => {
+  const handleSave = async (data: Partial<Product>) => {
     if (id) {
-      updateProduct(id, data);
+      await updateProduct(id, data);
       navigate("/products");
     }
   };

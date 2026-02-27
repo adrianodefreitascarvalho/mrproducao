@@ -20,7 +20,7 @@ export default function Dashboard() {
 
   const getActiveOrdersCount = (workstationId: string) => {
     return orders.filter(
-      (o) => o.currentWorkstation === workstationId && o.status !== "completed"
+      (o) => o.current_workstation === workstationId && o.status !== "completed"
     ).length;
   };
 
@@ -34,6 +34,20 @@ export default function Dashboard() {
   const delayedOrders = orders.filter(
     (o) => o.status === "delayed"
   ).length;
+
+  // Map orders to match the interface expected by OrdersTable (camelCase)
+  const dashboardOrders = orders.map((o) => ({
+    ...o,
+    orderNumber: o.order_number,
+    currentWorkstation: o.current_workstation,
+    currentOperation: o.current_operation,
+    startDate: o.start_date,
+    dueDate: o.due_date,
+    products: o.products.map((p) => ({
+      ...p,
+      productId: p.product_id,
+    })),
+  }));
 
   return (
     <div className="flex flex-col h-screen">
@@ -102,7 +116,9 @@ export default function Dashboard() {
 
         {/* Chart and Recent Orders */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ProductionChart />
+          <div className="h-80">
+            <ProductionChart />
+          </div>
 
           <div className="bg-card rounded-lg border border-border p-5">
             <div className="flex items-center justify-between mb-4">
@@ -121,7 +137,8 @@ export default function Dashboard() {
                 Ver todas
               </button>
             </div>
-            <OrdersTable orders={orders} limit={4} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <OrdersTable orders={dashboardOrders as any} limit={4} />
           </div>
         </div>
       </div>

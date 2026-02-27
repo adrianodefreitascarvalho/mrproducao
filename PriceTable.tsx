@@ -2,10 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { useForm, useFieldArray, Control, UseFormRegister, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Trash2, PlusCircle, Upload } from "lucide-react";
+import { Trash2, PlusCircle, Upload, PackageOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "./src/lib/supabase";
 import * as XLSX from "xlsx";
+import { useProductionStore } from "./src/lib/store";
 
 // 1. Definir os schemas de validação para a nova estrutura
 const tableItemSchema = z.object({
@@ -94,9 +95,8 @@ const PriceTable = () => {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      tables: [{ id: crypto.randomUUID(), name: "Tabela Padrão", items: [] }],
-    },
+    // Os valores são agora definidos dinamicamente no useEffect para garantir a sincronização correta.
+    defaultValues: { tables: [] },
   });
 
   const { fields: tableFields, append: appendTable, remove: removeTable } = useFieldArray({
@@ -104,27 +104,42 @@ const PriceTable = () => {
     name: "tables",
   });
 
-  const [activeTab, setActiveTab] = useState(tableFields[0]?.id);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { priceTables, fetchPriceTables, isLoadingPriceTables } = useProductionStore();
 
   // Carregar dados do Supabase ao iniciar
   useEffect(() => {
-    const fetchTables = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase.from("price_tables").select("*");
-      
-      if (data && data.length > 0) {
-        // Atualiza o formulário com os dados vindos do banco
-        reset({ tables: data });
-        setActiveTab(data[0].id);
-      } else if (error) {
-        console.error("Erro ao buscar tabelas:", error);
+    // Este efeito é a fonte de verdade para popular o formulário.
+    // Ele só é executado quando o estado de carregamento termina.
+    if (isLoadingPriceTables) return;
+
+    const tablesFromStore = priceTables.map((table) => {
+      let parsedItems: { description: string; price: number }[] = [];
+      // O campo 'items' pode vir como um array de objetos (correto) ou como uma string JSON (a ser corrigida).
+      if (Array.isArray(table.items)) {
+        parsedItems = table.items as unknown as { description: string; price: number }[];
+      } else if (typeof table.items === 'string') {
+        try {
+          const items = JSON.parse(table.items);
+          if (Array.isArray(items)) {
+            parsedItems = items;
+          }
+        } catch (e) {
+          console.error(`Erro ao fazer parse dos itens da tabela '${table.name}':`, table.items);
+        }
       }
-      setIsLoading(false);
-    };
-    fetchTables();
-  }, [reset]);
+      return { ...table, items: Array.isArray(parsedItems) ? parsedItems : [] };
+    });
+
+    reset({ tables: tablesFromStore as unknown as FormValues['tables'] });
+    if (tablesFromStore.length > 0) {
+      setActiveTab(currentTab => tablesFromStore.some(t => t.id === currentTab) ? currentTab : tablesFromStore[0]?.id);
+    } else {
+      setActiveTab(undefined);
+    }
+  }, [isLoadingPriceTables, priceTables, reset]);
 
   const addNewTable = () => {
     const newId = crypto.randomUUID();
@@ -145,6 +160,7 @@ const PriceTable = () => {
       alert("Erro ao salvar as tabelas.");
     } else {
       alert("Tabelas salvas com sucesso no Supabase!");
+      fetchPriceTables();
     }
   };
 
@@ -251,16 +267,22 @@ const PriceTable = () => {
             Salvar Alterações
           </button>
         </div>
-        {isLoading ? (
+        {(isLoading || isLoadingPriceTables) ? (
           <div className="flex justify-center items-center h-64">
             <p>A carregar dados...</p>
           </div>
-        ) : (
+        ) : tableFields.length > 0 ? (
           tableFields.map((field, index) => (
             <TabsContent key={field.id} value={field.id}>
               <TableItems tableIndex={index} control={control} register={register} errors={errors} />
             </TabsContent>
           ))
+        ) : (
+          <div className="mt-4 flex h-64 flex-col items-center justify-center rounded-lg border-2 border-dashed text-center text-slate-500">
+            <PackageOpen className="mb-4 h-12 w-12 text-slate-400" />
+            <h3 className="text-lg font-semibold">Nenhuma Tabela de Preços Encontrada</h3>
+            <p className="text-sm">Crie uma nova tabela ou importe de um ficheiro Excel para começar.</p>
+          </div>
         )}
       </Tabs>
     </form>

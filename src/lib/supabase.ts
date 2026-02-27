@@ -222,6 +222,37 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['release_orders']['Insert']>
         Relationships: []
       },
+      client_weapons: {
+        Row: {
+          id: string
+          created_at: string
+          client_id: string
+          weapon_id: string
+          identification_number: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          client_id: string
+          weapon_id: string
+          identification_number: string
+        }
+        Update: Partial<Database['public']['Tables']['client_weapons']['Insert']>
+        Relationships: [
+          {
+            foreignKeyName: "client_weapons_client_id_fkey"
+            columns: ["client_id"]
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_weapons_weapon_id_fkey"
+            columns: ["weapon_id"]
+            referencedRelation: "weapons"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
       weapons: {
         Row: {
           id: string
@@ -258,6 +289,22 @@ export interface Database {
           competition_frequency: string
         }
         Update: Partial<Database['public']['Tables']['weapons']['Insert']>
+        Relationships: []
+      },
+      price_tables: {
+        Row: {
+          id: string
+          created_at: string
+          name: string
+          items: Json
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          name: string
+          items: Json
+        }
+        Update: Partial<Database['public']['Tables']['price_tables']['Insert']>
         Relationships: []
       }
     }

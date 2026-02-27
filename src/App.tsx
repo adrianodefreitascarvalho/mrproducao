@@ -37,6 +37,7 @@ const App = () => {
   const fetchReleaseOrders = useProductionStore((state) => state.fetchReleaseOrders);
   const fetchClients = useProductionStore((state) => state.fetchClients);
   const fetchWeapons = useProductionStore((state) => state.fetchWeapons);
+  const fetchPriceTables = useProductionStore((state) => state.fetchPriceTables);
 
   useEffect(() => {
     // Carrega os dados iniciais da base de dados
@@ -46,7 +47,8 @@ const App = () => {
     fetchReleaseOrders();
     fetchClients();
     fetchWeapons();
-  }, [fetchProducts, fetchOrders, fetchWorkstations, fetchReleaseOrders, fetchClients, fetchWeapons]);
+    fetchPriceTables();
+  }, [fetchProducts, fetchOrders, fetchWorkstations, fetchReleaseOrders, fetchClients, fetchWeapons, fetchPriceTables]);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useProductionStore } from "@/lib/store";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase";
 import { MainLayout } from "@/components/layout/MainLayout";
 import type { Session } from "@supabase/supabase-js";
 import Login from "./pages/Login";
@@ -47,25 +47,14 @@ const App = () => {
   const fetchPriceTables = useProductionStore((state) => state.fetchPriceTables);
 
   useEffect(() => {
-<<<<<<< HEAD
-    // Carrega os dados iniciais da base de dados
-    fetchProducts();
-    fetchOrders();
-    fetchWorkstations();
-    fetchReleaseOrders();
-    fetchClients();
-    fetchWeapons();
-    fetchPriceTables();
-  }, [fetchProducts, fetchOrders, fetchWorkstations, fetchReleaseOrders, fetchClients, fetchWeapons, fetchPriceTables]);
-=======
     // Set up auth listener BEFORE getting session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
       setLoading(false);
     });
 
@@ -74,14 +63,16 @@ const App = () => {
 
   useEffect(() => {
     if (session) {
+      // Carrega os dados iniciais da base de dados
       fetchProducts();
       fetchOrders();
       fetchWorkstations();
       fetchReleaseOrders();
       fetchClients();
       fetchWeapons();
+      fetchPriceTables();
     }
-  }, [session, fetchProducts, fetchOrders, fetchWorkstations, fetchReleaseOrders, fetchClients, fetchWeapons]);
+  }, [session, fetchProducts, fetchOrders, fetchWorkstations, fetchReleaseOrders, fetchClients, fetchWeapons, fetchPriceTables]);
 
   if (loading) {
     return (
@@ -90,7 +81,6 @@ const App = () => {
       </div>
     );
   }
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
 
   return (
     <QueryClientProvider client={queryClient}>

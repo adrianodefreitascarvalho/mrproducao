@@ -4,6 +4,7 @@ import { OrderStatus, ProductType, WoodGrade, WoodSpecies, woodSpecies as sample
 import { integrationService } from './integration';
 import { PRODUCTION_ROUTING } from '@/config';
 import { supabase, type Database, type Json } from './supabase';
+export type { Database };
 import { getSafeErrorMessage } from './errorHandler';
 export type Product = Database['public']['Tables']['products']['Row'];
 export type { Json };

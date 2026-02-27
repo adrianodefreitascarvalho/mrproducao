@@ -126,14 +126,7 @@ const Products = () => {
                       {product.name}
                     </TableCell>
                     <TableCell>
-<<<<<<< HEAD
                       {product.product_type || "N/A"}
-=======
-                      {productTypeMap.get(product.product_type || '') || product.product_type || "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      {product.wood_grade || "Nogueira Turca"}
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

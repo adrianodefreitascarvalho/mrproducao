@@ -7,8 +7,9 @@ import {
 import { useProductionStore } from "@/lib/store";
 import { PlusCircle, Trash2, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import type { Client } from "@/lib/store";
 
-const getClientDisplayName = (client: any) => {
+const getClientDisplayName = (client: Client) => {
   return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Sem nome';
 };
 
@@ -20,8 +21,8 @@ const Clients = () => {
   const handleNewClient = () => navigate("/clients/new");
   const handleEditClient = (id: string) => navigate(`/clients/edit/${id}`);
 
-  const handleDeleteClient = (id: string, firstName: string | null, lastName: string | null) => {
-    const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+  const handleDeleteClient = (id: string, name: string) => {
+    const fullName = name.trim();
     if (confirm(`Tem a certeza que pretende eliminar o cliente "${fullName}"?`)) {
       removeClient(id);
     }
@@ -52,32 +53,6 @@ const Clients = () => {
                   <TableCell colSpan={4} className="h-24 text-center">Nenhum cliente encontrado.</TableCell>
                 </TableRow>
               ) : (
-<<<<<<< HEAD
-                clients.map((client) => (
-                  <TableRow key={client.id}>
-                    <TableCell className="font-medium">{client.first_name} {client.last_name}</TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell>{client.phone}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditClient(client.id)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteClient(client.id, client.first_name, client.last_name)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-=======
                 clients.map((client) => {
                   const displayName = getClientDisplayName(client);
                   return (
@@ -96,7 +71,6 @@ const Clients = () => {
                     </TableRow>
                   );
                 })
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
               )}
             </TableBody>
           </Table>

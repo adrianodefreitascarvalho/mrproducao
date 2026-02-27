@@ -6,7 +6,7 @@ import { Trash2, PlusCircle, Upload, PackageOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "./src/lib/supabase";
 import * as XLSX from "xlsx";
-import { useProductionStore } from "./src/lib/store";
+import { useProductionStore, type Database } from "./src/lib/store";
 
 // 1. Definir os schemas de validação para a nova estrutura
 const tableItemSchema = z.object({
@@ -153,7 +153,7 @@ const PriceTable = () => {
 
   const onSubmit = async (data: FormValues) => {
     // Salva (Upsert) todas as tabelas no Supabase
-    const { error } = await supabase.from("price_tables").upsert(data.tables as any);
+    const { error } = await supabase.from("price_tables").upsert(data.tables as Database['public']['Tables']['price_tables']['Insert'][]);
 
     if (error) {
       console.error("Erro ao salvar:", error);

@@ -12,41 +12,22 @@ import { useNavigate, useParams } from "react-router-dom";
 
 interface ProductFormProps {
   product: Product;
-<<<<<<< HEAD
   onSave: (data: Partial<Product>) => void;
-=======
-  onSave: (data: any) => void;
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
   onCancel: () => void;
 }
 
 const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
   const [name, setName] = useState(product.name);
-<<<<<<< HEAD
   const [description, setDescription] = useState(product.description || '');
   const [productType, setProductType] = useState(product.product_type || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !productType) {
-      return;
-    }
+    if (!name.trim() || !productType) return;
     onSave({
       name: name.trim(),
       description: description.trim(),
       product_type: productType,
-=======
-  const [description, setDescription] = useState(product.description || "");
-  const [productTypeId, setProductTypeId] = useState(product.product_type || "");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !productTypeId) return;
-    onSave({
-      name: name.trim(),
-      description: description.trim() || null,
-      product_type: productTypeId,
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
     });
   };
 
@@ -66,15 +47,10 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="product-type">Tipo de Produto</Label>
-<<<<<<< HEAD
               <Select onValueChange={setProductType} value={productType} required>
                 <SelectTrigger id="product-type">
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
-=======
-              <Select onValueChange={setProductTypeId} value={productTypeId} required>
-                <SelectTrigger id="product-type"><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
                 <SelectContent>
                   <SelectItem value="Coronha">Coronha</SelectItem>
                   <SelectItem value="Semi-Automática">Semi-Automática</SelectItem>
@@ -107,11 +83,7 @@ const EditProduct = () => {
     if (!productToEdit) navigate("/products");
   }, [productToEdit, navigate]);
 
-<<<<<<< HEAD
   const handleSave = async (data: Partial<Product>) => {
-=======
-  const handleSave = (data: any) => {
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
     if (id) {
       await updateProduct(id, data);
       navigate("/products");

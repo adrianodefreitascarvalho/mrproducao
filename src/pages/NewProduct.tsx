@@ -16,33 +16,18 @@ const NewProduct = () => {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-<<<<<<< HEAD
   const [productType, setProductType] = useState("");
-=======
-  const [productTypeId, setProductTypeId] = useState("");
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
     if (!name.trim() || !productType) {
       return;
     }
     await addProduct({
       name: name.trim(),
       sku: "",
-      description: description.trim(),
-      product_type: productType,
-=======
-    if (!name.trim() || !productTypeId) return;
-    
-    addProduct({
-      name: name.trim(),
-      sku: `SKU-${Date.now()}`,
       description: description.trim() || null,
-      product_type: productTypeId,
-      wood_grade: null,
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
+      product_type: productType,
     });
     navigate("/products");
   };
@@ -72,15 +57,10 @@ const NewProduct = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="product-type">Tipo de Produto</Label>
-<<<<<<< HEAD
                     <Select onValueChange={setProductType} value={productType} required>
                       <SelectTrigger id="product-type">
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
-=======
-                    <Select onValueChange={setProductTypeId} value={productTypeId} required>
-                      <SelectTrigger id="product-type"><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
                       <SelectContent>
                         <SelectItem value="Coronha">Coronha</SelectItem>
                         <SelectItem value="Semi-Automática">Semi-Automática</SelectItem>

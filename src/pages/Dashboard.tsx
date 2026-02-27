@@ -76,14 +76,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-<<<<<<< HEAD
-          <div className="h-80">
-            <ProductionChart />
-          </div>
-
-=======
           <ProductionChart />
->>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
           <div className="bg-card rounded-lg border border-border p-5">
             <div className="flex items-center justify-between mb-4">
               <div>

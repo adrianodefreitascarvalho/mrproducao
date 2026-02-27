@@ -111,21 +111,35 @@ const PriceTable = () => {
 
   // Carregar dados do Supabase ao iniciar
   useEffect(() => {
-    const fetchTables = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase.from("price_tables").select("*");
-      
-      if (data && data.length > 0) {
-        // Atualiza o formulário com os dados vindos do banco
-        reset({ tables: data });
-        setActiveTab(data[0].id);
-      } else if (error) {
-        console.error("Erro ao buscar tabelas:", error);
+    // Este efeito é a fonte de verdade para popular o formulário.
+    // Ele só é executado quando o estado de carregamento termina.
+    if (isLoadingPriceTables) return;
+
+    const tablesFromStore = priceTables.map((table) => {
+      let parsedItems: { description: string; price: number }[] = [];
+      // O campo 'items' pode vir como um array de objetos (correto) ou como uma string JSON (a ser corrigida).
+      if (Array.isArray(table.items)) {
+        parsedItems = table.items as unknown as { description: string; price: number }[];
+      } else if (typeof table.items === 'string') {
+        try {
+          const items = JSON.parse(table.items);
+          if (Array.isArray(items)) {
+            parsedItems = items;
+          }
+        } catch (e) {
+          console.error(`Erro ao fazer parse dos itens da tabela '${table.name}':`, table.items);
+        }
       }
-      setIsLoading(false);
-    };
-    fetchTables();
-  }, [reset]);
+      return { ...table, items: Array.isArray(parsedItems) ? parsedItems : [] };
+    });
+
+    reset({ tables: tablesFromStore as unknown as FormValues['tables'] });
+    if (tablesFromStore.length > 0) {
+      setActiveTab(currentTab => tablesFromStore.some(t => t.id === currentTab) ? currentTab : tablesFromStore[0]?.id);
+    } else {
+      setActiveTab(undefined);
+    }
+  }, [isLoadingPriceTables, priceTables, reset]);
 
   const addNewTable = () => {
     const newId = crypto.randomUUID();

@@ -12,7 +12,7 @@ export default function Workstations() {
 
   const getActiveOrdersCount = (workstationId: string) => {
     return orders.filter(
-      (o) => o.currentWorkstation === workstationId && o.status !== "completed"
+      (o) => o.current_workstation === workstationId && o.status !== "completed"
     ).length;
   };
 

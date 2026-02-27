@@ -13,7 +13,7 @@ export default function WorkstationDetail() {
   const orders = useProductionStore((state) => state.orders);
 
   const workstation = workstations.find((w) => w.id === id);
-  const workstationOrders = orders.filter((o) => o.currentWorkstation === id);
+  const workstationOrders = orders.filter((o) => o.current_workstation === id);
 
   if (!workstation) {
     return (

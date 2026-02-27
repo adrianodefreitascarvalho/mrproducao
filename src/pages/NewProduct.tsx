@@ -2,13 +2,7 @@ import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useProductionStore } from "@/lib/store";
@@ -22,10 +16,15 @@ const NewProduct = () => {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+<<<<<<< HEAD
   const [productType, setProductType] = useState("");
+=======
+  const [productTypeId, setProductTypeId] = useState("");
+>>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+<<<<<<< HEAD
     if (!name.trim() || !productType) {
       return;
     }
@@ -34,54 +33,54 @@ const NewProduct = () => {
       sku: "",
       description: description.trim(),
       product_type: productType,
+=======
+    if (!name.trim() || !productTypeId) return;
+    
+    addProduct({
+      name: name.trim(),
+      sku: `SKU-${Date.now()}`,
+      description: description.trim() || null,
+      product_type: productTypeId,
+      wood_grade: null,
+>>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
     });
     navigate("/products");
   };
 
   return (
     <div className="flex flex-col h-screen">
-      <Header
-        title="Novo Produto"
-        subtitle="Adicionar um novo produto ao catálogo"
-      />
+      <Header title="Novo Produto" subtitle="Adicionar um novo produto ao catálogo" />
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/products")}
-              className="mb-4"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar ao Catálogo
+            <Button variant="ghost" onClick={() => navigate("/products")} className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao Catálogo
             </Button>
           </div>
-
           <Card>
-            <CardHeader>
-              <CardTitle>Detalhes do Produto</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Detalhes do Produto</CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="product-name">Nome do Produto</Label>
-                    <Input id="product-name" placeholder="Ex: Coronha de Nogueira" value={name} onChange={(e) => setName(e.target.value)} required />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-name">Nome do Produto</Label>
+                  <Input id="product-name" placeholder="Ex: Coronha de Nogueira" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="product-description">Descrição</Label>
                   <Textarea id="product-description" placeholder="Descrição detalhada do produto..." value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="product-type">Tipo de Produto</Label>
+<<<<<<< HEAD
                     <Select onValueChange={setProductType} value={productType} required>
                       <SelectTrigger id="product-type">
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
+=======
+                    <Select onValueChange={setProductTypeId} value={productTypeId} required>
+                      <SelectTrigger id="product-type"><SelectValue placeholder="Selecione o tipo" /></SelectTrigger>
+>>>>>>> 6e7aab4b2e3fca4a767fa36813ed24dc91a04395
                       <SelectContent>
                         <SelectItem value="Coronha">Coronha</SelectItem>
                         <SelectItem value="Semi-Automática">Semi-Automática</SelectItem>
@@ -92,15 +91,8 @@ const NewProduct = () => {
                     </Select>
                   </div>
                 </div>
-
                 <div className="flex justify-end space-x-4 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate("/products")}
-                  >
-                    Cancelar
-                  </Button>
+                  <Button type="button" variant="outline" onClick={() => navigate("/products")}>Cancelar</Button>
                   <Button type="submit">Criar Produto</Button>
                 </div>
               </form>

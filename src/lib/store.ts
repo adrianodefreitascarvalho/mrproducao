@@ -4,6 +4,7 @@ import { OrderStatus, ProductType, WoodGrade, WoodSpecies, woodSpecies as sample
 import { integrationService } from './integration';
 import { PRODUCTION_ROUTING } from '@/config';
 import { supabase, type Database, type Json } from './supabase';
+import { getSafeErrorMessage } from './errorHandler';
 export type Product = Database['public']['Tables']['products']['Row'];
 export type { Json };
 
@@ -262,7 +263,7 @@ export const useProductionStore = create<ProductionStore>()(
         if (error) {
           console.error('Error adding product:', error);
           toast.error('Erro ao criar o produto', {
-            description: error.message,
+            description: getSafeErrorMessage(error, 'Product creation'),
           });
           return;
         }
@@ -279,7 +280,7 @@ export const useProductionStore = create<ProductionStore>()(
         if (error) {
           console.error('Error updating product:', error);
           toast.error('Erro ao atualizar o produto', {
-            description: error.message,
+            description: getSafeErrorMessage(error, 'Product update'),
           });
           return;
         }
@@ -295,7 +296,7 @@ export const useProductionStore = create<ProductionStore>()(
         const { error } = await supabase.from('products').delete().eq('id', productId);
         if (error) {
           console.error('Error removing product:', error);
-          toast.error('Erro ao remover o produto.', { description: error.message });
+          toast.error('Erro ao remover o produto.', { description: getSafeErrorMessage(error, 'Product removal') });
         } else {
           set((state) => ({ products: state.products.filter((p) => p.id !== productId) }));
           toast.success('Produto removido com sucesso.');
@@ -309,7 +310,7 @@ export const useProductionStore = create<ProductionStore>()(
         const { data, error } = await supabase.from('weapons').insert(payload).select().single();
         if (error) {
           console.error('Error adding weapon:', error);
-          toast.error('Erro ao adicionar arma', { description: error.message });
+          toast.error('Erro ao adicionar arma', { description: getSafeErrorMessage(error, 'Weapon creation') });
           return;
         }
         if (data) {
@@ -322,7 +323,7 @@ export const useProductionStore = create<ProductionStore>()(
         const { data, error } = await supabase.from('weapons').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating weapon:', error);
-          toast.error('Erro ao atualizar arma', { description: error.message });
+          toast.error('Erro ao atualizar arma', { description: getSafeErrorMessage(error, 'Weapon update') });
           return;
         }
         if (data) {
@@ -337,7 +338,7 @@ export const useProductionStore = create<ProductionStore>()(
         const { error } = await supabase.from('weapons').delete().eq('id', weaponId);
         if (error) {
           console.error('Error removing weapon:', error);
-          toast.error('Erro ao remover arma', { description: error.message });
+          toast.error('Erro ao remover arma', { description: getSafeErrorMessage(error, 'Weapon removal') });
         } else {
           set((state) => ({ weapons: state.weapons.filter((w) => w.id !== weaponId) }));
           toast.success('Arma removida com sucesso.');
@@ -351,7 +352,7 @@ export const useProductionStore = create<ProductionStore>()(
         const { data: client, error } = await supabase.from('clients').insert(payload).select().single();
         if (error) {
           console.error('Error adding client:', error);
-          toast.error('Erro ao adicionar cliente', { description: error.message });
+          toast.error('Erro ao adicionar cliente', { description: getSafeErrorMessage(error, 'Client creation') });
           return;
         }
 
@@ -379,7 +380,7 @@ export const useProductionStore = create<ProductionStore>()(
         const { data, error } = await supabase.from('clients').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating client:', error);
-          toast.error('Erro ao atualizar cliente', { description: error.message });
+          toast.error('Erro ao atualizar cliente', { description: getSafeErrorMessage(error, 'Client update') });
           return;
         }
         if (data) {
@@ -394,7 +395,7 @@ export const useProductionStore = create<ProductionStore>()(
         const { error } = await supabase.from('clients').delete().eq('id', clientId);
         if (error) {
           console.error('Error removing client:', error);
-          toast.error('Erro ao remover cliente', { description: error.message });
+          toast.error('Erro ao remover cliente', { description: getSafeErrorMessage(error, 'Client removal') });
         } else {
           set((state) => ({ clients: state.clients.filter((c) => c.id !== clientId) }));
           toast.success('Cliente removido com sucesso.');

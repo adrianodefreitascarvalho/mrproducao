@@ -27,7 +27,7 @@ export default function Reports() {
 
   const workstationData = workstations.map((ws) => ({
     name: ws.name,
-    value: orders.filter((o) => o.currentWorkstation === ws.id).length,
+    value: orders.filter((o) => o.current_workstation === ws.id).length,
     color: ws.color,
   })).filter((d) => d.value > 0);
   return (

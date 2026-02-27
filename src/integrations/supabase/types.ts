@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      clients: {
+        Row: {
+          address: Json | null
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: Json | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: Json | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      operations: {
+        Row: {
+          created_at: string
+          cycle_time: number | null
+          description: string | null
+          id: string
+          name: string
+          sequence: number
+          setup_time: number | null
+          workstation_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_time?: number | null
+          description?: string | null
+          id?: string
+          name: string
+          sequence?: number
+          setup_time?: number | null
+          workstation_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_time?: number | null
+          description?: string | null
+          id?: string
+          name?: string
+          sequence?: number
+          setup_time?: number | null
+          workstation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operations_workstation_id_fkey"
+            columns: ["workstation_id"]
+            isOneToOne: false
+            referencedRelation: "workstations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_tables: {
         Row: {
           id: string
@@ -28,6 +99,215 @@ export type Database = {
         Update: {
           id?: string
           items?: Json | null
+          name?: string
+        }
+        Relationships: []
+      }
+      production_orders: {
+        Row: {
+          client: string
+          created_at: string
+          current_operation: string | null
+          current_workstation: string | null
+          due_date: string | null
+          id: string
+          order_number: string
+          product: string
+          progress: number | null
+          quantity: number
+          routing: Json | null
+          start_date: string | null
+          status: string
+        }
+        Insert: {
+          client: string
+          created_at?: string
+          current_operation?: string | null
+          current_workstation?: string | null
+          due_date?: string | null
+          id: string
+          order_number: string
+          product: string
+          progress?: number | null
+          quantity: number
+          routing?: Json | null
+          start_date?: string | null
+          status: string
+        }
+        Update: {
+          client?: string
+          created_at?: string
+          current_operation?: string | null
+          current_workstation?: string | null
+          due_date?: string | null
+          id?: string
+          order_number?: string
+          product?: string
+          progress?: number | null
+          quantity?: number
+          routing?: Json | null
+          start_date?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          product_type: string | null
+          sku: string
+          wood_grade: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          product_type?: string | null
+          sku: string
+          wood_grade?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          product_type?: string | null
+          sku?: string
+          wood_grade?: string | null
+        }
+        Relationships: []
+      }
+      release_orders: {
+        Row: {
+          created_at: string
+          external_order_id: string
+          id: string
+          items: Json | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          external_order_id: string
+          id?: string
+          items?: Json | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          external_order_id?: string
+          id?: string
+          items?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
+      sales_order_items: {
+        Row: {
+          created_at: string
+          customization: Json | null
+          id: string
+          product_id: string
+          quantity: number
+          sales_order_id: string
+        }
+        Insert: {
+          created_at?: string
+          customization?: Json | null
+          id?: string
+          product_id: string
+          quantity: number
+          sales_order_id: string
+        }
+        Update: {
+          created_at?: string
+          customization?: Json | null
+          id?: string
+          product_id?: string
+          quantity?: number
+          sales_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_order_items_sales_order_id_fkey"
+            columns: ["sales_order_id"]
+            isOneToOne: false
+            referencedRelation: "sales_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_orders: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          estimated_completion_date: string | null
+          id: string
+          notes: string | null
+          order_number: string
+          priority: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          estimated_completion_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number: string
+          priority?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          estimated_completion_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string
+          priority?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workstations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
           name?: string
         }
         Relationships: []

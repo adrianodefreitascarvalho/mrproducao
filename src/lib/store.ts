@@ -6,7 +6,7 @@ import { PRODUCTION_ROUTING } from '@/config';
 import { supabase, type Database, type Json } from './supabase';
 export type { Database };
 import { getSafeErrorMessage } from './errorHandler';
-export type Product = Database['public']['Tables']['products']['Row'];
+export type Product = Database['public']['Tables']['products']['Row'] & { category?: string | null };
 export type { Json };
 
 // Define Operation and Workstation types based on the database schema
@@ -42,12 +42,7 @@ interface ProductionStore {
   releaseOrders: ReleaseOrder[];
   isLoadingReleaseOrders: boolean;
   isLoadingClients: boolean;
-  isLoadingWeapons: boolean;
-  priceTables: PriceTable[];
-  isLoadingPriceTables: boolean;
-  clients: Client[];
-  weapons: Weapon[];
-  fetchWorkstations: () => Promise<void>;
+ oid>;
   fetchReleaseOrders: () => Promise<void>;
   fetchOrders: () => Promise<void>;
   fetchClients: () => Promise<void>;
@@ -57,8 +52,8 @@ interface ProductionStore {
   updateOrder: (id: string, updates: Partial<ProductionOrder>) => void;
   addOrder: (order: Omit<ProductionOrder, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_workstation' | 'current_operation'>) => Promise<void>;
   removeOrder: (id: string) => void;
-  addProduct: (product: Database['public']['Tables']['products']['Insert']) => Promise<void>;
-  updateProduct: (id: string, updates: Database['public']['Tables']['products']['Update']) => Promise<void>;
+  addProduct: (product: Database['public']['Tables']['products']['Insert'] & { category?: string | null }) => Promise<void>;
+  updateProduct: (id: string, updates: Database['public']['Tables']['products']['Update'] & { category?: string | null }) => Promise<void>;
   removeProduct: (productId: string) => void;
   addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert']) => Promise<Weapon | null>;
   updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update']) => Promise<void>;
@@ -253,7 +248,7 @@ export const useProductionStore = create<ProductionStore>()(
         }
       },
 
-      addProduct: async (productData: Database['public']['Tables']['products']['Insert']) => {
+      addProduct: async (productData) => {
         // Remove id se estiver vazio ou indefinido para deixar o Supabase gerar o UUID
         const payload = { ...productData };
         if (!payload.id) {
@@ -276,7 +271,7 @@ export const useProductionStore = create<ProductionStore>()(
         }
       },
 
-      updateProduct: async (id: string, updates: Database['public']['Tables']['products']['Update']) => {
+      updateProduct: async (id, updates) => {
         const { data, error } = await supabase.from('products').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating product:', error);

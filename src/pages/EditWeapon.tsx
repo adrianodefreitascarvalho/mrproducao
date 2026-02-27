@@ -9,6 +9,7 @@ import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } fro
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
 const caliberOptions: Caliber[] = ['12', '16', '20', '28', '410'];
 const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
@@ -36,6 +37,23 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
   const [totalWeight, setTotalWeight] = useState(weapon.total_weight.toString());
   const [discipline, setDiscipline] = useState(weapon.discipline); 
   const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency>(weapon.competition_frequency as CompetitionFrequency);
+  const [clientName, setClientName] = useState("");
+
+  useEffect(() => {
+    const fetchClient = async () => {
+      const { data } = await supabase
+        .from('client_weapons')
+        .select('clients(first_name, last_name)')
+        .eq('weapon_id', weapon.id)
+        .maybeSingle();
+
+      if (data?.clients) {
+        const client = data.clients as unknown as { first_name: string | null, last_name: string | null };
+        setClientName(`${client.first_name || ''} ${client.last_name || ''}`.trim());
+      }
+    };
+    fetchClient();
+  }, [weapon.id]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +83,12 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {clientName && (
+            <div className="space-y-2">
+              <Label>Cliente Associado</Label>
+              <Input value={clientName} readOnly className="bg-muted" />
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="weapon-brand">Marca</Label>

@@ -10,6 +10,17 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+const weaponCategories = [
+  'Platina L – IV',
+  'Platina D – IF',
+  'Platina SO',
+  'Meia Platina',
+  'Semi Automática',
+  'Carabina',
+  'Carabina 2',
+  'Ergonómica'
+];
+
 interface ProductFormProps {
   product: Product;
   onSave: (data: Partial<Product>) => void;
@@ -20,6 +31,7 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description || '');
   const [productType, setProductType] = useState(product.product_type || '');
+  const [category, setCategory] = useState(product.category || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +40,7 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
       name: name.trim(),
       description: description.trim(),
       product_type: productType,
+      category: category || null,
     });
   };
 
@@ -36,6 +49,19 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
       <CardHeader><CardTitle>Detalhes do Produto</CardTitle></CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="category">Categoria de Arma</Label>
+            <Select onValueChange={setCategory} value={category}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Selecione a categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                {weaponCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="product-name">Nome do Produto</Label>
             <Input id="product-name" value={name} onChange={(e) => setName(e.target.value)} required />

@@ -19,6 +19,9 @@ import NewOrder from "./pages/NewOrder";
 import OrderDetail from "./pages/OrderDetail.tsx";
 import ProductionRouting from "./pages/ProductionRouting.tsx";
 import ReleaseOrders from "./pages/ReleaseOrders.tsx";
+import Products from "./pages/Products";
+import NewProduct from "./pages/NewProduct";
+import EditProduct from "./pages/EditProduct";
 import Weapons from "./pages/Weapons.tsx";
 import NewWeapon from "./pages/NewWeapon.tsx";
 import EditWeapon from "./pages/EditWeapon.tsx";
@@ -105,6 +108,9 @@ const App = () => {
                 <Route path="/orders/new" element={<NewOrder />} />
                 <Route path="/orders/:id" element={<OrderDetail />} />
                 <Route path="/orders/:id/routing" element={<ProductionRouting />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/new" element={<NewProduct />} />
+                <Route path="/products/edit/:id" element={<EditProduct />} />
                 <Route path="/weapons" element={<Weapons />} />
                 <Route path="/weapons/new" element={<NewWeapon />} />
                 <Route path="/weapons/edit/:id" element={<EditWeapon />} />

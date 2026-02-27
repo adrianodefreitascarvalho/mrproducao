@@ -107,7 +107,11 @@ const Products = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.length === 0 ? (
+              {isLoadingProducts ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">A carregar produtos...</TableCell>
+                </TableRow>
+              ) : products.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center">
                     Nenhum produto encontrado.

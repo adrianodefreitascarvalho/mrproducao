@@ -29,27 +29,35 @@ export type OrderPayload = {
   }>;
 };
 
-interface ProductionStore {
+interface ProductionStoreState {
   orders: ProductionOrder[];
   productTypes: ProductType[];
   woodGrades: WoodGrade[];
   woodSpecies: WoodSpecies[];
   workstations: Workstation[];
   products: Product[];
+  clients: Client[];
+  weapons: Weapon[];
+  priceTables: PriceTable[];
   isLoadingProducts: boolean;
   isLoadingOrders: boolean;
   isLoadingWorkstations: boolean;
   releaseOrders: ReleaseOrder[];
   isLoadingReleaseOrders: boolean;
   isLoadingClients: boolean;
- oid>;
+  isLoadingWeapons: boolean;
+  isLoadingPriceTables: boolean;
+}
+
+interface ProductionStoreActions {
+  fetchWorkstations: () => Promise<void>;
   fetchReleaseOrders: () => Promise<void>;
   fetchOrders: () => Promise<void>;
   fetchClients: () => Promise<void>;
   fetchWeapons: () => Promise<void>;
   fetchPriceTables: () => Promise<void>;
   importProductsFromPriceTables: () => Promise<void>;
-  updateOrder: (id: string, updates: Partial<ProductionOrder>) => void;
+  updateOrder: (id: string, updates: Partial<ProductionOrder>) => Promise<void>;
   addOrder: (order: Omit<ProductionOrder, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_workstation' | 'current_operation'>) => Promise<void>;
   removeOrder: (id: string) => void;
   addProduct: (product: Database['public']['Tables']['products']['Insert'] & { category?: string | null }) => Promise<void>;
@@ -73,8 +81,9 @@ interface ProductionStore {
   releaseProductionByOrderId: (orderId: string) => void;
 }
 
-export const useProductionStore = create<ProductionStore>()(
-    (set, get) => ({
+type ProductionStore = ProductionStoreState & ProductionStoreActions;
+
+export const useProductionStore = create<ProductionStore>((set, get) => ({
       productTypes: [
         { id: 'coronha', name: 'Coronha' },
         { id: 'fuste', name: 'Fuste' },
@@ -163,7 +172,7 @@ export const useProductionStore = create<ProductionStore>()(
         set({ isLoadingClients: true });
         const { data, error } = await supabase.from('clients').select('*').order('first_name');
         if (error) {
-          console.error('Error fetching clients:', error);
+          console.error('Error fetching clients:', error.message);
           toast.error('Erro ao carregar clientes');
           set({ isLoadingClients: false });
           return;
@@ -175,7 +184,7 @@ export const useProductionStore = create<ProductionStore>()(
         set({ isLoadingWeapons: true });
         const { data, error } = await supabase.from('weapons').select('*').order('brand');
         if (error) {
-          console.error('Error fetching weapons:', error);
+          console.error('Error fetching weapons:', error.message);
           toast.error('Erro ao carregar armas');
           set({ isLoadingWeapons: false });
           return;
@@ -349,7 +358,7 @@ export const useProductionStore = create<ProductionStore>()(
 
         const { data: client, error } = await supabase.from('clients').insert(payload).select().single();
         if (error) {
-          console.error('Error adding client:', error);
+          console.error('Error adding client:', error.message);
           toast.error('Erro ao adicionar cliente', { description: getSafeErrorMessage(error, 'Client creation') });
           return;
         }
@@ -363,7 +372,7 @@ export const useProductionStore = create<ProductionStore>()(
 
           const { error: weaponsError } = await supabase.from('client_weapons').insert(clientWeapons);
           if (weaponsError) {
-            console.error('Error adding client weapons:', weaponsError);
+            console.error('Error adding client weapons:', weaponsError.message);
             toast.error('Cliente criado, mas erro ao associar armas', { description: weaponsError.message });
           }
         }
@@ -377,7 +386,7 @@ export const useProductionStore = create<ProductionStore>()(
       updateClient: async (id, updates, weapons) => {
         const { data, error } = await supabase.from('clients').update(updates).eq('id', id).select().single();
         if (error) {
-          console.error('Error updating client:', error);
+          console.error('Error updating client:', error.message);
           toast.error('Erro ao atualizar cliente', { description: getSafeErrorMessage(error, 'Client update') });
           return;
         }
@@ -386,7 +395,7 @@ export const useProductionStore = create<ProductionStore>()(
           // Remove existing weapons association
           const { error: deleteError } = await supabase.from('client_weapons').delete().eq('client_id', id);
           if (deleteError) {
-            console.error('Error removing existing client weapons:', deleteError);
+            console.error('Error removing existing client weapons:', deleteError.message);
           }
 
           // Add new weapons association
@@ -399,7 +408,7 @@ export const useProductionStore = create<ProductionStore>()(
 
             const { error: insertError } = await supabase.from('client_weapons').insert(clientWeapons);
             if (insertError) {
-              console.error('Error updating client weapons:', insertError);
+              console.error('Error updating client weapons:', insertError.message);
               toast.error('Cliente atualizado, mas erro ao atualizar armas', { description: insertError.message });
             }
           }
@@ -416,7 +425,7 @@ export const useProductionStore = create<ProductionStore>()(
       removeClient: async (clientId) => {
         const { error } = await supabase.from('clients').delete().eq('id', clientId);
         if (error) {
-          console.error('Error removing client:', error);
+          console.error('Error removing client:', error.message);
           toast.error('Erro ao remover cliente', { description: getSafeErrorMessage(error, 'Client removal') });
         } else {
           set((state) => ({ clients: state.clients.filter((c) => c.id !== clientId) }));
@@ -457,7 +466,7 @@ export const useProductionStore = create<ProductionStore>()(
       .single();
 
     if (error) {
-      console.error('Erro ao adicionar ordem de produção:', error);
+      console.error('Erro ao adicionar ordem de produção:', error.message);
       // TODO: Adicionar feedback de erro para o utilizador
       return;
     }
@@ -477,7 +486,7 @@ export const useProductionStore = create<ProductionStore>()(
       .single();
 
     if (error) {
-      console.error('Erro ao atualizar ordem de produção:', error);
+      console.error('Erro ao atualizar ordem de produção:', error.message);
       return;
     }
     if (data) {
@@ -489,7 +498,7 @@ export const useProductionStore = create<ProductionStore>()(
 
   removeOrder: async (id) => {
     const { error } = await supabase.from('production_orders').delete().eq('id', id);
-    if (error) console.error('Erro ao remover ordem de produção:', error);
+    if (error) console.error('Erro ao remover ordem de produção:', error.message);
     else set((state) => ({ orders: state.orders.filter((order) => order.id !== id) }));
   },
 
@@ -542,7 +551,7 @@ export const useProductionStore = create<ProductionStore>()(
       .single();
 
     if (error) {
-      console.error('Erro ao criar encomenda para liberação:', error);
+      console.error('Erro ao criar encomenda para liberação:', error.message);
       return;
     }
     set((state) => ({ releaseOrders: [data as ReleaseOrder, ...state.releaseOrders] }));
@@ -576,7 +585,7 @@ export const useProductionStore = create<ProductionStore>()(
         releaseOrders: state.releaseOrders.map((p) => (p.id === id ? (data as ReleaseOrder) : p)),
       }));
     } catch (error) {
-      console.error('Erro ao liberar encomenda para produção:', error);
+      console.error('Erro ao liberar encomenda para produção:', (error as Error).message);
       // TODO: Add user feedback for the error
     }
   },
@@ -585,5 +594,4 @@ export const useProductionStore = create<ProductionStore>()(
     const orderToRelease = get().releaseOrders.find((p) => p.external_order_id === orderId);
     if (orderToRelease) get().releaseOrder(orderToRelease.id);
   },
-    })
-);
+}));

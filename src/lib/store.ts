@@ -60,11 +60,11 @@ interface ProductionStore {
   addProduct: (product: Database['public']['Tables']['products']['Insert']) => Promise<void>;
   updateProduct: (id: string, updates: Database['public']['Tables']['products']['Update']) => Promise<void>;
   removeProduct: (productId: string) => void;
-  addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert']) => Promise<void>;
+  addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert']) => Promise<Weapon | null>;
   updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update']) => Promise<void>;
   removeWeapon: (weaponId: string) => Promise<void>;
   addClient: (client: Database['public']['Tables']['clients']['Insert'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<void>;
-  updateClient: (id: string, updates: Database['public']['Tables']['clients']['Update']) => Promise<void>;
+  updateClient: (id: string, updates: Database['public']['Tables']['clients']['Update'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<void>;
   removeClient: (clientId: string) => Promise<void>;
   moveOrderToNextWorkstation: (orderId: string) => void;
   getOrdersByWorkstation: (workstationId: string) => ProductionOrder[];
@@ -312,12 +312,14 @@ export const useProductionStore = create<ProductionStore>()(
         if (error) {
           console.error('Error adding weapon:', error);
           toast.error('Erro ao adicionar arma', { description: getSafeErrorMessage(error, 'Weapon creation') });
-          return;
+          return null;
         }
         if (data) {
           set((state) => ({ weapons: [...state.weapons, data as Weapon] }));
           toast.success('Arma adicionada com sucesso!');
+          return data as Weapon;
         }
+        return null;
       },
 
       updateWeapon: async (id, updates) => {
@@ -377,13 +379,37 @@ export const useProductionStore = create<ProductionStore>()(
         }
       },
 
-      updateClient: async (id, updates) => {
+      updateClient: async (id, updates, weapons) => {
         const { data, error } = await supabase.from('clients').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating client:', error);
           toast.error('Erro ao atualizar cliente', { description: getSafeErrorMessage(error, 'Client update') });
           return;
         }
+
+        if (weapons) {
+          // Remove existing weapons association
+          const { error: deleteError } = await supabase.from('client_weapons').delete().eq('client_id', id);
+          if (deleteError) {
+            console.error('Error removing existing client weapons:', deleteError);
+          }
+
+          // Add new weapons association
+          if (weapons.length > 0) {
+            const clientWeapons = weapons.map(w => ({
+              client_id: id,
+              weapon_id: w.weapon_id,
+              identification_number: w.identification_number
+            }));
+
+            const { error: insertError } = await supabase.from('client_weapons').insert(clientWeapons);
+            if (insertError) {
+              console.error('Error updating client weapons:', insertError);
+              toast.error('Cliente atualizado, mas erro ao atualizar armas', { description: insertError.message });
+            }
+          }
+        }
+
         if (data) {
           set((state) => ({
             clients: state.clients.map((c) => (c.id === id ? (data as Client) : c)),

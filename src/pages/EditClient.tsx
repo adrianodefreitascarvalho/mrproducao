@@ -5,10 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useProductionStore, type Client } from "@/lib/store";
+import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+
+const caliberOptions: Caliber[] = ['12', '16', '20', '28', '410'];
+const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
+const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
+const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
+const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
 
 const getClientDisplayName = (client: Client) => {
   return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Sem nome';
@@ -16,7 +26,7 @@ const getClientDisplayName = (client: Client) => {
 
 interface ClientFormProps {
   client: Client;
-  onSave: (data: Partial<Client>) => void;
+  onSave: (data: Partial<Client>, weapons: { weapon_id: string; identification_number: string }[]) => void;
   onCancel: () => void;
 }
 
@@ -34,9 +44,41 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
   const [selectedWeaponToAdd, setSelectedWeaponToAdd] = useState("");
   const [currentIdNumber, setCurrentIdNumber] = useState("");
 
+  // State for new weapon form
+  const [isNewWeaponOpen, setIsNewWeaponOpen] = useState(false);
+  const addWeapon = useProductionStore((state) => state.addWeapon);
+  const [newWeaponBrand, setNewWeaponBrand] = useState("");
+  const [newWeaponModel, setNewWeaponModel] = useState("");
+  const [newWeaponSerial, setNewWeaponSerial] = useState("");
+  const [newWeaponCaliber, setNewWeaponCaliber] = useState<Caliber>('12');
+  const [newWeaponHand, setNewWeaponHand] = useState<DominantHand>('Direita');
+  const [newWeaponPlates, setNewWeaponPlates] = useState<SidePlates>('Meias');
+  const [newWeaponBarrelLen, setNewWeaponBarrelLen] = useState('');
+  const [newWeaponBarrelWt, setNewWeaponBarrelWt] = useState('');
+  const [newWeaponForendWt, setNewWeaponForendWt] = useState('');
+  const [newWeaponRib, setNewWeaponRib] = useState<Rib>('Media');
+  const [newWeaponTotalWt, setNewWeaponTotalWt] = useState('');
+  const [newWeaponDiscipline, setNewWeaponDiscipline] = useState('');
+  const [newWeaponFreq, setNewWeaponFreq] = useState<CompetitionFrequency>('Não Frequente');
+
   useEffect(() => {
-    // In a real app, you would fetch the client's associated weapons here.
-    // For this example, we'll assume it's empty on load for the edit form.
+    const fetchWeapons = async () => {
+      const { data, error } = await supabase
+        .from('client_weapons')
+        .select('weapon_id, identification_number')
+        .eq('client_id', client.id);
+      
+      if (error) {
+        console.error("Erro ao carregar armas do cliente:", error);
+        toast.error("Erro ao carregar armas associadas.");
+        return;
+      }
+
+      if (data) {
+        setClientWeapons(data);
+      }
+    };
+    fetchWeapons();
   }, [client.id]);
 
   const handleAddWeapon = () => {
@@ -62,10 +104,55 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
       email: email.trim() || null,
       phone: phone.trim() || null,
       address: { street: address.trim(), notes: notes.trim() },
-      // Note: Saving the associated weapons should be handled by the `onSave` function,
-      // likely involving a separate call to a `client_weapons` table.
-      // The `updateClient` in the store doesn't handle this yet.
+    }, clientWeapons);
+  };
+
+  const handleCreateWeapon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWeaponBrand.trim() || !newWeaponModel.trim() || !newWeaponSerial.trim()) return;
+
+    const newWeapon = await addWeapon({
+      brand: newWeaponBrand.trim(),
+      model: newWeaponModel.trim(),
+      serial_number: newWeaponSerial.trim(),
+      caliber: newWeaponCaliber,
+      dominant_hand: newWeaponHand,
+      side_plates: newWeaponPlates,
+      barrel_length: Number(newWeaponBarrelLen),
+      barrel_weight: Number(newWeaponBarrelWt),
+      forend_weight: Number(newWeaponForendWt),
+      rib: newWeaponRib,
+      total_weight: Number(newWeaponTotalWt),
+      discipline: newWeaponDiscipline.trim(),
+      competition_frequency: newWeaponFreq,
     });
+
+    if (newWeapon) {
+      // Associar automaticamente a nova arma à lista
+      setClientWeapons(prev => [...prev, { weapon_id: newWeapon.id, identification_number: newWeapon.serial_number }]);
+      
+      setIsNewWeaponOpen(false);
+      
+      // Reset form
+      setNewWeaponBrand("");
+      setNewWeaponModel("");
+      setNewWeaponSerial("");
+      setNewWeaponCaliber('12');
+      setNewWeaponHand('Direita');
+      setNewWeaponPlates('Meias');
+      setNewWeaponBarrelLen('');
+      setNewWeaponBarrelWt('');
+      setNewWeaponForendWt('');
+      setNewWeaponRib('Media');
+      setNewWeaponTotalWt('');
+      setNewWeaponDiscipline('');
+      setNewWeaponFreq('Não Frequente');
+      
+      // Limpar campos de seleção para evitar duplicação visual
+      setSelectedWeaponToAdd("");
+      setCurrentIdNumber("");
+      toast.success("Nova arma criada e associada!");
+    }
   };
 
   return (
@@ -107,14 +194,19 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
               <div className="md:col-span-5 space-y-2">
                 <Label htmlFor="weapon-select">Modelo da Arma</Label>
-                <Select value={selectedWeaponToAdd} onValueChange={setSelectedWeaponToAdd}>
-                  <SelectTrigger id="weapon-select"><SelectValue placeholder="Selecione uma arma" /></SelectTrigger>
-                  <SelectContent>
-                    {weapons.map(w => (
-                      <SelectItem key={w.id} value={w.id}>{w.brand} {w.model}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select value={selectedWeaponToAdd} onValueChange={setSelectedWeaponToAdd}>
+                    <SelectTrigger id="weapon-select" className="flex-1"><SelectValue placeholder="Selecione uma arma" /></SelectTrigger>
+                    <SelectContent>
+                      {weapons.map(w => (
+                        <SelectItem key={w.id} value={w.id}>{w.brand} {w.model}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button type="button" variant="outline" size="icon" onClick={() => setIsNewWeaponOpen(true)} title="Criar nova arma">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="md:col-span-5 space-y-2">
                 <Label htmlFor="id-number">Nº Identificação (Série)</Label>
@@ -150,6 +242,81 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
           </div>
         </form>
       </CardContent>
+
+      <Sheet open={isNewWeaponOpen} onOpenChange={setIsNewWeaponOpen}>
+        <SheetContent className="overflow-y-auto sm:max-w-xl w-full">
+          <SheetHeader>
+            <SheetTitle>Criar Nova Arma</SheetTitle>
+          </SheetHeader>
+          <form onSubmit={handleCreateWeapon} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Marca</Label>
+                <Input value={newWeaponBrand} onChange={e => setNewWeaponBrand(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Modelo</Label>
+                <Input value={newWeaponModel} onChange={e => setNewWeaponModel(e.target.value)} required />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Número de Série</Label>
+              <Input value={newWeaponSerial} onChange={e => setNewWeaponSerial(e.target.value)} required />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Calibre</Label>
+                <Select value={newWeaponCaliber} onValueChange={(v: Caliber) => setNewWeaponCaliber(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{caliberOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Mão</Label>
+                <Select value={newWeaponHand} onValueChange={(v: DominantHand) => setNewWeaponHand(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{dominantHandOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Platinas</Label>
+                <Select value={newWeaponPlates} onValueChange={(v: SidePlates) => setNewWeaponPlates(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{sidePlatesOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Comp. Canos (cm)</Label><Input type="number" value={newWeaponBarrelLen} onChange={e => setNewWeaponBarrelLen(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Peso Canos (kg)</Label><Input type="number" step="0.001" value={newWeaponBarrelWt} onChange={e => setNewWeaponBarrelWt(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Peso Fuste (gr)</Label><Input type="number" value={newWeaponForendWt} onChange={e => setNewWeaponForendWt(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Peso Total (kg)</Label><Input type="number" step="0.001" value={newWeaponTotalWt} onChange={e => setNewWeaponTotalWt(e.target.value)} /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>Fita</Label>
+              <Select value={newWeaponRib} onValueChange={(v: Rib) => setNewWeaponRib(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{ribOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Disciplina</Label>
+              <Input value={newWeaponDiscipline} onChange={e => setNewWeaponDiscipline(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Frequência</Label>
+              <Select value={newWeaponFreq} onValueChange={(v: CompetitionFrequency) => setNewWeaponFreq(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{competitionFrequencyOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsNewWeaponOpen(false)}>Cancelar</Button>
+              <Button type="submit">Criar Arma</Button>
+            </div>
+          </form>
+        </SheetContent>
+      </Sheet>
     </Card>
   );
 };
@@ -167,9 +334,9 @@ const EditClient = () => {
     return null;
   }
 
-  const handleSave = async (data: Partial<Client>) => {
+  const handleSave = async (data: Partial<Client>, weapons: { weapon_id: string; identification_number: string }[]) => {
     if (id) {
-      await updateClient(id, data);
+      await updateClient(id, data, weapons);
       navigate("/clients");
     }
   };

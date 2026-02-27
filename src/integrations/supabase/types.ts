@@ -291,6 +291,60 @@ export type Database = {
           },
         ]
       }
+      weapons: {
+        Row: {
+          barrel_length: number
+          barrel_weight: number
+          brand: string
+          caliber: string
+          competition_frequency: string
+          created_at: string
+          discipline: string
+          dominant_hand: string
+          forend_weight: number
+          id: string
+          model: string
+          rib: string
+          serial_number: string
+          side_plates: string
+          total_weight: number
+        }
+        Insert: {
+          barrel_length: number
+          barrel_weight: number
+          brand: string
+          caliber: string
+          competition_frequency: string
+          created_at?: string
+          discipline: string
+          dominant_hand: string
+          forend_weight: number
+          id?: string
+          model: string
+          rib: string
+          serial_number: string
+          side_plates: string
+          total_weight: number
+        }
+        Update: {
+          barrel_length?: number
+          barrel_weight?: number
+          brand?: string
+          caliber?: string
+          competition_frequency?: string
+          created_at?: string
+          discipline?: string
+          dominant_hand?: string
+          forend_weight?: number
+          id?: string
+          model?: string
+          rib?: string
+          serial_number?: string
+          side_plates?: string
+          total_weight?: number
+        }
+        Relationships: []
+      }
       workstations: {
         Row: {
           created_at: string

@@ -19,6 +19,16 @@ const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
 const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
 const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
 const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
+const weaponCategories = [
+  'Platina L – IV',
+  'Platina D – IF',
+  'Platina SO',
+  'Meia Platina',
+  'Semi Automática',
+  'Carabina',
+  'Carabina 2',
+  'Ergonómica'
+];
 
 const getClientDisplayName = (client: Client) => {
   return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Sem nome';
@@ -49,6 +59,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
   const addWeapon = useProductionStore((state) => state.addWeapon);
   const [newWeaponBrand, setNewWeaponBrand] = useState("");
   const [newWeaponModel, setNewWeaponModel] = useState("");
+  const [newWeaponCategory, setNewWeaponCategory] = useState("");
   const [newWeaponSerial, setNewWeaponSerial] = useState("");
   const [newWeaponCaliber, setNewWeaponCaliber] = useState<Caliber>('12');
   const [newWeaponHand, setNewWeaponHand] = useState<DominantHand>('Direita');
@@ -114,6 +125,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
     const newWeapon = await addWeapon({
       brand: newWeaponBrand.trim(),
       model: newWeaponModel.trim(),
+      category: newWeaponCategory || null,
       serial_number: newWeaponSerial.trim(),
       caliber: newWeaponCaliber,
       dominant_hand: newWeaponHand,
@@ -136,6 +148,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
       // Reset form
       setNewWeaponBrand("");
       setNewWeaponModel("");
+      setNewWeaponCategory("");
       setNewWeaponSerial("");
       setNewWeaponCaliber('12');
       setNewWeaponHand('Direita');
@@ -258,6 +271,15 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
                 <Label>Modelo</Label>
                 <Input value={newWeaponModel} onChange={e => setNewWeaponModel(e.target.value)} required />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Categoria</Label>
+              <Select value={newWeaponCategory} onValueChange={setNewWeaponCategory}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                <SelectContent>
+                  {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Número de Série</Label>

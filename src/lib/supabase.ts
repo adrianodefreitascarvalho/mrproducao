@@ -270,6 +270,7 @@ export interface Database {
           total_weight: number
           discipline: string
           competition_frequency: string
+          category: string | null
         }
         Insert: {
           id?: string
@@ -287,6 +288,7 @@ export interface Database {
           total_weight: number
           discipline: string
           competition_frequency: string
+          category?: string | null
         }
         Update: Partial<Database['public']['Tables']['weapons']['Insert']>
         Relationships: []

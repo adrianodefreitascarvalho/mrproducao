@@ -15,6 +15,16 @@ const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
 const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
 const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
 const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
+const weaponCategories = [
+  'Platina L – IV',
+  'Platina D – IF',
+  'Platina SO',
+  'Meia Platina',
+  'Semi Automática',
+  'Carabina',
+  'Carabina 2',
+  'Ergonómica'
+];
 
 const NewWeapon = () => {
   const navigate = useNavigate();
@@ -22,6 +32,7 @@ const NewWeapon = () => {
 
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
+  const [category, setCategory] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
   const [caliber, setCaliber] = useState<Caliber>('12');
   const [dominantHand, setDominantHand] = useState<DominantHand>('Direita');
@@ -42,6 +53,7 @@ const NewWeapon = () => {
     await addWeapon( {
       brand: brand.trim(),
       model: model.trim(), 
+      category: category || null,
       serial_number: serialNumber.trim(),
       caliber,
       dominant_hand: dominantHand,
@@ -90,6 +102,15 @@ const NewWeapon = () => {
                   <div className="space-y-2">
                     <Label htmlFor="weapon-model">Modelo</Label>
                     <Input id="weapon-model" placeholder="Ex: 686" value={model} onChange={(e) => setModel(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="weapon-category">Categoria</Label>
+                    <Select onValueChange={setCategory} value={category}>
+                      <SelectTrigger id="weapon-category"><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                      <SelectContent>
+                        {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="weapon-serial">Número da Arma</Label>

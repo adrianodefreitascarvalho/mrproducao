@@ -26,6 +26,7 @@ const NewProduct = () => {
   const addProduct = useProductionStore((state) => state.addProduct);
   const fetchPriceTables = useProductionStore((state) => state.fetchPriceTables);
   const priceTables = useProductionStore((state) => state.priceTables);
+  const productTypes = useProductionStore((state) => state.productTypes);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -150,11 +151,9 @@ const NewProduct = () => {
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Coronha">Coronha</SelectItem>
-                        <SelectItem value="Semi-Automática">Semi-Automática</SelectItem>
-                        <SelectItem value="Carabina">Carabina</SelectItem>
-                        <SelectItem value="Fuste">Fuste</SelectItem>
-                        <SelectItem value="Punho Glove">Punho Glove</SelectItem>
+                        {productTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

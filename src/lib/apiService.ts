@@ -9,7 +9,7 @@ import { getAuthHeaders } from './authHeaders';
 // ===== Types =====
 export interface OrderItem {
   id?: string;
-  productType: 'coronha' | 'fuste';
+  productType: 'coronha' | 'fuste' | 'reparacao' | 'garantia' | 'outro';
   woodGrade: string;
   quantity: number;
 }

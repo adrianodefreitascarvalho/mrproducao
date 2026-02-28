@@ -15,7 +15,7 @@ export type Workstation = Database['public']['Tables']['workstations']['Row'] & 
 export type ReleaseOrder = Database['public']['Tables']['release_orders']['Row'];
 export type PriceTable = Database['public']['Tables']['price_tables']['Row'];
 export type Client = Database['public']['Tables']['clients']['Row'];
-export type Weapon = Database['public']['Tables']['weapons']['Row'];
+export type Weapon = Database['public']['Tables']['weapons']['Row'] & { category?: string | null };
 export type ClientWeapon = Database['public']['Tables']['client_weapons']['Row'];
 
 // Define ProductionOrder type based on the database schema for use within the app
@@ -63,8 +63,8 @@ interface ProductionStoreActions {
   addProduct: (product: Database['public']['Tables']['products']['Insert'] & { category?: string | null }) => Promise<void>;
   updateProduct: (id: string, updates: Database['public']['Tables']['products']['Update'] & { category?: string | null }) => Promise<void>;
   removeProduct: (productId: string) => void;
-  addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert']) => Promise<Weapon | null>;
-  updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update']) => Promise<void>;
+  addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert'] & { category?: string | null }) => Promise<Weapon | null>;
+  updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update'] & { category?: string | null }) => Promise<void>;
   removeWeapon: (weaponId: string) => Promise<void>;
   addClient: (client: Database['public']['Tables']['clients']['Insert'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<void>;
   updateClient: (id: string, updates: Database['public']['Tables']['clients']['Update'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<void>;
@@ -87,6 +87,9 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       productTypes: [
         { id: 'coronha', name: 'Coronha' },
         { id: 'fuste', name: 'Fuste' },
+        { id: 'reparacao', name: 'Reparação' },
+        { id: 'garantia', name: 'Garantia' },
+        { id: 'outro', name: 'Outro' },
       ],
       woodGrades: [
         { id: 'grade1', name: 'Grau 1' },
@@ -233,7 +236,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
                   name: item.description,
                   sku: `IMP-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`,
                   description: `Importado de ${pt.name}. Preço Base: ${item.price}€`,
-                  product_type: 'Outro',
+                  product_type: 'outro',
                 });
               });
             }
@@ -312,7 +315,19 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         const payload = { ...weaponData };
         if (!payload.id) delete payload.id;
 
-        const { data, error } = await supabase.from('weapons').insert(payload).select().single();
+        let { data, error } = await supabase.from('weapons').insert(payload).select().single();
+
+        // Fallback for missing 'category' column (Postgres error 42703 or PostgREST schema error)
+        if (error && (error.code === '42703' || error.message.includes('Could not find the \'category\' column')) && 'category' in payload) {
+          const { category, ...fallbackPayload } = payload;
+          const retry = await supabase.from('weapons').insert(fallbackPayload).select().single();
+          if (!retry.error) {
+            data = retry.data;
+            error = null;
+            toast.warning('Arma criada, mas a categoria não foi salva (coluna em falta na BD).');
+          }
+        }
+
         if (error) {
           console.error('Error adding weapon:', error);
           toast.error('Erro ao adicionar arma', { description: getSafeErrorMessage(error, 'Weapon creation') });
@@ -327,7 +342,19 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       },
 
       updateWeapon: async (id, updates) => {
-        const { data, error } = await supabase.from('weapons').update(updates).eq('id', id).select().single();
+        let { data, error } = await supabase.from('weapons').update(updates).eq('id', id).select().single();
+
+        // Fallback for missing 'category' column (Postgres error 42703 or PostgREST schema error)
+        if (error && (error.code === '42703' || error.message.includes('Could not find the \'category\' column')) && 'category' in updates) {
+          const { category, ...fallbackUpdates } = updates;
+          const retry = await supabase.from('weapons').update(fallbackUpdates).eq('id', id).select().single();
+          if (!retry.error) {
+            data = retry.data;
+            error = null;
+            toast.warning('Arma atualizada, mas a categoria não foi salva (coluna em falta na BD).');
+          }
+        }
+
         if (error) {
           console.error('Error updating weapon:', error);
           toast.error('Erro ao atualizar arma', { description: getSafeErrorMessage(error, 'Weapon update') });

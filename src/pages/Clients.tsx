@@ -7,6 +7,7 @@ import {
 import { useProductionStore } from "@/lib/store";
 import { PlusCircle, Trash2, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import type { Client } from "@/lib/store";
 
 const getClientDisplayName = (client: Client) => {
@@ -16,7 +17,13 @@ const getClientDisplayName = (client: Client) => {
 const Clients = () => {
   const navigate = useNavigate();
   const clients = useProductionStore((state) => state.clients);
+  const fetchClients = useProductionStore((state) => state.fetchClients);
+  const isLoadingClients = useProductionStore((state) => state.isLoadingClients);
   const removeClient = useProductionStore((state) => state.removeClient);
+
+  useEffect(() => {
+    fetchClients();
+  }, [fetchClients]);
 
   const handleNewClient = () => navigate("/clients/new");
   const handleEditClient = (id: string) => navigate(`/clients/edit/${id}`);
@@ -48,9 +55,17 @@ const Clients = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients.length === 0 ? (
+              {isLoadingClients ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">Nenhum cliente encontrado.</TableCell>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    A carregar clientes...
+                  </TableCell>
+                </TableRow>
+              ) : clients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    Nenhum cliente encontrado.
+                  </TableCell>
                 </TableRow>
               ) : (
                 clients.map((client) => {

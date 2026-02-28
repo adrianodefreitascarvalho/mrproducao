@@ -16,6 +16,16 @@ const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
 const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
 const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
 const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
+const weaponCategories = [
+  'Platina L – IV',
+  'Platina D – IF',
+  'Platina SO',
+  'Meia Platina',
+  'Semi Automática',
+  'Carabina',
+  'Carabina 2',
+  'Ergonómica'
+];
 
 interface WeaponFormProps {
   weapon: Weapon;
@@ -26,6 +36,7 @@ interface WeaponFormProps {
 const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
   const [brand, setBrand] = useState(weapon.brand);
   const [model, setModel] = useState(weapon.model); 
+  const [category, setCategory] = useState(weapon.category || "");
   const [serialNumber, setSerialNumber] = useState(weapon.serial_number); 
   const [caliber, setCaliber] = useState<Caliber>(weapon.caliber as Caliber);
   const [dominantHand, setDominantHand] = useState<DominantHand>(weapon.dominant_hand as DominantHand);
@@ -61,6 +72,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
     onSave({
       brand: brand.trim(),
       model: model.trim(),
+      category: category || null,
       serial_number: serialNumber.trim(),
       caliber,
       dominant_hand: dominantHand,
@@ -97,6 +109,15 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
             <div className="space-y-2">
               <Label htmlFor="weapon-model">Modelo</Label>
               <Input id="weapon-model" value={model} onChange={(e) => setModel(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weapon-category">Categoria</Label>
+              <Select onValueChange={setCategory} value={category}>
+                <SelectTrigger id="weapon-category"><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                <SelectContent>
+                  {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="weapon-serial">Número da Arma</Label>

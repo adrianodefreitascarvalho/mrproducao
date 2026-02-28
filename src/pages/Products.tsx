@@ -11,17 +11,23 @@ import {
 } from "@/components/ui/table";
 import { useProductionStore } from "@/lib/store";
 import { PlusCircle, Trash2, Pencil, Download } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const Products = () => {
   const navigate = useNavigate();
   const products = useProductionStore((state) => state.products);
+  const fetchProducts = useProductionStore((state) => state.fetchProducts);
+  const productTypes = useProductionStore((state) => state.productTypes);
   const isLoadingProducts = useProductionStore((state) => state.isLoadingProducts);
   const removeProduct = useProductionStore((state) => state.removeProduct);
   const importProductsFromPriceTables = useProductionStore((state) => state.importProductsFromPriceTables);
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleNewProduct = () => {
     navigate("/products/new");
@@ -64,6 +70,12 @@ const Products = () => {
     if (confirm("Tem a certeza que deseja importar todos os itens das tabelas de preços para o catálogo de produtos?")) {
       importProductsFromPriceTables();
     }
+  };
+
+  const getTypeName = (typeId: string | null) => {
+    if (!typeId) return "N/A";
+    const type = productTypes.find((t) => t.id === typeId || t.name === typeId);
+    return type ? type.name : typeId;
   };
 
   return (
@@ -130,7 +142,7 @@ const Products = () => {
                       {product.name}
                     </TableCell>
                     <TableCell>
-                      {product.product_type || "N/A"}
+                      {getTypeName(product.product_type)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button

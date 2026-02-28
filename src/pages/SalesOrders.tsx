@@ -10,14 +10,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge, BadgeProps } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { RefreshCw, Pencil, Trash2, Plus, Save, X, Minus, AlertCircle, ArrowRight, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { SalesOrderSchema, sanitizeText } from "@/lib/validation";
-import { useProductionStore } from "@/lib/store";
+import { useProductionStore, type Client } from "@/lib/store";
+import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 // Type definitions
 type SalesOrderStatus = 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled';
 type SalesOrderPriority = 'Alta' | 'Media' | 'Baixa';
+
+const caliberOptions: Caliber[] = ['12', '16', '20', '28', '410'];
+const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
+const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
+const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
+const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
+const weaponCategories = [
+  'Platina L – IV',
+  'Platina D – IF',
+  'Platina SO',
+  'Meia Platina',
+  'Semi Automática',
+  'Carabina',
+  'Carabina 2',
+  'Ergonómica'
+];
 
 type GripType = 'Punho Normal' | 'Punho Pistola' | 'Punho anatómico com dedos' | 'Punho anatómico sem dedos' | 'Punho papo de rôla';
 type CheckeringType = 'Normal' | 'Laser' | 'Personalizado';
@@ -26,6 +46,7 @@ interface OrderItem {
   id: string;
   weaponId?: string;
   productId?: string;
+  weaponType?: string;
   woodId?: string;
   quantity: number;
   unitPrice?: number;
@@ -76,16 +97,19 @@ const EMPTY_FORM_DATA: Omit<SalesOrder, 'id' | 'createdAt'> = {
 const GRIP_TYPES: GripType[] = ['Punho Normal', 'Punho Pistola', 'Punho anatómico com dedos', 'Punho anatómico sem dedos', 'Punho papo de rôla'];
 // const CHECKERING_TYPES: CheckeringType[] = ['Normal', 'Laser', 'Personalizado'];
 
-const getClientName = (client: any) => {
-  if (client.name) return client.name;
+const getClientName = (client: Client) => {
   return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Sem nome';
 };
 
 export default function SalesOrders() {
   const clients = useProductionStore(state => state.clients);
   const weapons = useProductionStore(state => state.weapons);
+  const addWeapon = useProductionStore(state => state.addWeapon);
+  const products = useProductionStore(state => state.products);
+  const fetchProducts = useProductionStore(state => state.fetchProducts);
   // const updateClient = useProductionStore(state => state.updateClient);
   
+  const [clientWeapons, setClientWeapons] = useState<{ weapon_id: string; identification_number: string }[]>([]);
   const [woodStock, setWoodStock] = useState<WoodStockItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -96,6 +120,23 @@ export default function SalesOrders() {
   const [, setIsAssociatingWeapon] = useState(false);
   // const [weaponToAssociate, setWeaponToAssociate] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
+
+  // State for new weapon form
+  const [isNewWeaponOpen, setIsNewWeaponOpen] = useState(false);
+  const [newWeaponBrand, setNewWeaponBrand] = useState("");
+  const [newWeaponModel, setNewWeaponModel] = useState("");
+  const [newWeaponCategory, setNewWeaponCategory] = useState("");
+  const [newWeaponSerial, setNewWeaponSerial] = useState("");
+  const [newWeaponCaliber, setNewWeaponCaliber] = useState<Caliber>('12');
+  const [newWeaponHand, setNewWeaponHand] = useState<DominantHand>('Direita');
+  const [newWeaponPlates, setNewWeaponPlates] = useState<SidePlates>('Meias');
+  const [newWeaponBarrelLen, setNewWeaponBarrelLen] = useState('');
+  const [newWeaponBarrelWt, setNewWeaponBarrelWt] = useState('');
+  const [newWeaponForendWt, setNewWeaponForendWt] = useState('');
+  const [newWeaponRib, setNewWeaponRib] = useState<Rib>('Media');
+  const [newWeaponTotalWt, setNewWeaponTotalWt] = useState('');
+  const [newWeaponDiscipline, setNewWeaponDiscipline] = useState('');
+  const [newWeaponFreq, setNewWeaponFreq] = useState<CompetitionFrequency>('Não Frequente');
 
   const [orders, setOrders] = useState<SalesOrder[]>(() => {
     try {
@@ -121,6 +162,26 @@ export default function SalesOrders() {
     }
   }, [isFormOpen, editingId]);
 
+  useEffect(() => {
+    if (!formData.clientId) {
+      setClientWeapons([]);
+      return;
+    }
+
+    const fetchClientWeapons = async () => {
+      const { data } = await supabase
+        .from('client_weapons')
+        .select('weapon_id, identification_number')
+        .eq('client_id', formData.clientId);
+      
+      if (data) {
+        setClientWeapons(data);
+      }
+    };
+
+    fetchClientWeapons();
+  }, [formData.clientId]);
+
   const fetchOrders = async () => {
     setLoading(true);
     try { await new Promise(resolve => setTimeout(resolve, 500)); }
@@ -128,7 +189,10 @@ export default function SalesOrders() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => { 
+    fetchOrders();
+    fetchProducts();
+  }, [fetchProducts]);
 
   const resetForm = () => {
     setFormData(EMPTY_FORM_DATA); setEditingId(null); setIsFormOpen(false);
@@ -282,7 +346,7 @@ export default function SalesOrders() {
                           setFormData({...formData, clientId: value, clientName: c ? getClientName(c) : '', weaponId: ""});
                           setIsAssociatingWeapon(false);
                         }} value={formData.clientId} required>
-                          <SelectTrigger><SelectValue placeholder="Selecione um cliente" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Seleccione um cliente" /></SelectTrigger>
                           <SelectContent>
                             {clients.map(c => <SelectItem key={c.id} value={c.id}>{getClientName(c)}</SelectItem>)}
                           </SelectContent>
@@ -290,22 +354,27 @@ export default function SalesOrders() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="weapon">Arma da Encomenda</Label>
-                        <Select onValueChange={(value) => setFormData({...formData, weaponId: value})} value={formData.weaponId} disabled={!formData.clientId}>
-                          <SelectTrigger><SelectValue placeholder="Selecione a arma" /></SelectTrigger>
-                          <SelectContent>
-                            {formData.clientId && (() => {
-                              const client = clients.find(c => c.id === formData.clientId);
-                              const addressData = (client?.address as any) || {};
-                              const clientWeaponIds = addressData.weaponIds || [];
-                              const weaponIdsToShow = formData.weaponId && !clientWeaponIds.includes(formData.weaponId) 
-                                ? [...clientWeaponIds, formData.weaponId] : clientWeaponIds;
-                              return weaponIdsToShow.map((wid: string) => {
-                                const w = weapons.find(wp => wp.id === wid);
-                                return w ? <SelectItem key={w.id} value={w.id}>{w.brand} {w.model} ({w.serial_number})</SelectItem> : null;
-                              });
-                            })()}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                          <Select onValueChange={(value) => setFormData({...formData, weaponId: value})} value={formData.weaponId || undefined} disabled={!formData.clientId}>
+                            <SelectTrigger className="flex-1"><SelectValue placeholder="Seleccione a arma" /></SelectTrigger>
+                            <SelectContent>
+                              {clientWeapons.map((cw, index) => {
+                                const w = weapons.find(wp => wp.id === cw.weapon_id);
+                                return w ? (
+                                  <SelectItem key={`${cw.weapon_id}-${index}`} value={cw.weapon_id}>
+                                    {w.brand} {w.model} ({cw.identification_number})
+                                  </SelectItem>
+                                ) : null;
+                              })}
+                              {clientWeapons.length === 0 && (
+                                <SelectItem value="none" disabled>Nenhuma arma associada</SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <Button type="button" variant="outline" size="icon" onClick={() => setIsNewWeaponOpen(true)} disabled={!formData.clientId} title="Criar nova arma">
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -340,23 +409,37 @@ export default function SalesOrders() {
                         <Plus className="h-4 w-4 mr-2" /> Adicionar Item
                       </Button>
                     </div>
-                    {formData.items.map((item, index) => (
+                    {formData.items.map((item, index) => {
+                      const selectedProduct = products.find(p => p.id === item.productId);
+                      const showGrip = selectedProduct?.product_type === 'coronha';
+
+                      return (
                       <Card key={item.id} className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                          <div className="space-y-2">
+                        <div className="flex flex-wrap gap-4 items-end">
+                          <div className="space-y-2 min-w-50 flex-1">
                             <Label>Produto</Label>
                             <Select value={item.productId || ''} onValueChange={(value) => handleItemChange(index, 'productId', value)}>
-                              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                              <SelectTrigger><SelectValue placeholder="Seleccione..." /></SelectTrigger>
                               <SelectContent>
-                                {woodStock.map(w => <SelectItem key={w.id} value={w.id}>{w.sku} - {w.grade}</SelectItem>)}
+                                {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="space-y-2">
+                          <div className="space-y-2 min-w-37.5 flex-1">
+                            <Label>Tipo de Arma</Label>
+                            <Select value={item.weaponType || ''} onValueChange={(value) => handleItemChange(index, 'weaponType', value)}>
+                              <SelectTrigger><SelectValue placeholder="Tipo de arma..." /></SelectTrigger>
+                              <SelectContent>
+                                {weaponCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2 w-25">
                             <Label>Quantidade</Label>
                             <Input type="number" min="1" max="10000" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)} />
                           </div>
-                          <div className="space-y-2">
+                          {showGrip && (
+                          <div className="space-y-2 min-w-50 flex-1">
                             <Label>Punho</Label>
                             <Select value={item.gripType || ''} onValueChange={(value) => handleItemChange(index, 'gripType', value)}>
                               <SelectTrigger><SelectValue placeholder="Tipo de punho..." /></SelectTrigger>
@@ -365,14 +448,16 @@ export default function SalesOrders() {
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="flex items-end">
+                          )}
+                          <div className="pb-0.5">
                             <Button type="button" variant="ghost" size="icon" className="text-destructive" onClick={() => handleRemoveItem(index)}>
                               <Minus className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
                       </Card>
-                    ))}
+                    );
+                    })}
                     {formData.items.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">Adicione pelo menos um item.</div>
                     )}
@@ -449,6 +534,119 @@ export default function SalesOrders() {
           </Table>
         </Card>
       </div>
+
+      <Sheet open={isNewWeaponOpen} onOpenChange={setIsNewWeaponOpen}>
+        <SheetContent className="overflow-y-auto sm:max-w-xl w-full">
+          <SheetHeader>
+            <SheetTitle>Criar Nova Arma</SheetTitle>
+          </SheetHeader>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            if (!newWeaponBrand.trim() || !newWeaponModel.trim() || !newWeaponSerial.trim() || !formData.clientId) return;
+
+            const newWeapon = await addWeapon({
+              brand: newWeaponBrand.trim(),
+              model: newWeaponModel.trim(),
+              category: newWeaponCategory || null,
+              serial_number: newWeaponSerial.trim(),
+              caliber: newWeaponCaliber,
+              dominant_hand: newWeaponHand,
+              side_plates: newWeaponPlates,
+              barrel_length: Number(newWeaponBarrelLen),
+              barrel_weight: Number(newWeaponBarrelWt),
+              forend_weight: Number(newWeaponForendWt),
+              rib: newWeaponRib,
+              total_weight: Number(newWeaponTotalWt),
+              discipline: newWeaponDiscipline.trim(),
+              competition_frequency: newWeaponFreq,
+            });
+
+            if (newWeapon) {
+              const { data: association, error } = await supabase
+                .from('client_weapons')
+                .insert({
+                  client_id: formData.clientId,
+                  weapon_id: newWeapon.id,
+                  identification_number: newWeapon.serial_number
+                })
+                .select()
+                .single();
+
+              if (error) {
+                toast.error("Erro ao associar arma ao cliente.");
+              } else {
+                setClientWeapons(prev => [...prev, association as { weapon_id: string; identification_number: string }]);
+                setFormData(prev => ({ ...prev, weaponId: newWeapon.id }));
+                toast.success("Nova arma criada e selecionada!");
+                setIsNewWeaponOpen(false);
+                
+                setNewWeaponBrand("");
+                setNewWeaponModel("");
+                setNewWeaponCategory("");
+                setNewWeaponSerial("");
+                setNewWeaponBarrelLen('');
+                setNewWeaponBarrelWt('');
+                setNewWeaponForendWt('');
+                setNewWeaponRib('Media');
+                setNewWeaponTotalWt('');
+                setNewWeaponDiscipline('');
+                setNewWeaponFreq('Não Frequente');
+              }
+            }
+          }} className="space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Marca</Label><Input value={newWeaponBrand} onChange={e => setNewWeaponBrand(e.target.value)} required /></div>
+              <div className="space-y-2"><Label>Modelo</Label><Input value={newWeaponModel} onChange={e => setNewWeaponModel(e.target.value)} required /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>Categoria</Label>
+              <Select value={newWeaponCategory} onValueChange={setNewWeaponCategory}>
+                <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+                <SelectContent>
+                  {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2"><Label>Número de Série</Label><Input value={newWeaponSerial} onChange={e => setNewWeaponSerial(e.target.value)} required /></div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>Calibre</Label>
+                <Select value={newWeaponCaliber} onValueChange={(v: Caliber) => setNewWeaponCaliber(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{caliberOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Mão</Label>
+                <Select value={newWeaponHand} onValueChange={(v: DominantHand) => setNewWeaponHand(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{dominantHandOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Platinas</Label>
+                <Select value={newWeaponPlates} onValueChange={(v: SidePlates) => setNewWeaponPlates(v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{sidePlatesOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Comp. Canos (cm)</Label><Input type="number" value={newWeaponBarrelLen} onChange={e => setNewWeaponBarrelLen(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Peso Canos (kg)</Label><Input type="number" step="0.001" value={newWeaponBarrelWt} onChange={e => setNewWeaponBarrelWt(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Peso Fuste (gr)</Label><Input type="number" value={newWeaponForendWt} onChange={e => setNewWeaponForendWt(e.target.value)} /></div>
+              <div className="space-y-2"><Label>Peso Total (kg)</Label><Input type="number" step="0.001" value={newWeaponTotalWt} onChange={e => setNewWeaponTotalWt(e.target.value)} /></div>
+            </div>
+            <div className="space-y-2"><Label>Fita</Label><Select value={newWeaponRib} onValueChange={(v: Rib) => setNewWeaponRib(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ribOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Disciplina</Label><Input value={newWeaponDiscipline} onChange={e => setNewWeaponDiscipline(e.target.value)} /></div>
+            <div className="space-y-2"><Label>Frequência</Label><Select value={newWeaponFreq} onValueChange={(v: CompetitionFrequency) => setNewWeaponFreq(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{competitionFrequencyOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsNewWeaponOpen(false)}>Cancelar</Button>
+              <Button type="submit">Criar Arma</Button>
+            </div>
+          </form>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

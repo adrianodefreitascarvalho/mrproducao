@@ -10,33 +10,27 @@ import { ArrowLeft } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
-const weaponCategories = [
-  'Platina L – IV',
-  'Platina D – IF',
-  'Platina SO',
-  'Meia Platina',
-  'Semi Automática',
-  'Carabina',
-  'Carabina 2',
-  'Ergonómica'
-];
-
 const NewProduct = () => {
   const navigate = useNavigate();
   const addProduct = useProductionStore((state) => state.addProduct);
   const fetchPriceTables = useProductionStore((state) => state.fetchPriceTables);
+  const fetchDropdowns = useProductionStore((state) => state.fetchDropdowns);
   const priceTables = useProductionStore((state) => state.priceTables);
   const productTypes = useProductionStore((state) => state.productTypes);
+  const woodGrades = useProductionStore((state) => state.woodGrades);
+  const weaponCategories = useProductionStore((state) => state.weaponCategories);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [productType, setProductType] = useState("");
   const [category, setCategory] = useState("");
+  const [woodGrade, setWoodGrade] = useState("");
   const [selectedPriceItem, setSelectedPriceItem] = useState("");
 
   useEffect(() => {
     fetchPriceTables();
-  }, [fetchPriceTables]);
+    fetchDropdowns();
+  }, [fetchPriceTables, fetchDropdowns]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,37 +39,56 @@ const NewProduct = () => {
     }
     await addProduct({
       name: name.trim(),
-      sku: "",
+      sku: `PROD-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`,
       description: description.trim() || null,
       product_type: productType || null,
       category: category || null,
+      wood_grade: (productType === 'coronha' || productType === 'fuste') ? woodGrade : null,
     });
     navigate("/products");
   };
 
   const filteredItems = useMemo(() => {
-    if (!category) return [];
-    
     // Filter tables: Match category OR is 'Extras' OR is 'Geral'
-    const relevantTables = priceTables.filter(pt => 
-      pt.name === category || pt.name === 'Extras' || pt.name === 'Geral'
-    );
+    // Normaliza a string para minúsculas e substitui travessão (–) por hífen (-) para garantir a correspondência
+    // Também trata plurais comuns nos nomes das tabelas (ex: Platinas -> Platina) para garantir o match
+    const normalize = (str: string) => {
+      if (!str) return '';
+      return str.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+        .trim()
+        .replace(/platinas/g, 'platina')
+        .replace(/meias/g, 'meia')
+        .replace(/automaticas/g, 'automatica')
+        .replace(/carabinas/g, 'carabina')
+        .replace(/ergonomicas/g, 'ergonomica')
+        .replace(/[^a-z0-9]/g, '');
+    };
 
-    // Flatten items from relevant tables
-    return relevantTables.flatMap(pt => {
-      let items: { description: string; price: number }[] = [];
-      if (Array.isArray(pt.items)) {
-        items = pt.items as { description: string; price: number }[];
-      } else if (typeof pt.items === 'string') {
-        try {
-          items = JSON.parse(pt.items);
-        } catch (e) {
-          console.error("Error parsing items", e);
-        }
+    const pType = (productType || '').toLowerCase().trim();
+    const isStockOrForend = pType === 'coronha' || pType === 'fuste';
+
+    const results = priceTables.flatMap(pt => {
+      if (!pt.name) return [];
+      const tableName = normalize(pt.name);
+      const items = pt.price_items || [];
+
+      // 1. Sempre mostrar itens das tabelas Geral e Extras
+      if (tableName === 'extras' || tableName === 'geral') {
+        return items.map(item => ({ ...item, tableName: pt.name }));
       }
-      return items.map(item => ({ ...item, tableName: pt.name }));
+      
+      // 2. Se for Coronha ou Fuste, mostrar itens de QUALQUER tabela que contenham o tipo na descrição
+      if (isStockOrForend) {
+        const matchingItems = items.filter(item => item.description.toLowerCase().includes(pType));
+        return matchingItems.map(item => ({ ...item, tableName: pt.name }));
+      }
+
+      return [];
     });
-  }, [category, priceTables]);
+
+    return results.sort((a, b) => a.description.localeCompare(b.description));
+  }, [priceTables, productType]);
 
   const handlePriceItemChange = (value: string) => {
     setSelectedPriceItem(value);
@@ -104,6 +117,14 @@ const NewProduct = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 
                 <div className="space-y-2">
+                  <Label htmlFor="product-name">Nome do Produto</Label>
+                  <Input id="product-name" placeholder="Nome do produto" value={name} onChange={(e) => setName(e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="product-description">Descrição</Label>
+                  <Textarea id="product-description" placeholder="Descrição detalhada do produto..." value={description} onChange={(e) => setDescription(e.target.value)} />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="category">Categoria de Arma</Label>
                   <Select onValueChange={setCategory} value={category}>
                     <SelectTrigger id="category">
@@ -111,13 +132,45 @@ const NewProduct = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {weaponCategories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {category && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="product-type">Tipo de Produto</Label>
+                    <Select onValueChange={setProductType} value={productType} required>
+                      <SelectTrigger id="product-type">
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {productTypes.map((type) => (
+                          <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {(productType === 'coronha' || productType === 'fuste') && (
+                    <div className="space-y-2">
+                      <Label htmlFor="wood-grade">Tipo de Madeira</Label>
+                      <Select onValueChange={setWoodGrade} value={woodGrade}>
+                        <SelectTrigger id="wood-grade">
+                          <SelectValue placeholder="Selecione o tipo de madeira" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {woodGrades.map((grade) => (
+                            <SelectItem key={grade.id} value={grade.name}>{grade.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+
+                {filteredItems.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="price-item">Selecionar Produto da Tabela de Preços</Label>
                     <Select onValueChange={handlePriceItemChange} value={selectedPriceItem}>
@@ -135,29 +188,6 @@ const NewProduct = () => {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="product-name">Nome do Produto</Label>
-                  <Input id="product-name" placeholder="Nome do produto" value={name} onChange={(e) => setName(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="product-description">Descrição</Label>
-                  <Textarea id="product-description" placeholder="Descrição detalhada do produto..." value={description} onChange={(e) => setDescription(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="product-type">Tipo de Produto</Label>
-                    <Select onValueChange={setProductType} value={productType} required>
-                      <SelectTrigger id="product-type">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {productTypes.map((type) => (
-                          <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
                 <div className="flex justify-end space-x-4 pt-4">
                   <Button type="button" variant="outline" onClick={() => navigate("/products")}>Cancelar</Button>
                   <Button type="submit">Criar Produto</Button>

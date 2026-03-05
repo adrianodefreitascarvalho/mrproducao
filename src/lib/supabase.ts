@@ -54,6 +54,7 @@ export interface Database {
           sku: string
           name: string
           description: string | null
+          category: string | null
           product_type: string | null
           wood_grade: string | null
         }
@@ -63,6 +64,7 @@ export interface Database {
           sku: string
           name: string
           description?: string | null
+          category?: string | null
           product_type?: string | null
           wood_grade?: string | null
         }
@@ -307,6 +309,121 @@ export interface Database {
           items: Json
         }
         Update: Partial<Database['public']['Tables']['price_tables']['Insert']>
+        Relationships: []
+      },
+      price_items: {
+        Row: {
+          id: string
+          price_table_id: string
+          description: string
+          price: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          price_table_id: string
+          description: string
+          price: number
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['price_items']['Insert']>
+        Relationships: [
+          {
+            foreignKeyName: "price_items_price_table_id_fkey"
+            columns: ["price_table_id"]
+            referencedRelation: "price_tables"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
+      weapon_categories: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      calibers: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      dominant_hands: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      side_plates: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      ribs: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      competition_frequencies: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      product_types: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      wood_grades: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
+        Relationships: []
+      },
+      grip_types: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: { id?: string; name: string; created_at?: string }
+        Update: { id?: string; name?: string; created_at?: string }
         Relationships: []
       }
     }

@@ -23,37 +23,19 @@ import { toast } from "sonner";
 type SalesOrderStatus = 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled';
 type SalesOrderPriority = 'Alta' | 'Media' | 'Baixa';
 
-const caliberOptions: Caliber[] = ['12', '16', '20', '28', '410'];
-const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
-const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
-const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
-const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
-const weaponCategories = [
-  'Platina L – IV',
-  'Platina D – IF',
-  'Platina SO',
-  'Meia Platina',
-  'Semi Automática',
-  'Carabina',
-  'Carabina 2',
-  'Ergonómica'
-];
-
 type GripType = 'Punho Normal' | 'Punho Pistola' | 'Punho anatómico com dedos' | 'Punho anatómico sem dedos' | 'Punho papo de rôla';
 type CheckeringType = 'Normal' | 'Laser' | 'Personalizado';
 
 interface OrderItem {
   id: string;
-  weaponId?: string;
   productId?: string;
-  weaponType?: string;
-  woodId?: string;
   quantity: number;
   unitPrice?: number;
+  weaponType?: string;
+  weaponId?: string;
+  woodId?: string;
   gripType?: GripType;
-  stockLength?: number;
-  lengthOfPull?: number;
-  dropAtComb?: number;
+  comb?: number;
   dropAtHeel?: number;
   castHeel?: number;
   castToe?: number;
@@ -94,8 +76,6 @@ const EMPTY_FORM_DATA: Omit<SalesOrder, 'id' | 'createdAt'> = {
   totalAmount: 0, items: []
 };
 
-const GRIP_TYPES: GripType[] = ['Punho Normal', 'Punho Pistola', 'Punho anatómico com dedos', 'Punho anatómico sem dedos', 'Punho papo de rôla'];
-// const CHECKERING_TYPES: CheckeringType[] = ['Normal', 'Laser', 'Personalizado'];
 
 const getClientName = (client: Client) => {
   return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Sem nome';
@@ -107,7 +87,16 @@ export default function SalesOrders() {
   const addWeapon = useProductionStore(state => state.addWeapon);
   const products = useProductionStore(state => state.products);
   const fetchProducts = useProductionStore(state => state.fetchProducts);
-  // const updateClient = useProductionStore(state => state.updateClient);
+  const fetchDropdowns = useProductionStore((state) => state.fetchDropdowns);
+
+  const weaponCategories = useProductionStore((state) => state.weaponCategories);
+  const caliberOptions = useProductionStore((state) => state.calibers);
+  const dominantHandOptions = useProductionStore((state) => state.dominantHands);
+  const sidePlatesOptions = useProductionStore((state) => state.sidePlates);
+  const ribOptions = useProductionStore((state) => state.ribs);
+  const competitionFrequencyOptions = useProductionStore((state) => state.competitionFrequencies);
+  const gripTypes = useProductionStore((state) => state.gripTypes);
+
   
   const [clientWeapons, setClientWeapons] = useState<{ weapon_id: string; identification_number: string }[]>([]);
   const [woodStock, setWoodStock] = useState<WoodStockItem[]>([]);
@@ -192,7 +181,8 @@ export default function SalesOrders() {
   useEffect(() => { 
     fetchOrders();
     fetchProducts();
-  }, [fetchProducts]);
+    fetchDropdowns();
+  }, [fetchProducts, fetchDropdowns]);
 
   const resetForm = () => {
     setFormData(EMPTY_FORM_DATA); setEditingId(null); setIsFormOpen(false);
@@ -205,7 +195,7 @@ export default function SalesOrders() {
       weaponId: order.weaponId || "", priority: order.priority, clientName: order.clientName || "",
       clientEmail: order.clientEmail || "", shippingAddress: order.shippingAddress || "",
       deliveryDate: order.deliveryDate || "", observations: order.observations || "",
-      totalAmount: order.totalAmount || 0, items: order.items.map(item => ({ ...item })),
+      totalAmount: order.totalAmount || 0, items: (order.items || []).map(item => ({ ...item })),
     });
     setEditingId(order.id); setIsFormOpen(true); setFormError(null); setCurrentStep(1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -228,24 +218,45 @@ export default function SalesOrders() {
   };
 
   const handleAddItem = () => {
-    setFormData({ ...formData, items: [...formData.items, { id: crypto.randomUUID(), quantity: 1, weaponId: formData.weaponId }] });
+    setFormData({ ...formData, items: [...(formData.items || []), { id: crypto.randomUUID(), quantity: 1, weaponId: formData.weaponId }] });
   };
 
   const handleRemoveItem = (index: number) => {
-    const newItems = [...formData.items]; newItems.splice(index, 1);
-    const newTotal = newItems.reduce((sum, item) => sum + (item.quantity * (item.unitPrice || 0)), 0);
+    const newItems = [...(formData.items || [])]; newItems.splice(index, 1);
+    const newTotal = newItems.reduce((sum, item) => {
+      const qty = typeof item.quantity === 'number' && !isNaN(item.quantity) ? item.quantity : 0;
+      const price = item.unitPrice || 0;
+      return sum + (qty * price);
+    }, 0);
     setFormData({ ...formData, items: newItems, totalAmount: newTotal });
   };
 
   const handleItemChange = (index: number, field: keyof OrderItem, value: string | number | undefined): void => {
-    const newItems = [...formData.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    if (field === 'woodId') {
-      const wood = woodStock.find((w) => w.id === value);
-      if (wood && wood.price !== undefined) newItems[index].unitPrice = Number(wood.price) || 0;
-    }
-    const newTotal = newItems.reduce((sum, item) => sum + (item.quantity * (item.unitPrice || 0)), 0);
-    setFormData({ ...formData, items: newItems, totalAmount: newTotal });
+    setFormData(prev => {
+      const currentItems = prev.items || [];
+      if (index < 0 || index >= currentItems.length) return prev;
+
+      const newItems = [...currentItems];
+      const updatedItem = { ...newItems[index], [field]: value };
+
+      if (field === 'quantity') {
+        const qty = parseInt(String(value), 10);
+        updatedItem.quantity = isNaN(qty) || qty < 1 ? 1 : qty;
+      }
+
+      if (field === 'woodId') {
+        const wood = woodStock.find((w) => w.id === value);
+        if (wood && wood.price !== undefined) updatedItem.unitPrice = Number(wood.price) || 0;
+      }
+      newItems[index] = updatedItem;
+
+      const newTotal = newItems.reduce((sum, item) => {
+        const qty = typeof item.quantity === 'number' && !isNaN(item.quantity) ? item.quantity : 0;
+        const price = item.unitPrice || 0;
+        return sum + (qty * price);
+      }, 0);
+      return { ...prev, items: newItems, totalAmount: newTotal };
+    });
   };
 
   /* handleAssociateWeapon removed - kept for future use
@@ -300,7 +311,14 @@ export default function SalesOrders() {
     pending: 'secondary', confirmed: 'default', processing: 'default', completed: 'success', cancelled: 'destructive'
   };
 
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 3));
+  const nextStep = () => {
+    if (currentStep === 2 && (!formData.items || formData.items.length === 0)) {
+      setFormError("Adicione pelo menos um item à encomenda.");
+      return;
+    }
+    setFormError(null);
+    setCurrentStep(prev => Math.min(prev + 1, 3));
+  };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
   return (
@@ -409,7 +427,7 @@ export default function SalesOrders() {
                         <Plus className="h-4 w-4 mr-2" /> Adicionar Item
                       </Button>
                     </div>
-                    {formData.items.map((item, index) => {
+                    {(formData.items || []).map((item, index) => {
                       const selectedProduct = products.find(p => p.id === item.productId);
                       const showGrip = selectedProduct?.product_type === 'coronha';
 
@@ -430,13 +448,13 @@ export default function SalesOrders() {
                             <Select value={item.weaponType || ''} onValueChange={(value) => handleItemChange(index, 'weaponType', value)}>
                               <SelectTrigger><SelectValue placeholder="Tipo de arma..." /></SelectTrigger>
                               <SelectContent>
-                                {weaponCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                {weaponCategories.map(cat => <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>
                           <div className="space-y-2 w-25">
                             <Label>Quantidade</Label>
-                            <Input type="number" min="1" max="10000" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)} />
+                            <Input type="number" min="1" max="10000" value={item.quantity} onChange={(e) => handleItemChange(index, 'quantity', e.target.value)} />
                           </div>
                           {showGrip && (
                           <div className="space-y-2 min-w-50 flex-1">
@@ -444,7 +462,7 @@ export default function SalesOrders() {
                             <Select value={item.gripType || ''} onValueChange={(value) => handleItemChange(index, 'gripType', value)}>
                               <SelectTrigger><SelectValue placeholder="Tipo de punho..." /></SelectTrigger>
                               <SelectContent>
-                                {GRIP_TYPES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                                {gripTypes.map(g => <SelectItem key={g.id} value={g.name}>{g.name}</SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>
@@ -458,7 +476,7 @@ export default function SalesOrders() {
                       </Card>
                     );
                     })}
-                    {formData.items.length === 0 && (
+                    {(formData.items || []).length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">Adicione pelo menos um item.</div>
                     )}
                   </div>
@@ -471,8 +489,8 @@ export default function SalesOrders() {
                       <span className="text-muted-foreground">Nº Encomenda:</span><span>{formData.orderNumber || 'Auto'}</span>
                       <span className="text-muted-foreground">Cliente:</span><span>{formData.clientName}</span>
                       <span className="text-muted-foreground">Prioridade:</span><span>{formData.priority}</span>
-                      <span className="text-muted-foreground">Itens:</span><span>{formData.items.length}</span>
-                      <span className="text-muted-foreground">Total:</span><span>{(formData.totalAmount || 0).toFixed(2)} €</span>
+                      <span className="text-muted-foreground">Itens:</span><span>{formData.items?.length || 0}</span>
+                      <span className="text-muted-foreground">Total:</span><span>{Number(formData.totalAmount || 0).toFixed(2)} €</span>
                     </div>
                   </div>
                 )}
@@ -603,7 +621,7 @@ export default function SalesOrders() {
               <Select value={newWeaponCategory} onValueChange={setNewWeaponCategory}>
                 <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
                 <SelectContent>
-                  {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {weaponCategories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -613,21 +631,21 @@ export default function SalesOrders() {
                 <Label>Calibre</Label>
                 <Select value={newWeaponCaliber} onValueChange={(v: Caliber) => setNewWeaponCaliber(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{caliberOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{caliberOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Mão</Label>
                 <Select value={newWeaponHand} onValueChange={(v: DominantHand) => setNewWeaponHand(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{dominantHandOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{dominantHandOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Platinas</Label>
                 <Select value={newWeaponPlates} onValueChange={(v: SidePlates) => setNewWeaponPlates(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{sidePlatesOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{sidePlatesOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
@@ -637,9 +655,9 @@ export default function SalesOrders() {
               <div className="space-y-2"><Label>Peso Fuste (gr)</Label><Input type="number" value={newWeaponForendWt} onChange={e => setNewWeaponForendWt(e.target.value)} /></div>
               <div className="space-y-2"><Label>Peso Total (kg)</Label><Input type="number" step="0.001" value={newWeaponTotalWt} onChange={e => setNewWeaponTotalWt(e.target.value)} /></div>
             </div>
-            <div className="space-y-2"><Label>Fita</Label><Select value={newWeaponRib} onValueChange={(v: Rib) => setNewWeaponRib(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ribOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Fita</Label><Select value={newWeaponRib} onValueChange={(v: Rib) => setNewWeaponRib(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ribOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>Disciplina</Label><Input value={newWeaponDiscipline} onChange={e => setNewWeaponDiscipline(e.target.value)} /></div>
-            <div className="space-y-2"><Label>Frequência</Label><Select value={newWeaponFreq} onValueChange={(v: CompetitionFrequency) => setNewWeaponFreq(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{competitionFrequencyOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>Frequência</Label><Select value={newWeaponFreq} onValueChange={(v: CompetitionFrequency) => setNewWeaponFreq(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{competitionFrequencyOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent></Select></div>
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsNewWeaponOpen(false)}>Cancelar</Button>
               <Button type="submit">Criar Arma</Button>

@@ -6,14 +6,15 @@ import { PRODUCTION_ROUTING } from '@/config';
 import { supabase, type Database, type Json } from './supabase';
 export type { Database };
 import { getSafeErrorMessage } from './errorHandler';
-export type Product = Database['public']['Tables']['products']['Row'] & { category?: string | null };
+export type Product = Database['public']['Tables']['products']['Row'];
 export type { Json };
 
 // Define Operation and Workstation types based on the database schema
 export type Operation = Database['public']['Tables']['operations']['Row'];
 export type Workstation = Database['public']['Tables']['workstations']['Row'] & { operations: Operation[] };
 export type ReleaseOrder = Database['public']['Tables']['release_orders']['Row'];
-export type PriceTable = Database['public']['Tables']['price_tables']['Row'];
+export type PriceItem = Database['public']['Tables']['price_items']['Row'];
+export type PriceTable = Database['public']['Tables']['price_tables']['Row'] & { price_items: PriceItem[] };
 export type Client = Database['public']['Tables']['clients']['Row'];
 export type Weapon = Database['public']['Tables']['weapons']['Row'] & { category?: string | null };
 export type ClientWeapon = Database['public']['Tables']['client_weapons']['Row'];
@@ -28,6 +29,8 @@ export type OrderPayload = {
     quantity: number;
   }>;
 };
+
+export type DropdownItem = { id: string; name: string };
 
 interface ProductionStoreState {
   orders: ProductionOrder[];
@@ -47,6 +50,14 @@ interface ProductionStoreState {
   isLoadingClients: boolean;
   isLoadingWeapons: boolean;
   isLoadingPriceTables: boolean;
+  // New dropdown states
+  weaponCategories: DropdownItem[];
+  calibers: DropdownItem[];
+  dominantHands: DropdownItem[];
+  sidePlates: DropdownItem[];
+  ribs: DropdownItem[];
+  competitionFrequencies: DropdownItem[];
+  gripTypes: DropdownItem[];
 }
 
 interface ProductionStoreActions {
@@ -56,12 +67,13 @@ interface ProductionStoreActions {
   fetchClients: () => Promise<void>;
   fetchWeapons: () => Promise<void>;
   fetchPriceTables: () => Promise<void>;
+  fetchDropdowns: () => Promise<void>;
   importProductsFromPriceTables: () => Promise<void>;
   updateOrder: (id: string, updates: Partial<ProductionOrder>) => Promise<void>;
   addOrder: (order: Omit<ProductionOrder, 'id' | 'created_at' | 'updated_at' | 'status' | 'progress' | 'current_workstation' | 'current_operation'>) => Promise<void>;
   removeOrder: (id: string) => void;
-  addProduct: (product: Database['public']['Tables']['products']['Insert'] & { category?: string | null }) => Promise<void>;
-  updateProduct: (id: string, updates: Database['public']['Tables']['products']['Update'] & { category?: string | null }) => Promise<void>;
+  addProduct: (product: Database['public']['Tables']['products']['Insert']) => Promise<void>;
+  updateProduct: (id: string, updates: Database['public']['Tables']['products']['Update']) => Promise<void>;
   removeProduct: (productId: string) => void;
   addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert'] & { category?: string | null }) => Promise<Weapon | null>;
   updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update'] & { category?: string | null }) => Promise<void>;
@@ -84,21 +96,8 @@ interface ProductionStoreActions {
 type ProductionStore = ProductionStoreState & ProductionStoreActions;
 
 export const useProductionStore = create<ProductionStore>((set, get) => ({
-      productTypes: [
-        { id: 'coronha', name: 'Coronha' },
-        { id: 'fuste', name: 'Fuste' },
-        { id: 'reparacao', name: 'Reparação' },
-        { id: 'garantia', name: 'Garantia' },
-        { id: 'outro', name: 'Outro' },
-      ],
-      woodGrades: [
-        { id: 'grade1', name: 'Grau 1' },
-        { id: 'grade2', name: 'Grau 2' },
-        { id: 'grade3', name: 'Grau 3' },
-        { id: 'grade4', name: 'Grau 4' },
-        { id: 'grade5', name: 'Grau 5' },
-        { id: 'exhibition', name: 'Exhibition' },
-      ],
+      productTypes: [],
+      woodGrades: [],
       woodSpecies: sampleWoodSpecies,
       workstations: [],
       products: [],
@@ -114,6 +113,13 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       isLoadingWeapons: false,
       priceTables: [],
       isLoadingPriceTables: false,
+      weaponCategories: [],
+      calibers: [],
+      dominantHands: [],
+      sidePlates: [],
+      ribs: [],
+      competitionFrequencies: [],
+      gripTypes: [],
 
       fetchWorkstations: async () => {
         set({ isLoadingWorkstations: true });
@@ -200,7 +206,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       fetchPriceTables: async () => {
         set({ isLoadingPriceTables: true });
         // Adicionado `count: 'exact'` para depuração.
-        const { data, error, count } = await supabase.from('price_tables').select('*', { count: 'exact' }).order('name');
+        const { data, error, count } = await supabase.from('price_tables').select('*, price_items(*)', { count: 'exact' }).order('name');
 
         if (error) {
           console.error('Error fetching price tables:', error);
@@ -214,10 +220,46 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         set({ priceTables: (data as PriceTable[]) || [], isLoadingPriceTables: false });
       },
 
+      fetchDropdowns: async () => {
+        const [
+          { data: weaponCategories },
+          { data: calibers },
+          { data: dominantHands },
+          { data: sidePlates },
+          { data: ribs },
+          { data: competitionFrequencies },
+          { data: productTypes },
+          { data: woodGrades },
+          { data: gripTypes }
+        ] = await Promise.all([
+          supabase.from('weapon_categories').select('id, name').order('name'),
+          supabase.from('calibers').select('id, name').order('name'),
+          supabase.from('dominant_hands').select('id, name').order('name'),
+          supabase.from('side_plates').select('id, name').order('name'),
+          supabase.from('ribs').select('id, name').order('name'),
+          supabase.from('competition_frequencies').select('id, name').order('name'),
+          supabase.from('product_types').select('id, name').order('name'),
+          supabase.from('wood_grades').select('id, name').order('name'),
+          supabase.from('grip_types').select('id, name').order('name')
+        ]);
+
+        set({
+          weaponCategories: weaponCategories || [],
+          calibers: calibers || [],
+          dominantHands: dominantHands || [],
+          sidePlates: sidePlates || [],
+          ribs: ribs || [],
+          competitionFrequencies: competitionFrequencies || [],
+          productTypes: (productTypes || []).map(pt => ({ id: pt.name, name: pt.name })), // Map ID to name for compatibility or use ID if refactoring fully
+          woodGrades: (woodGrades || []).map(wg => ({ id: wg.name, name: wg.name })),
+          gripTypes: gripTypes || []
+        });
+      },
+
       importProductsFromPriceTables: async () => {
         set({ isLoadingProducts: true });
         try {
-          const { data: priceTables, error: ptError } = await supabase.from('price_tables').select('*');
+          const { data: priceTables, error: ptError } = await supabase.from('price_tables').select('*, price_items(*)');
           if (ptError) throw ptError;
 
           if (!priceTables || priceTables.length === 0) {
@@ -229,7 +271,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
           const productsToInsert: Database['public']['Tables']['products']['Insert'][] = [];
 
           (priceTables as PriceTable[]).forEach((pt) => {
-            const items = pt.items as { description: string; price: number }[] | null;
+            const items = pt.price_items;
             if (Array.isArray(items)) {
               items.forEach((item) => {
                 productsToInsert.push({

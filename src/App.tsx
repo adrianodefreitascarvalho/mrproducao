@@ -30,7 +30,7 @@ import NewClient from "./pages/NewClient";
 import EditClient from "./pages/EditClient";
 import Reports from "./pages/Reports";
 import WoodStock from "./pages/WoodStock";
-import PriceTablesPage from "../PriceTable";
+import PriceTablesPage from "./pages/PriceTable.tsx";
 import SalesOrders from "./pages/SalesOrders";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";

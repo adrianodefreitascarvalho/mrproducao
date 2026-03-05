@@ -14,22 +14,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
-const caliberOptions: Caliber[] = ['12', '16', '20', '28', '410'];
-const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
-const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
-const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
-const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
-const weaponCategories = [
-  'Platina L – IV',
-  'Platina D – IF',
-  'Platina SO',
-  'Meia Platina',
-  'Semi Automática',
-  'Carabina',
-  'Carabina 2',
-  'Ergonómica'
-];
-
 const getClientDisplayName = (client: Client) => {
   return `${client.first_name || ''} ${client.last_name || ''}`.trim() || 'Sem nome';
 };
@@ -42,6 +26,13 @@ interface ClientFormProps {
 
 const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
   const weapons = useProductionStore((state) => state.weapons);
+  const weaponCategories = useProductionStore((state) => state.weaponCategories);
+  const caliberOptions = useProductionStore((state) => state.calibers);
+  const dominantHandOptions = useProductionStore((state) => state.dominantHands);
+  const sidePlatesOptions = useProductionStore((state) => state.sidePlates);
+  const ribOptions = useProductionStore((state) => state.ribs);
+  const competitionFrequencyOptions = useProductionStore((state) => state.competitionFrequencies);
+
   const addressData = (client.address as { street?: string; notes?: string }) || {};
   
   const [firstName, setFirstName] = useState(client.first_name || "");
@@ -277,7 +268,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
               <Select value={newWeaponCategory} onValueChange={setNewWeaponCategory}>
                 <SelectTrigger><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
                 <SelectContent>
-                  {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {weaponCategories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -290,21 +281,21 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
                 <Label>Calibre</Label>
                 <Select value={newWeaponCaliber} onValueChange={(v: Caliber) => setNewWeaponCaliber(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{caliberOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{caliberOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Mão</Label>
                 <Select value={newWeaponHand} onValueChange={(v: DominantHand) => setNewWeaponHand(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{dominantHandOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{dominantHandOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Platinas</Label>
                 <Select value={newWeaponPlates} onValueChange={(v: SidePlates) => setNewWeaponPlates(v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{sidePlatesOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                  <SelectContent>{sidePlatesOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
@@ -318,7 +309,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
               <Label>Fita</Label>
               <Select value={newWeaponRib} onValueChange={(v: Rib) => setNewWeaponRib(v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{ribOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                <SelectContent>{ribOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
@@ -329,7 +320,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
               <Label>Frequência</Label>
               <Select value={newWeaponFreq} onValueChange={(v: CompetitionFrequency) => setNewWeaponFreq(v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{competitionFrequencyOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                <SelectContent>{competitionFrequencyOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="flex justify-end gap-2 pt-4">
@@ -348,6 +339,11 @@ const EditClient = () => {
   const navigate = useNavigate();
   const clients = useProductionStore((state) => state.clients);
   const updateClient = useProductionStore((state) => state.updateClient);
+  const fetchDropdowns = useProductionStore((state) => state.fetchDropdowns);
+
+  useEffect(() => {
+    fetchDropdowns();
+  }, [fetchDropdowns]);
 
   const client = clients.find((c) => c.id === id);
 

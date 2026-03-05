@@ -7,28 +7,22 @@ import { Label } from "@/components/ui/label";
 import { useProductionStore } from "@/lib/store";
 import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const caliberOptions: Caliber[] = ['12', '16', '20', '28', '410'];
-const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
-const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
-const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
-const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
-const weaponCategories = [
-  'Platina L – IV',
-  'Platina D – IF',
-  'Platina SO',
-  'Meia Platina',
-  'Semi Automática',
-  'Carabina',
-  'Carabina 2',
-  'Ergonómica'
-];
 
 const NewWeapon = () => {
   const navigate = useNavigate();
   const addWeapon = useProductionStore((state) => state.addWeapon);
+  const fetchDropdowns = useProductionStore((state) => state.fetchDropdowns);
+  
+  const weaponCategories = useProductionStore((state) => state.weaponCategories);
+  const caliberOptions = useProductionStore((state) => state.calibers);
+  const dominantHandOptions = useProductionStore((state) => state.dominantHands);
+  const sidePlatesOptions = useProductionStore((state) => state.sidePlates);
+  const ribOptions = useProductionStore((state) => state.ribs);
+  const competitionFrequencyOptions = useProductionStore((state) => state.competitionFrequencies);
+
+  useEffect(() => { fetchDropdowns(); }, [fetchDropdowns]);
 
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
@@ -108,7 +102,7 @@ const NewWeapon = () => {
                     <Select onValueChange={setCategory} value={category}>
                       <SelectTrigger id="weapon-category"><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
                       <SelectContent>
-                        {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        {weaponCategories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -124,7 +118,7 @@ const NewWeapon = () => {
                     <Select onValueChange={(v) => setCaliber(v as Caliber)} value={caliber}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {caliberOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                        {caliberOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -133,7 +127,7 @@ const NewWeapon = () => {
                     <Select onValueChange={(v) => setDominantHand(v as DominantHand)} value={dominantHand}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {dominantHandOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                        {dominantHandOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -142,7 +136,7 @@ const NewWeapon = () => {
                     <Select onValueChange={(v) => setSidePlates(v as SidePlates)} value={sidePlates}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {sidePlatesOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                        {sidePlatesOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -173,7 +167,7 @@ const NewWeapon = () => {
                     <Select onValueChange={(v) => setRib(v as Rib)} value={rib}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {ribOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                        {ribOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
@@ -186,7 +180,7 @@ const NewWeapon = () => {
                     <Select onValueChange={(v) => setCompetitionFrequency(v as CompetitionFrequency)} value={competitionFrequency}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        {competitionFrequencyOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                        {competitionFrequencyOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>

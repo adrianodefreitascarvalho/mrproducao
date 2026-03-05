@@ -11,22 +11,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
-const caliberOptions: Caliber[] = ['12', '16', '20', '28', '410'];
-const dominantHandOptions: DominantHand[] = ['Direita', 'Esquerda'];
-const sidePlatesOptions: SidePlates[] = ['Inteiras', 'Inteiras falsas', 'Meias'];
-const ribOptions: Rib[] = ['Alta', 'Media', 'Baixa', 'Rasa', 'Ajustável'];
-const competitionFrequencyOptions: CompetitionFrequency[] = ['Não Frequente', 'Frequente', 'Intensiva', 'Profissional'];
-const weaponCategories = [
-  'Platina L – IV',
-  'Platina D – IF',
-  'Platina SO',
-  'Meia Platina',
-  'Semi Automática',
-  'Carabina',
-  'Carabina 2',
-  'Ergonómica'
-];
-
 interface WeaponFormProps {
   weapon: Weapon;
   onSave: (data: Omit<Weapon, 'id'>) => void;
@@ -34,6 +18,13 @@ interface WeaponFormProps {
 }
 
 const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
+  const weaponCategories = useProductionStore((state) => state.weaponCategories);
+  const caliberOptions = useProductionStore((state) => state.calibers);
+  const dominantHandOptions = useProductionStore((state) => state.dominantHands);
+  const sidePlatesOptions = useProductionStore((state) => state.sidePlates);
+  const ribOptions = useProductionStore((state) => state.ribs);
+  const competitionFrequencyOptions = useProductionStore((state) => state.competitionFrequencies);
+
   const [brand, setBrand] = useState(weapon.brand);
   const [model, setModel] = useState(weapon.model); 
   const [category, setCategory] = useState(weapon.category || "");
@@ -115,7 +106,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Select onValueChange={setCategory} value={category}>
                 <SelectTrigger id="weapon-category"><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
                 <SelectContent>
-                  {weaponCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {weaponCategories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -131,7 +122,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Select onValueChange={(v) => setCaliber(v as Caliber)} value={caliber}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {caliberOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  {caliberOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -140,7 +131,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Select onValueChange={(v) => setDominantHand(v as DominantHand)} value={dominantHand}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {dominantHandOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  {dominantHandOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -149,7 +140,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Select onValueChange={(v) => setSidePlates(v as SidePlates)} value={sidePlates}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {sidePlatesOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  {sidePlatesOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -180,7 +171,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Select onValueChange={(v) => setRib(v as Rib)} value={rib}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {ribOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  {ribOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -193,7 +184,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Select onValueChange={(v) => setCompetitionFrequency(v as CompetitionFrequency)} value={competitionFrequency}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {competitionFrequencyOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  {competitionFrequencyOptions.map(o => <SelectItem key={o.id} value={o.name}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -218,6 +209,7 @@ const EditWeapon = () => {
 
   const weapons = useProductionStore((state) => state.weapons);
   const updateWeapon = useProductionStore((state) => state.updateWeapon);
+  const fetchDropdowns = useProductionStore((state) => state.fetchDropdowns);
 
   const weaponToEdit = useMemo(
     () => weapons.find((w) => w.id === id),
@@ -225,10 +217,11 @@ const EditWeapon = () => {
   );
 
   useEffect(() => {
+    fetchDropdowns();
     if (!weaponToEdit) {
       navigate("/weapons");
     }
-  }, [weaponToEdit, navigate]);
+  }, [weaponToEdit, navigate, fetchDropdowns]);
 
   const handleSave = async (data: Omit<Weapon, 'id'>) => {
     if (id) {

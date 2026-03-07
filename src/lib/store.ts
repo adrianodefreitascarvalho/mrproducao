@@ -159,7 +159,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
           .select('*')
           .order('created_at', { ascending: false });
         if (error) {
-          console.error('Erro ao buscar encomendas para liberação:', error);
+          console.error('Erro ao buscar encomendas para libertação:', error);
           set({ isLoadingReleaseOrders: false });
           return;
         }
@@ -329,7 +329,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         const { data, error } = await supabase.from('products').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating product:', error);
-          toast.error('Erro ao atualizar o produto', {
+          toast.error('Erro ao actualizar o produto', {
             description: getSafeErrorMessage(error, 'Product update'),
           });
           return;
@@ -338,7 +338,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
           set((state) => ({
             products: state.products.map((p) => (p.id === id ? (data as Product) : p)),
           }));
-          toast.success('Produto atualizado com sucesso!');
+          toast.success('Produto actualizado com sucesso!');
         }
       },
 
@@ -393,20 +393,20 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
           if (!retry.error) {
             data = retry.data;
             error = null;
-            toast.warning('Arma atualizada, mas a categoria não foi salva (coluna em falta na BD).');
+            toast.warning('Arma actualizada, mas a categoria não foi salva (coluna em falta na BD).');
           }
         }
 
         if (error) {
           console.error('Error updating weapon:', error);
-          toast.error('Erro ao atualizar arma', { description: getSafeErrorMessage(error, 'Weapon update') });
+          toast.error('Erro ao actualizar arma', { description: getSafeErrorMessage(error, 'Weapon update') });
           return;
         }
         if (data) {
           set((state) => ({
             weapons: state.weapons.map((w) => (w.id === id ? (data as Weapon) : w)),
           }));
-          toast.success('Arma atualizada com sucesso!');
+          toast.success('Arma actualizada com sucesso!');
         }
       },
 
@@ -456,7 +456,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         const { data, error } = await supabase.from('clients').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating client:', error.message);
-          toast.error('Erro ao atualizar cliente', { description: getSafeErrorMessage(error, 'Client update') });
+          toast.error('Erro ao actualizar cliente', { description: getSafeErrorMessage(error, 'Client update') });
           return;
         }
 
@@ -478,7 +478,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
             const { error: insertError } = await supabase.from('client_weapons').insert(clientWeapons);
             if (insertError) {
               console.error('Error updating client weapons:', insertError.message);
-              toast.error('Cliente atualizado, mas erro ao atualizar armas', { description: insertError.message });
+              toast.error('Cliente actualizado, mas erro ao actualizar armas', { description: insertError.message });
             }
           }
         }
@@ -487,7 +487,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
           set((state) => ({
             clients: state.clients.map((c) => (c.id === id ? (data as Client) : c)),
           }));
-          toast.success('Cliente atualizado com sucesso!');
+          toast.success('Cliente actualizado com sucesso!');
         }
       },
 
@@ -555,7 +555,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao atualizar ordem de produção:', error.message);
+      console.error('Erro ao actualizar ordem de produção:', error.message);
       return;
     }
     if (data) {
@@ -620,7 +620,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       .single();
 
     if (error) {
-      console.error('Erro ao criar encomenda para liberação:', error.message);
+      console.error('Erro ao criar encomenda para libertação:', error.message);
       return;
     }
     set((state) => ({ releaseOrders: [data as ReleaseOrder, ...state.releaseOrders] }));
@@ -654,7 +654,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         releaseOrders: state.releaseOrders.map((p) => (p.id === id ? (data as ReleaseOrder) : p)),
       }));
     } catch (error) {
-      console.error('Erro ao liberar encomenda para produção:', (error as Error).message);
+      console.error('Erro ao libertar encomenda para produção:', (error as Error).message);
       // TODO: Add user feedback for the error
     }
   },

@@ -2,7 +2,8 @@
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category text;
 ALTER TABLE public.weapons ADD COLUMN IF NOT EXISTS category text;
 
--- Atualizar categorias na tabela de produtos
+-- Atualizar categori
+as na tabela de produtos
 UPDATE public.products SET category = 'Platinas L_IV' WHERE category = 'Platinas L - IV' OR category = 'Platinas L – IV';
 UPDATE public.products SET category = 'Platinas D_IF' WHERE category = 'Platinas D - IF' OR category = 'Platinas D – IF';
 UPDATE public.products SET category = 'Meias Platinas' WHERE category = 'Meia Platina';

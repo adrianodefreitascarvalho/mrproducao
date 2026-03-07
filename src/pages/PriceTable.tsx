@@ -223,7 +223,7 @@ const PriceTable = () => {
         }
       } catch (error) {
         console.error("Erro ao importar o ficheiro:", error);
-        alert("Ocorreu um erro ao processar o ficheiro. Verifique se o formato está correto.");
+        alert("Ocorreu um erro ao processar o ficheiro. Verifique se o formato está correcto.");
       } finally {
         setIsLoading(false);
       }

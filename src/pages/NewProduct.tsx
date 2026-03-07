@@ -61,7 +61,7 @@ const NewProduct = () => {
         .replace(/meias/g, 'meia')
         .replace(/automaticas/g, 'automatica')
         .replace(/carabinas/g, 'carabina')
-        .replace(/ergonomicas/g, 'ergonomica')
+        .replace(/ergonomicas/g, 'ergonómica')
         .replace(/[^a-z0-9]/g, '');
     };
 
@@ -97,7 +97,7 @@ const NewProduct = () => {
     const item = filteredItems.find(i => i.description === value);
     if (item) {
       setName(item.description);
-      setDescription(`Produto selecionado da tabela ${item.tableName}. Preço Base: ${item.price}€`);
+      setDescription(`Produto seleccionado da tabela ${item.tableName}. Preço Base: ${item.price}€`);
     }
   };
 
@@ -128,7 +128,7 @@ const NewProduct = () => {
                   <Label htmlFor="category">Categoria de Arma</Label>
                   <Select onValueChange={setCategory} value={category}>
                     <SelectTrigger id="category">
-                      <SelectValue placeholder="Selecione a categoria" />
+                      <SelectValue placeholder="Seleccione a categoria" />
                     </SelectTrigger>
                     <SelectContent>
                       {weaponCategories.map((cat) => (
@@ -143,7 +143,7 @@ const NewProduct = () => {
                     <Label htmlFor="product-type">Tipo de Produto</Label>
                     <Select onValueChange={setProductType} value={productType} required>
                       <SelectTrigger id="product-type">
-                        <SelectValue placeholder="Selecione o tipo" />
+                        <SelectValue placeholder="Seleccione o tipo" />
                       </SelectTrigger>
                       <SelectContent>
                         {productTypes.map((type) => (
@@ -158,7 +158,7 @@ const NewProduct = () => {
                       <Label htmlFor="wood-grade">Tipo de Madeira</Label>
                       <Select onValueChange={setWoodGrade} value={woodGrade}>
                         <SelectTrigger id="wood-grade">
-                          <SelectValue placeholder="Selecione o tipo de madeira" />
+                          <SelectValue placeholder="Seleccione o tipo de madeira" />
                         </SelectTrigger>
                         <SelectContent>
                           {woodGrades.map((grade) => (
@@ -175,7 +175,7 @@ const NewProduct = () => {
                     <Label htmlFor="price-item">Selecionar Produto da Tabela de Preços</Label>
                     <Select onValueChange={handlePriceItemChange} value={selectedPriceItem}>
                       <SelectTrigger id="price-item">
-                        <SelectValue placeholder="Selecione um produto..." />
+                        <SelectValue placeholder="Seleccione um produto..." />
                       </SelectTrigger>
                       <SelectContent>
                         {filteredItems.map((item, idx) => (

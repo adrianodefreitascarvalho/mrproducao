@@ -47,13 +47,17 @@ export default function Reports() {
           Voltar para Produção
         </Button>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ProductionChart />
-
+          <div className="bg-card rounded-lg border border-border p-5">
+            <h3 className="font-semibold text-foreground mb-4">
+              Produção ao Longo do Tempo
+            </h3>
+            <div className="h-72"><ProductionChart /></div>
+          </div>
           <div className="bg-card rounded-lg border border-border p-5">
             <h3 className="font-semibold text-foreground mb-4">
               Estado das Ordens
             </h3>
-            <div className="h-62.5">
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -95,7 +99,7 @@ export default function Reports() {
           <h3 className="font-semibold text-foreground mb-4">
             Ordens por Posto de Trabalho
           </h3>
-          <div className="h-75">
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useProductionStore, type Client } from "@/lib/store";
@@ -45,6 +46,15 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
   const [selectedWeaponToAdd, setSelectedWeaponToAdd] = useState("");
   const [currentIdNumber, setCurrentIdNumber] = useState("");
 
+  // Shooter Profile State
+  const [dominantHand, setDominantHand] = useState("");
+  const [dominantEye, setDominantEye] = useState("");
+  const [glasses, setGlasses] = useState(false);
+  const [shootingVision, setShootingVision] = useState("");
+  const [shootingDiscipline, setShootingDiscipline] = useState("");
+  const [practiceFrequence, setPracticeFrequence] = useState("");
+  const [competitionFrequence, setCompetitionFrequence] = useState("");
+
   // State for new weapon form
   const [isNewWeaponOpen, setIsNewWeaponOpen] = useState(false);
   const addWeapon = useProductionStore((state) => state.addWeapon);
@@ -64,6 +74,25 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
   const [newWeaponFreq, setNewWeaponFreq] = useState<CompetitionFrequency>('Não Frequente');
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase.from('shooter_profiles') as any)
+        .select('*')
+        .eq('client_id', client.id)
+        .maybeSingle();
+      
+      if (data) {
+        setDominantHand(data.dominant_hand || "");
+        setDominantEye(data.dominant_eye || "");
+        setGlasses(data.glasses || false);
+        setShootingVision(data.shooting_vision || "");
+        setShootingDiscipline(data.shooting_discipline || "");
+        setPracticeFrequence(data.practice_frequence || "");
+        setCompetitionFrequence(data.competition_frequence || "");
+      }
+    };
+    fetchProfile();
+
     const fetchWeapons = async () => {
       const { data, error } = await supabase
         .from('client_weapons')
@@ -95,9 +124,23 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
     setClientWeapons(clientWeapons.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName.trim() && !lastName.trim()) return;
+
+    // Update shooter profile
+    const profileData = {
+      client_id: client.id,
+      dominant_hand: dominantHand,
+      dominant_eye: dominantEye,
+      glasses: glasses,
+      shooting_vision: shootingVision,
+      shooting_discipline: shootingDiscipline,
+      practice_frequence: practiceFrequence,
+      competition_frequence: competitionFrequence
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('shooter_profiles') as any).upsert(profileData, { onConflict: 'client_id' });
 
     onSave({
       ...client,
@@ -191,6 +234,59 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
           <div className="space-y-2">
             <Label htmlFor="notes">Observações</Label>
             <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+          </div>
+
+          <div className="space-y-4 border rounded-md p-4 bg-muted/10">
+            <Label className="text-base font-semibold">Perfil de Atirador</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dominantHand">Mão Dominante</Label>
+                <Select value={dominantHand} onValueChange={setDominantHand}>
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Direita">Direita</SelectItem>
+                    <SelectItem value="Esquerda">Esquerda</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dominantEye">Olho Dominante</Label>
+                <Select value={dominantEye} onValueChange={setDominantEye}>
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Direito">Direito</SelectItem>
+                    <SelectItem value="Esquerdo">Esquerdo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2 flex items-center gap-2 pt-6">
+                <Checkbox id="glasses" checked={glasses} onCheckedChange={(c) => setGlasses(!!c)} />
+                <Label htmlFor="glasses" className="cursor-pointer">Usa Óculos</Label>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shootingVision">Visão de Tiro</Label>
+                <Input id="shootingVision" value={shootingVision} onChange={(e) => setShootingVision(e.target.value)} placeholder="Ex: Correção astigmatismo" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shootingDiscipline">Disciplina de Tiro</Label>
+                <Input id="shootingDiscipline" value={shootingDiscipline} onChange={(e) => setShootingDiscipline(e.target.value)} placeholder="Ex: Fosso Olímpico" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="practiceFrequence">Frequência de Prática</Label>
+                <Select value={practiceFrequence} onValueChange={setPracticeFrequence}>
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Semanal">Semanal</SelectItem>
+                    <SelectItem value="Mensal">Mensal</SelectItem>
+                    <SelectItem value="Ocasional">Ocasional</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="competitionFrequence">Frequência de Competição</Label>
+                <Input id="competitionFrequence" value={competitionFrequence} onChange={(e) => setCompetitionFrequence(e.target.value)} placeholder="Ex: Nacional, Internacional" />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-4 border rounded-md p-4 bg-muted/10">

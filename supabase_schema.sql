@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS public.clients (
     email TEXT,
     phone TEXT,
     nif TEXT,
-    address JSONB,
+    addresses JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
@@ -78,3 +78,43 @@ WHERE NOT EXISTS (SELECT 1 FROM public.clients WHERE first_name = 'Cliente' AND 
 
 -- Adicionar coluna de categoria à tabela de produtos
 ALTER TABLE public.products ADD COLUMN IF NOT EXISTS category TEXT;
+
+-- Criação da tabela contacts (Contactos)
+CREATE TABLE IF NOT EXISTS public.contacts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    first_name TEXT,
+    last_name TEXT,
+    email TEXT,
+    phone TEXT,
+    nif TEXT,
+    address JSONB,
+    hearaboutus TEXT,
+    created TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    updated TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
+ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a contacts" ON public.contacts FOR ALL USING (true);
+
+-- Criação da tabela shooter_profiles (Perfil de Atirador)
+CREATE TABLE IF NOT EXISTS public.shooter_profiles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    contact_id UUID REFERENCES public.contacts(id) ON DELETE CASCADE,
+    dominant_hand TEXT,
+    dominant_eye TEXT,
+    glasses BOOLEAN DEFAULT false,
+    shooting_vision TEXT,
+    shooting_discipline TEXT,
+    practice_frequence TEXT,
+    competition_frequence TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    CONSTRAINT one_owner_check CHECK (
+        (client_id IS NOT NULL AND contact_id IS NULL) OR
+        (client_id IS NULL AND contact_id IS NOT NULL)
+    )
+);
+
+ALTER TABLE public.shooter_profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a shooter_profiles" ON public.shooter_profiles FOR ALL USING (true);

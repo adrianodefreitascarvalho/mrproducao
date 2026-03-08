@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useProductionStore } from "@/lib/store";
 import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
@@ -12,6 +13,7 @@ import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 const NewClient = () => {
   const navigate = useNavigate();
@@ -37,6 +39,15 @@ const NewClient = () => {
   const [currentIdNumber, setCurrentIdNumber] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+
+  // Shooter Profile State
+  const [dominantHand, setDominantHand] = useState("");
+  const [dominantEye, setDominantEye] = useState("");
+  const [glasses, setGlasses] = useState(false);
+  const [shootingVision, setShootingVision] = useState("");
+  const [shootingDiscipline, setShootingDiscipline] = useState("");
+  const [practiceFrequence, setPracticeFrequence] = useState("");
+  const [competitionFrequence, setCompetitionFrequence] = useState("");
 
   // State for new weapon form
   const [isNewWeaponOpen, setIsNewWeaponOpen] = useState(false);
@@ -71,13 +82,31 @@ const NewClient = () => {
     e.preventDefault();
     if (!firstName.trim() && !lastName.trim()) return;
     
-    await addClient({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newClient: any = await addClient({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
       email: email.trim() || null,
       phone: phone.trim() || null,
       address: { street: address.trim(), notes: notes.trim() },
     }, selectedWeapons);
+
+    if (newClient && newClient.id) {
+      // Create shooter profile
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from('shooter_profiles') as any).insert({
+        client_id: newClient.id,
+        dominant_hand: dominantHand,
+        dominant_eye: dominantEye,
+        glasses: glasses,
+        shooting_vision: shootingVision,
+        shooting_discipline: shootingDiscipline,
+        practice_frequence: practiceFrequence,
+        competition_frequence: competitionFrequence
+      });
+      if (error) console.error("Erro ao criar perfil de atirador:", error);
+    }
+
     navigate("/clients");
   };
 
@@ -173,6 +202,59 @@ const NewClient = () => {
                 <div className="space-y-2">
                   <Label htmlFor="notes">Observações</Label>
                   <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+                </div>
+
+                <div className="space-y-4 border rounded-md p-4 bg-muted/10">
+                  <Label className="text-base font-semibold">Perfil de Atirador</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dominantHand">Mão Dominante</Label>
+                      <Select value={dominantHand} onValueChange={setDominantHand}>
+                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Direita">Direita</SelectItem>
+                          <SelectItem value="Esquerda">Esquerda</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dominantEye">Olho Dominante</Label>
+                      <Select value={dominantEye} onValueChange={setDominantEye}>
+                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Direito">Direito</SelectItem>
+                          <SelectItem value="Esquerdo">Esquerdo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2 flex items-center gap-2 pt-6">
+                      <Checkbox id="glasses" checked={glasses} onCheckedChange={(c) => setGlasses(!!c)} />
+                      <Label htmlFor="glasses" className="cursor-pointer">Usa Óculos</Label>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="shootingVision">Visão de Tiro</Label>
+                      <Input id="shootingVision" value={shootingVision} onChange={(e) => setShootingVision(e.target.value)} placeholder="Ex: Correção astigmatismo" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="shootingDiscipline">Disciplina de Tiro</Label>
+                      <Input id="shootingDiscipline" value={shootingDiscipline} onChange={(e) => setShootingDiscipline(e.target.value)} placeholder="Ex: Fosso Olímpico" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="practiceFrequence">Frequência de Prática</Label>
+                      <Select value={practiceFrequence} onValueChange={setPracticeFrequence}>
+                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Semanal">Semanal</SelectItem>
+                          <SelectItem value="Mensal">Mensal</SelectItem>
+                          <SelectItem value="Ocasional">Ocasional</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="competitionFrequence">Frequência de Competição</Label>
+                      <Input id="competitionFrequence" value={competitionFrequence} onChange={(e) => setCompetitionFrequence(e.target.value)} placeholder="Ex: Nacional, Internacional" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4 border rounded-md p-4 bg-muted/10">

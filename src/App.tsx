@@ -28,6 +28,9 @@ import EditWeapon from "./pages/EditWeapon.tsx";
 import Clients from "./pages/Clients";
 import NewClient from "./pages/NewClient";
 import EditClient from "./pages/EditClient";
+import Contacts from "./pages/Contacts";
+import NewContact from "./pages/NewContact";
+import EditContact from "./pages/EditContact";
 import Reports from "./pages/Reports";
 import WoodStock from "./pages/WoodStock";
 import PriceTablesPage from "./pages/PriceTable.tsx";
@@ -117,6 +120,9 @@ const App = () => {
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/clients/new" element={<NewClient />} />
                 <Route path="/clients/edit/:id" element={<EditClient />} />
+                <Route path="/contacts" element={<Contacts />} />
+                <Route path="/contacts/new" element={<NewContact />} />
+                <Route path="/contacts/edit/:id" element={<EditContact />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/woodstock" element={<WoodStock />} />
                 <Route path="/price-tables" element={<PriceTablesPage />} />

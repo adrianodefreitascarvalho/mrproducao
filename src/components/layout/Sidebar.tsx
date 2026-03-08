@@ -15,6 +15,7 @@ import {
   Crosshair,
   TreePine,
   Users,
+  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Dashboard Integrado", href: "/dashboard", icon: BarChart3 },
   { name: "Armas", href: "/weapons", icon: Crosshair }, 
   { name: "Clientes", href: "/clients", icon: Users },
+  { name: "Contactos", href: "/contacts", icon: Phone },
   { name: "Madeiras", href: "/woodstock", icon: TreePine },
   { name: "Produtos", href: "/products", icon: Package },
   { name: "Tabelas de Preços", href: "/price-tables", icon: Tags },
@@ -63,7 +65,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = location.pathname === item.href;
           return (

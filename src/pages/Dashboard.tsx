@@ -76,7 +76,12 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ProductionChart />
+          <div className="bg-card rounded-lg border border-border p-5">
+            <h3 className="font-semibold text-foreground mb-4">
+              Produção ao Longo do Tempo
+            </h3>
+            <div className="h-72"><ProductionChart /></div>
+          </div>
           <div className="bg-card rounded-lg border border-border p-5">
             <div className="flex items-center justify-between mb-4">
               <div>

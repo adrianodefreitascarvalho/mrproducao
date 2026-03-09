@@ -77,6 +77,10 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
     return results.sort((a, b) => a.description.localeCompare(b.description));
   }, [priceTables, productType]);
 
+  const initialSelectedItem = useMemo(() => {
+    return filteredItems.find(item => item.description === product.name)?.description;
+  }, [filteredItems, product.name]);
+
   const handlePriceItemChange = (value: string) => {
     setSelectedPriceItem(value);
     const item = filteredItems.find(i => i.description === value);
@@ -131,7 +135,7 @@ const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => {
           {filteredItems.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="price-item">Selecionar Produto da Tabela de Preços</Label>
-              <Select onValueChange={handlePriceItemChange} value={selectedPriceItem}>
+              <Select onValueChange={handlePriceItemChange} value={selectedPriceItem || initialSelectedItem || ""}>
                 <SelectTrigger id="price-item">
                   <SelectValue placeholder="Selecione um produto..." />
                 </SelectTrigger>

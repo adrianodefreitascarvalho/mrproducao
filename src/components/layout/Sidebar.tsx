@@ -17,16 +17,35 @@ import {
   Users,
   Phone,
   UserCog,
+  Ruler,
+  ChevronDown,
+  LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const navigation = [
+type NavigationItem = {
+  name: string;
+  href?: string;
+  icon: LucideIcon;
+  children?: { name: string; href: string }[];
+};
+
+const navigation: NavigationItem[] = [
   { name: "Início", href: "/", icon: LayoutDashboard },
   { name: "Dashboard Integrado", href: "/dashboard", icon: BarChart3 },
   { name: "Contactos", href: "/contacts", icon: Phone },
   { name: "Armas", href: "/weapons", icon: Crosshair }, 
   { name: "Clientes", href: "/clients", icon: Users },
+  {
+    name: "Fittings",
+    icon: Ruler,
+    children: [
+      { name: "Gunstock Dimensions", href: "/fittings/gunstock" },
+      { name: "Body Measurements", href: "/fittings/body" },
+      { name: "Forehand Dimensions", href: "/fittings/forehand" },
+    ],
+  },
   { name: "Madeiras", href: "/woodstock", icon: TreePine },
   { name: "Produtos", href: "/products", icon: Package },
   { name: "Tabelas de Preços", href: "/price-tables", icon: Tags },
@@ -41,6 +60,30 @@ const navigation = [
 export function Sidebar() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([]);
+
+  useEffect(() => {
+    const activeParent = navigation.find((item) =>
+      item.children?.some((child) => location.pathname.startsWith(child.href))
+    );
+    if (activeParent) {
+      // Adiciona o menu pai à lista de menus expandidos se ainda não estiver lá.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setExpandedMenus((prev) => {
+        if (prev.includes(activeParent.name)) {
+          return prev;
+        }
+        return [...prev, activeParent.name];
+      });
+    }
+  }, [location.pathname]);
+
+  const toggleMenu = (name: string) => {
+    if (collapsed) setCollapsed(false);
+    setExpandedMenus((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
+    );
+  };
 
   return (
     <aside
@@ -69,11 +112,60 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
+          if (item.children) {
+            const isExpanded = expandedMenus.includes(item.name);
+            const isChildActive = item.children.some(
+              (child) => location.pathname.startsWith(child.href)
+            );
+
+            return (
+              <div key={item.name}>
+                <button
+                  onClick={() => toggleMenu(item.name)}
+                  className={cn(
+                    "sidebar-item w-full justify-between",
+                    isChildActive && "text-primary"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon className="w-5 h-5 shrink-0" />
+                    {!collapsed && <span>{item.name}</span>}
+                  </div>
+                  {!collapsed && (
+                    <ChevronDown
+                      className={cn(
+                        "w-4 h-4 transition-transform",
+                        isExpanded && "rotate-180"
+                      )}
+                    />
+                  )}
+                </button>
+                {!collapsed && isExpanded && (
+                  <div className="mt-1 space-y-1">
+                    {item.children.map((child) => (
+                      <NavLink
+                        key={child.name}
+                        to={child.href}
+                        className={cn(
+                          "sidebar-item pl-11 h-9",
+                          location.pathname.startsWith(child.href) &&
+                            "sidebar-item-active"
+                        )}
+                      >
+                        <span>{child.name}</span>
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
           const isActive = location.pathname === item.href;
           return (
             <NavLink
               key={item.name}
-              to={item.href}
+              to={item.href!}
               className={cn(
                 "sidebar-item",
                 isActive && "sidebar-item-active"

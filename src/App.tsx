@@ -39,6 +39,9 @@ import Users from "./pages/Users";
 import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import GunstockDimensions from "./pages/Fittings/GunstockDimensions";
+import BodyMeasurements from "./pages/Fittings/BodyMeasurements";
+import ForehandDimensions from "./pages/Fittings/ForehandDimensions";
 
 const queryClient = new QueryClient();
 
@@ -132,6 +135,9 @@ const App = () => {
                 <Route path="/users" element={<Users />} />
                 <Route path="/users/edit/:id" element={<EditUser />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/fittings/gunstock" element={<GunstockDimensions />} />
+                <Route path="/fittings/body" element={<BodyMeasurements />} />
+                <Route path="/fittings/forehand" element={<ForehandDimensions />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

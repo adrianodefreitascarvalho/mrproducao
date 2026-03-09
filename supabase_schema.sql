@@ -118,3 +118,106 @@ CREATE TABLE IF NOT EXISTS public.shooter_profiles (
 
 ALTER TABLE public.shooter_profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Acesso total a shooter_profiles" ON public.shooter_profiles FOR ALL USING (true);
+
+-- Criação da tabela gunstock_dimensions
+CREATE TABLE IF NOT EXISTS public.gunstock_dimensions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id TEXT REFERENCES public.production_orders(id) ON DELETE SET NULL,
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    weapon_id UUID, -- FK para weapons(id) pode ser adicionada quando a tabela for formalmente definida no schema
+    
+    gunstock_measurements NUMERIC(10, 2),
+    gunstock_measurements2 NUMERIC(10, 2),
+    gunstock_measurements3 NUMERIC(10, 2),
+    gunstock_measurements4 NUMERIC(10, 2),
+    gunstock_measurements5 NUMERIC(10, 2),
+    gunstock_measurements6 NUMERIC(10, 2),
+    gunstock_measurements7 NUMERIC(10, 2),
+    
+    gunstock_cast_on1 NUMERIC(10, 2),
+    gunstock_cast_on2 NUMERIC(10, 2),
+    gunstock_cast_on3 NUMERIC(10, 2),
+    gunstock_cast_on4 NUMERIC(10, 2),
+
+    gunstock_cast_off1 NUMERIC(10, 2),
+    gunstock_cast_off2 NUMERIC(10, 2),
+    gunstock_cast_off3 NUMERIC(10, 2),
+    gunstock_cast_off4 NUMERIC(10, 2),
+
+    gunstock_width1 NUMERIC(10, 2),
+    gunstock_width2 NUMERIC(10, 2),
+    gunstock_width3 NUMERIC(10, 2),
+
+    gunstock_recoil_pad1 NUMERIC(10, 2),
+    gunstock_recoil_pad2 NUMERIC(10, 2),
+    gunstock_recoil_pad3 NUMERIC(10, 2),
+
+    units TEXT DEFAULT 'cm' CHECK (units IN ('cm', 'inches')),
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.gunstock_dimensions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a gunstock_dimensions" ON public.gunstock_dimensions FOR ALL USING (true);
+
+-- Criação da tabela body_measurements
+CREATE TABLE IF NOT EXISTS public.body_measurements (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id TEXT REFERENCES public.production_orders(id) ON DELETE SET NULL,
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    weapon_id UUID,
+    
+    body_measurements_open_palm1 NUMERIC(10, 2),
+    body_measurements_open_palm2 NUMERIC(10, 2),
+    body_measurements_open_palm3 NUMERIC(10, 2),
+    body_measurements_open_palm4 NUMERIC(10, 2),
+    body_measurements_open_palm5 NUMERIC(10, 2),
+    body_measurements_open_palm6 NUMERIC(10, 2),
+
+    body_measurements_body1 NUMERIC(10, 2),
+    body_measurements_body2 NUMERIC(10, 2),
+    body_measurements_body3 NUMERIC(10, 2),
+
+    body_measurements_weight NUMERIC(10, 2),
+    body_measurements_age NUMERIC(10, 2),
+
+    body_measurements_hand_in_position1 NUMERIC(10, 2),
+    body_measurements_hand_in_position2 NUMERIC(10, 2),
+    body_measurements_hand_in_position3 NUMERIC(10, 2),
+
+    body_measurements_between_hands NUMERIC(10, 2),
+
+    units TEXT DEFAULT 'cm' CHECK (units IN ('cm', 'inches')),
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.body_measurements ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a body_measurements" ON public.body_measurements FOR ALL USING (true);
+
+-- Criação da tabela forehand_dimensions
+CREATE TABLE IF NOT EXISTS public.forehand_dimensions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id TEXT REFERENCES public.production_orders(id) ON DELETE SET NULL,
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    weapon_id UUID,
+    
+    forehand_dimensions_top_view1 NUMERIC(10, 2),
+    forehand_dimensions_top_view2 NUMERIC(10, 2),
+    forehand_dimensions_top_view3 NUMERIC(10, 2),
+    
+    forehand_dimensions_side_view4 NUMERIC(10, 2),
+    forehand_dimensions_side_view5 NUMERIC(10, 2),
+    forehand_dimensions_side_view6 NUMERIC(10, 2),
+    forehand_dimensions_side_view7 NUMERIC(10, 2),
+
+    units TEXT DEFAULT 'cm' CHECK (units IN ('cm', 'inches')),
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.forehand_dimensions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a forehand_dimensions" ON public.forehand_dimensions FOR ALL USING (true);

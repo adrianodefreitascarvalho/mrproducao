@@ -14,9 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      calibers: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      client_weapons: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          identification_number: string
+          weapon_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          identification_number: string
+          weapon_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          identification_number?: string
+          weapon_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_weapons_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_weapons_weapon_id_fkey"
+            columns: ["weapon_id"]
+            isOneToOne: false
+            referencedRelation: "weapons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
-          address: Json | null
+          addresses: Json | null
           created_at: string
           email: string | null
           first_name: string | null
@@ -25,7 +82,7 @@ export type Database = {
           phone: string | null
         }
         Insert: {
-          address?: Json | null
+          addresses?: Json | null
           created_at?: string
           email?: string | null
           first_name?: string | null
@@ -34,13 +91,106 @@ export type Database = {
           phone?: string | null
         }
         Update: {
-          address?: Json | null
+          addresses?: Json | null
           created_at?: string
           email?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+        }
+        Relationships: []
+      }
+      competition_frequencies: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          address: Json | null
+          created: string
+          email: string | null
+          first_name: string | null
+          hearaboutus: string | null
+          id: string
+          last_name: string | null
+          nif: string | null
+          phone: string | null
+          updated: string
+        }
+        Insert: {
+          address?: Json | null
+          created?: string
+          email?: string | null
+          first_name?: string | null
+          hearaboutus?: string | null
+          id?: string
+          last_name?: string | null
+          nif?: string | null
+          phone?: string | null
+          updated?: string
+        }
+        Update: {
+          address?: Json | null
+          created?: string
+          email?: string | null
+          first_name?: string | null
+          hearaboutus?: string | null
+          id?: string
+          last_name?: string | null
+          nif?: string | null
+          phone?: string | null
+          updated?: string
+        }
+        Relationships: []
+      }
+      dominant_hands: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      grip_types: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -85,6 +235,38 @@ export type Database = {
           },
         ]
       }
+      price_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          price: number
+          price_table_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          price?: number
+          price_table_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          price?: number
+          price_table_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_items_price_table_id_fkey"
+            columns: ["price_table_id"]
+            isOneToOne: false
+            referencedRelation: "price_tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_tables: {
         Row: {
           id: string
@@ -99,6 +281,24 @@ export type Database = {
         Update: {
           id?: string
           items?: Json | null
+          name?: string
+        }
+        Relationships: []
+      }
+      product_types: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
           name?: string
         }
         Relationships: []
@@ -153,6 +353,7 @@ export type Database = {
       }
       products: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
           id: string
@@ -162,6 +363,7 @@ export type Database = {
           wood_grade: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -171,6 +373,7 @@ export type Database = {
           wood_grade?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -202,6 +405,24 @@ export type Database = {
           id?: string
           items?: Json | null
           status?: string
+        }
+        Relationships: []
+      }
+      ribs: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -291,12 +512,109 @@ export type Database = {
           },
         ]
       }
+      shooter_profiles: {
+        Row: {
+          client_id: string | null
+          competition_frequence: string | null
+          contact_id: string | null
+          created_at: string
+          dominant_eye: string | null
+          dominant_hand: string | null
+          glasses: boolean | null
+          id: string
+          practice_frequence: string | null
+          shooting_discipline: string | null
+          shooting_vision: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          competition_frequence?: string | null
+          contact_id?: string | null
+          created_at?: string
+          dominant_eye?: string | null
+          dominant_hand?: string | null
+          glasses?: boolean | null
+          id?: string
+          practice_frequence?: string | null
+          shooting_discipline?: string | null
+          shooting_vision?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          competition_frequence?: string | null
+          contact_id?: string | null
+          created_at?: string
+          dominant_eye?: string | null
+          dominant_hand?: string | null
+          glasses?: boolean | null
+          id?: string
+          practice_frequence?: string | null
+          shooting_discipline?: string | null
+          shooting_vision?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shooter_profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shooter_profiles_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      side_plates: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      weapon_categories: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       weapons: {
         Row: {
           barrel_length: number
           barrel_weight: number
           brand: string
           caliber: string
+          category: string | null
           competition_frequency: string
           created_at: string
           discipline: string
@@ -314,6 +632,7 @@ export type Database = {
           barrel_weight: number
           brand: string
           caliber: string
+          category?: string | null
           competition_frequency: string
           created_at?: string
           discipline: string
@@ -331,6 +650,7 @@ export type Database = {
           barrel_weight?: number
           brand?: string
           caliber?: string
+          category?: string | null
           competition_frequency?: string
           created_at?: string
           discipline?: string
@@ -342,6 +662,24 @@ export type Database = {
           serial_number?: string
           side_plates?: string
           total_weight?: number
+        }
+        Relationships: []
+      }
+      wood_grades: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
         }
         Relationships: []
       }

@@ -16,6 +16,7 @@ import {
   TreePine,
   Users,
   Phone,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -23,9 +24,9 @@ import { useState } from "react";
 const navigation = [
   { name: "Início", href: "/", icon: LayoutDashboard },
   { name: "Dashboard Integrado", href: "/dashboard", icon: BarChart3 },
+  { name: "Contactos", href: "/contacts", icon: Phone },
   { name: "Armas", href: "/weapons", icon: Crosshair }, 
   { name: "Clientes", href: "/clients", icon: Users },
-  { name: "Contactos", href: "/contacts", icon: Phone },
   { name: "Madeiras", href: "/woodstock", icon: TreePine },
   { name: "Produtos", href: "/products", icon: Package },
   { name: "Tabelas de Preços", href: "/price-tables", icon: Tags },
@@ -34,6 +35,7 @@ const navigation = [
   { name: "Ordens de Produção", href: "/orders", icon: ClipboardList },
   { name: "Postos de Trabalho", href: "/workstations", icon: Factory },
   { name: "Relatórios", href: "/reports", icon: BarChart3 },
+  { name: "Gestão de Utilizadores", href: "/users", icon: UserCog },
 ];
 
 export function Sidebar() {

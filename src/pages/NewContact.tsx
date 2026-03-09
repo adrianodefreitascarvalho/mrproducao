@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useProductionStore } from "@/lib/store";
 
 const NewContact = () => {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ const NewContact = () => {
   const [nif, setNif] = useState("");
   const [address, setAddress] = useState("");
   const [hearAboutUs, setHearAboutUs] = useState("");
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+
+  const addClient = useProductionStore((state) => state.addClient);
 
   // Shooter Profile State
   const [dominantHand, setDominantHand] = useState("");
@@ -33,50 +37,72 @@ const NewContact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!firstName.trim() && !lastName.trim()) return;
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: newContact, error: contactError } = await (supabase.from('contacts') as any).insert({
+    if (!firstName.trim() && !lastName.trim()) {
+      toast.error("O nome próprio ou apelido é obrigatório.");
+      return;
+    }
+
+    const contactPayload = {
       first_name: firstName.trim(),
       last_name: lastName.trim(),
       email: email.trim() || null,
       phone: phone.trim() || null,
       nif: nif.trim() || null,
-      address: { street: address.trim() },
-      hearaboutus: hearAboutUs.trim() || null
-    }).select().single();
+      address: address.trim() ? { street: address.trim() } : null,
+      hearaboutus: hearAboutUs.trim() || null,
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: newContact, error: contactError } = await (supabase.from("contacts") as any)
+      .insert(contactPayload)
+      .select()
+      .single();
 
     if (contactError) {
       toast.error("Erro ao criar contacto");
       console.error(contactError);
       return;
     }
+    if (!newContact) {
+      toast.error("Falha ao criar o contacto. O registo não foi retornado.");
+      return;
+    }
 
-    if (newContact) {
-      // Create shooter profile
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: profileError } = await (supabase.from('shooter_profiles') as any).insert({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: profileError } = await (supabase.from("shooter_profiles") as any)
+      .insert({
         contact_id: newContact.id,
-        dominant_hand: dominantHand,
-        dominant_eye: dominantEye,
+        dominant_hand: dominantHand || null,
+        dominant_eye: dominantEye || null,
         glasses: glasses,
-        shooting_vision: shootingVision,
-        shooting_discipline: shootingDiscipline,
-        practice_frequence: practiceFrequence,
-        competition_frequence: competitionFrequence
+        shooting_vision: shootingVision || null,
+        shooting_discipline: shootingDiscipline || null,
+        practice_frequence: practiceFrequence || null,
+        competition_frequence: competitionFrequence || null,
       });
-      
-      if (profileError) {
-        console.error("Erro ao criar perfil de atirador:", profileError);
-        toast.warning("Contacto criado, mas houve um erro ao salvar o perfil de atirador.");
-      } else {
+
+    if (profileError) {
+      console.error("Erro ao criar perfil de atirador:", profileError);
+      toast.warning(
+        "Contacto criado, mas houve um erro ao salvar o perfil de atirador."
+      );
+    }
+
+    if (isOrderPlaced) {
+      const { hearaboutus, ...clientPayload } = contactPayload;
+      await addClient({
+        ...clientPayload,
+        source_contact_id: newContact.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+    } else {
+      if (!profileError) {
         toast.success("Contacto criado com sucesso!");
       }
     }
 
     navigate("/contacts");
   };
-
   return (
     <div className="flex flex-col h-screen">
       <Header title="Novo Contacto" subtitle="Adicionar um novo contacto (Lead)" />
@@ -125,6 +151,11 @@ const NewContact = () => {
                 <div className="space-y-2">
                   <Label htmlFor="address">Morada</Label>
                   <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox id="order-placed" checked={isOrderPlaced} onCheckedChange={(checked) => setIsOrderPlaced(checked === true)} />
+                  <Label htmlFor="order-placed" className="cursor-pointer">Encomenda colocada (Criar como Cliente)</Label>
                 </div>
 
                 <div className="space-y-4 border rounded-md p-4 bg-muted/10">

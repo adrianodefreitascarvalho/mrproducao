@@ -10,11 +10,13 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
+import { useProductionStore } from "@/lib/store";
 
 const EditContact = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const addClient = useProductionStore((state) => state.addClient);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -23,6 +25,9 @@ const EditContact = () => {
   const [nif, setNif] = useState("");
   const [address, setAddress] = useState("");
   const [hearAboutUs, setHearAboutUs] = useState("");
+
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+  const [isAlreadyClient, setIsAlreadyClient] = useState(false);
 
   // Shooter Profile State
   const [dominantHand, setDominantHand] = useState("");
@@ -49,6 +54,20 @@ const EditContact = () => {
         toast.error("Erro ao carregar contacto");
         navigate("/contacts");
         return;
+      }
+
+      // Check if a client record exists for this contact
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('source_contact_id', id)
+        .maybeSingle();
+
+      if (clientError) {
+        console.error("Error checking for existing client:", clientError);
+      } else if (client) {
+        setIsOrderPlaced(true);
+        setIsAlreadyClient(true);
       }
 
       if (contact) {
@@ -124,7 +143,25 @@ const EditContact = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: profileError } = await (supabase.from('shooter_profiles') as any).upsert(profileData, { onConflict: 'contact_id' });
     
-    if (profileError) {
+    if (isOrderPlaced && !isAlreadyClient) {
+      await addClient({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        nif: nif.trim() || null,
+        address: { street: address.trim() },
+        source_contact_id: id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      toast.success("Contacto actualizado e cliente criado com sucesso!");
+
+      if (profileError) {
+        console.error("Erro ao actualizar perfil de atirador:", profileError);
+        toast.warning("Perfil de atirador não foi salvo.");
+      }
+    } else if (profileError) {
       console.error("Erro ao actualizar perfil de atirador:", profileError);
       toast.warning("Contacto atualizado, mas houve um erro ao salvar o perfil de atirador.");
     } else {
@@ -186,6 +223,22 @@ const EditContact = () => {
                 <div className="space-y-2">
                   <Label htmlFor="address">Morada</Label>
                   <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
+                </div>
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox
+                    id="order-placed"
+                    checked={isOrderPlaced}
+                    onCheckedChange={(checked) => {
+                      if (!isAlreadyClient) {
+                        setIsOrderPlaced(checked === true);
+                      }
+                    }}
+                    disabled={isAlreadyClient}
+                  />
+                  <Label htmlFor="order-placed" className="cursor-pointer">
+                    {isAlreadyClient ? "Este contacto já é um cliente" : "Encomenda colocada (Criar como Cliente)"}
+                  </Label>
                 </div>
 
                 <div className="space-y-4 border rounded-md p-4 bg-muted/10">

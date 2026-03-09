@@ -35,6 +35,8 @@ import Reports from "./pages/Reports";
 import WoodStock from "./pages/WoodStock";
 import PriceTablesPage from "./pages/PriceTable.tsx";
 import SalesOrders from "./pages/SalesOrders";
+import Users from "./pages/Users";
+import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -127,6 +129,8 @@ const App = () => {
                 <Route path="/woodstock" element={<WoodStock />} />
                 <Route path="/price-tables" element={<PriceTablesPage />} />
                 <Route path="/sales-orders" element={<SalesOrders />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/users/edit/:id" element={<EditUser />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />

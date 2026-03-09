@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useProductionStore } from "@/lib/store";
 import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
 import { ArrowLeft } from "lucide-react";
@@ -38,6 +39,7 @@ const NewWeapon = () => {
   const [totalWeight, setTotalWeight] = useState('');
   const [discipline, setDiscipline] = useState('');
   const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency>('Não Frequente');
+  const [observations, setObservations] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +60,10 @@ const NewWeapon = () => {
       rib,
       total_weight: Number(totalWeight),
       discipline: discipline.trim(),
-      competition_frequency: competitionFrequency, 
-    });
+      competition_frequency: competitionFrequency,
+      observations: observations.trim() || null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
     navigate("/weapons"); 
   };
 
@@ -88,7 +92,7 @@ const NewWeapon = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="weapon-brand">Marca</Label>
                     <Input id="weapon-brand" placeholder="Ex: Beretta" value={brand} onChange={(e) => setBrand(e.target.value)} required />
@@ -110,6 +114,11 @@ const NewWeapon = () => {
                     <Label htmlFor="weapon-serial">Número da Arma</Label>
                     <Input id="weapon-serial" placeholder="Ex: A123456" value={serialNumber} onChange={(e) => setSerialNumber(e.target.value)} required />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="weapon-observations">Observações</Label>
+                  <Textarea id="weapon-observations" placeholder="Notas sobre a arma, estado, etc." value={observations} onChange={(e) => setObservations(e.target.value)} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

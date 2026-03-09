@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useProductionStore, type Weapon } from "@/lib/store";
 import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
 import { ArrowLeft } from "lucide-react";
@@ -13,7 +14,7 @@ import { supabase } from "@/lib/supabase";
 
 interface WeaponFormProps {
   weapon: Weapon;
-  onSave: (data: Omit<Weapon, 'id'>) => void;
+  onSave: (data: Partial<Omit<Weapon, 'id' | 'created_at'>>) => void;
   onCancel: () => void;
 }
 
@@ -40,6 +41,8 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
   const [discipline, setDiscipline] = useState(weapon.discipline); 
   const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency>(weapon.competition_frequency as CompetitionFrequency);
   const [clientName, setClientName] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [observations, setObservations] = useState((weapon as any).observations || "");
 
   useEffect(() => {
     const fetchClient = async () => {
@@ -75,8 +78,9 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
       total_weight: Number(totalWeight),
       discipline: discipline.trim(),
       competition_frequency: competitionFrequency,
-      created_at: weapon.created_at,
-    });
+      observations: observations.trim() || null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   };
 
   return (
@@ -92,7 +96,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Input value={clientName} readOnly className="bg-muted" />
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="weapon-brand">Marca</Label>
               <Input id="weapon-brand" value={brand} onChange={(e) => setBrand(e.target.value)} required />
@@ -114,6 +118,11 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
               <Label htmlFor="weapon-serial">Número da Arma</Label>
               <Input id="weapon-serial" value={serialNumber} onChange={(e) => setSerialNumber(e.target.value)} required />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="weapon-observations">Observações</Label>
+            <Textarea id="weapon-observations" placeholder="Notas sobre a arma, estado, etc." value={observations} onChange={(e) => setObservations(e.target.value)} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -223,7 +232,7 @@ const EditWeapon = () => {
     }
   }, [weaponToEdit, navigate, fetchDropdowns]);
 
-  const handleSave = async (data: Omit<Weapon, 'id'>) => {
+  const handleSave = async (data: Partial<Omit<Weapon, 'id' | 'created_at'>>) => {
     if (id) {
       await updateWeapon(id, data);
       navigate("/weapons");

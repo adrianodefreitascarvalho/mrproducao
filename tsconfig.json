@@ -1,21 +1,26 @@
 {
-  "files": [],
-  "references": [
-    { "path":"./tsconfig.app.json" }, 
-    { "path": "./tsconfig.node.json" }
-    ],
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "strict": true,
+    "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
-    "noUnusedParameters": false,
-    "skipLibCheck": true,
-    "allowJs": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": false,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "skipLibCheck": true,
+    "strict": true,
     "strictNullChecks": true
-  }
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

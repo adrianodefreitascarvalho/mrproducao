@@ -39,10 +39,9 @@ import Users from "./pages/Users";
 import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import GunstockDimensions from "./pages/fittings/GunstockDimensions";
-import BodyMeasurements from "./pages/fittings/BodyMeasurements";
-import ForehandDimensions from "./pages/fittings/ForehandDimensions";
-
+import GunstockPage from "./pages/fittings/GunstockPage";
+import BodyMeasurementsPage from "./pages/fittings/BodyMeasurementsPage";
+import ForehandDimensionsPage from "./pages/fittings/ForehandDimensionsPage";
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -101,6 +100,7 @@ const App = () => {
         <BrowserRouter>
           {!session ? (
             <Routes>
+              
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="*" element={<Login />} />
             </Routes>
@@ -108,6 +108,9 @@ const App = () => {
             <MainLayout>
               <Routes>
                 <Route path="/" element={<Index />} />
+                 <Route path="/fittings/gunstock" element={<GunstockPage />} />
+                <Route path="/fittings/body" element={<BodyMeasurementsPage />} />
+                <Route path="/fittings/forehand" element={<ForehandDimensionsPage />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/release-orders" element={<ReleaseOrders />} />
                 <Route path="/workstations" element={<Workstations />} />
@@ -115,7 +118,7 @@ const App = () => {
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/orders/new" element={<NewOrder />} />
                 <Route path="/orders/:id" element={<OrderDetail />} />
-                <Route path="/orders/:id/routing" element={<ProductionRouting />} />
+                 <Route path="/orders/:id/routing" element={<ProductionRouting />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/new" element={<NewProduct />} />
                 <Route path="/products/edit/:id" element={<EditProduct />} />
@@ -135,9 +138,6 @@ const App = () => {
                 <Route path="/users" element={<Users />} />
                 <Route path="/users/edit/:id" element={<EditUser />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/fittings/gunstock" element={<GunstockDimensions />} />
-                <Route path="/fittings/body" element={<BodyMeasurements />} />
-                <Route path="/fittings/forehand" element={<ForehandDimensions />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

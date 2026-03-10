@@ -24,7 +24,7 @@ interface FittingPageProps<T extends Omit<FittingData, 'id' | 'created_at'>> {
   emptyFormData: T;
   renderFormFields: (
     formData: T,
-    handleInputChange: (field: keyof T, value: string | number | null | undefined) => void,
+    handleInputChange: (field: keyof T, value: string | number | boolean | null | undefined) => void,
     renderField: RenderFieldFunc<T>
   ) => ReactNode;
   pdfTemplatePath: string;
@@ -106,7 +106,7 @@ export function FittingPage<T extends Omit<FittingData, 'id' | 'created_at'>>({
     }
   };
 
-  const handleInputChange = (field: keyof T, value: string | number | null | undefined) => {
+  const handleInputChange = (field: keyof T, value: string | number | boolean | null | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value === '' || value === null ? undefined : value }));
   };
 

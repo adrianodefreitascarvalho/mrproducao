@@ -41,9 +41,9 @@ const navigation: NavigationItem[] = [
     name: "Fittings",
     icon: Ruler,
     children: [
-      { name: "Gunstock Dimensions", href: "/fittings/gunstock" },
-      { name: "Body Measurements", href: "/fittings/body" },
-      { name: "Forehand Dimensions", href: "/fittings/forehand" },
+      { name: "Medidas Coronha", href: "/fittings/gunstock" },
+      { name: "Medidas Corporais", href: "/fittings/body" },
+      { name: "Medidas Fuste", href: "/fittings/forehand" },
     ],
   },
   { name: "Madeiras", href: "/woodstock", icon: TreePine },

@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS public.production_orders (
     product TEXT NOT NULL,
     quantity INTEGER NOT NULL,
     start_date TIMESTAMP WITH TIME ZONE,
+    weapon_id UUID,
     due_date TIMESTAMP WITH TIME ZONE,
     status TEXT NOT NULL,
     progress INTEGER DEFAULT 0,
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.clients (
     email TEXT,
     phone TEXT,
     nif TEXT,
+    source_contact_id UUID,
     addresses JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL

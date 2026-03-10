@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"; 
 import { Label } from "@/components/ui/label";
-import { ArrowLeft as ArrowLeftIcon, Pencil, Save, X, Route, Plus, Minus } from "lucide-react";
+import { ArrowLeft as ArrowLeftIcon, Pencil, Save, X, Route, Plus, Minus, FileDown } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom"; 
 import { useProductionStore, type ProductionOrder, type Product } from "@/lib/store";
 import { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { workstations, OrderStatus } from "@/data/workstations";
+import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
+import { generatePdf } from "@/lib/pdfGenerator";
 
 const statusLabels: Record<string, string> = {
   pending: 'Pendente',
@@ -123,6 +126,63 @@ export default function OrderDetail() {
     }
   };
 
+  const handleGenerateWorksheetPdf = async () => {
+    if (!order) return;
+
+    toast.info("A recolher dados para o PDF...");
+
+    try {
+      // 1. Fetch all related data
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: gunstockData, error: gunstockError } = await (supabase.from('gunstock_dimensions') as any).select('*').eq('order_id', order.id).maybeSingle();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: bodyData, error: bodyError } = await (supabase.from('body_measurements') as any).select('*').eq('client_id', order.client.id).maybeSingle();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: forehandData, error: forehandError } = await (supabase.from('forehand_dimensions') as any).select('*').eq('order_id', order.id).maybeSingle();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: profileData, error: profileError } = await (supabase.from('shooter_profiles') as any).select('*').eq('client_id', order.client.id).maybeSingle();
+
+      if (gunstockError || bodyError || forehandError || profileError) {
+       console.error({ gunstockError, bodyError, forehandError, profileError });
+        throw new Error("Falha ao carregar dados das medidas.");
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const weapon = weapons.find(w => w.id === (order as any).weapon_id);
+
+      // 2. Combine data
+      const fullData = {
+        ...order,
+        ...(gunstockData || {}),
+        ...(bodyData || {}),
+        ...(forehandData || {}),
+        ...(profileData || {}),
+        client_name: order.client?.name || 'N/A',
+        client_email: (clients.find(c => c.id === order.client.id))?.email || 'N/A',
+        client_phone: (clients.find(c => c.id === order.client.id))?.phone || 'N/A',
+        order_number: order.order_number,
+        creation_date: order.created_at ? new Date(order.created_at).toLocaleDateString('pt-PT') : 'N/A',
+        due_date: order.due_date ? new Date(order.due_date).toLocaleDateString('pt-PT') : 'N/A',
+        weapon_brand_model: weapon ? `${weapon.brand} ${weapon.model}` : 'N/A',
+        weapon_serial_number: weapon?.serial_number || 'N/A',
+        units: gunstockData?.units || bodyData?.units || forehandData?.units || 'cm',
+      };
+
+      // 3. Generate PDF
+      const templatePath = '/pdf-templates/Folha_de_obra.pdf';
+      const schemaPath = '/pdf-templates/folha_de_obra_schema.json';
+      const outputFileName = `FolhaDeObra_${order.order_number}.pdf`;
+
+      toast.info("A gerar PDF...");
+      await generatePdf(templatePath, schemaPath, fullData, outputFileName);
+    } catch (e) {
+      toast.error("Falha ao gerar PDF.", { description: (e as Error).message });
+      console.error("PDF Generation Error:", e);
+    }
+  };
+
   const order = useMemo(() => orders.find((o) => o.id === id), [id, orders]);
   const clientName = useMemo(() => order?.client?.name || '', [order]);
   const weaponModel = useMemo(() => weapons.find(w => w.id === formData.weaponId)?.model || '', [formData.weaponId, weapons]);
@@ -186,6 +246,10 @@ export default function OrderDetail() {
                 <Button variant="outline" size="sm" onClick={() => navigate(`/orders/${id}/routing`)}>
                   <Route className="mr-2 h-4 w-4" />
                   Roteiro
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleGenerateWorksheetPdf}>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Gerar Folha de Obra
                 </Button>
                 {!effectiveIsEditing && (
                   <Button variant="outline" size="sm" onClick={handleEditClick} disabled={isCompleted}>

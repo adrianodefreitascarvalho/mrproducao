@@ -3,7 +3,6 @@ import { FittingPage, FittingData } from "./FittingPage";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 
 // Define a estrutura de dados específica para Medidas Corporais
@@ -20,7 +19,7 @@ type BodyMeasurementsData = Omit<FittingData, 'id' | 'created_at'> & {
     dominant_hand?: 'Direita' | 'Esquerda';
     dominant_eye?: 'Direito' | 'Esquerdo';
     shooting_eyes?: 'Ambos' | 'Direito' | 'Esquerdo';
-    has_prescription_glasses?: boolean;
+    has_prescription_glasses?: 'Sim' | 'Não';
     sees_flat_rib?: 'Sim' | 'Não' | 'Parcialmente';
     coin_test?: string;
     training_frequency?: string;
@@ -114,9 +113,15 @@ const renderFormFields = (
                 <Label htmlFor="coin_test">Teste das Moedas</Label>
                 <Input id="coin_test" value={formData.coin_test || ''} onChange={(e) => handleInputChange('coin_test', e.target.value)} />
             </div>
-            <div className="flex items-center space-x-2 pt-6">
-                <Checkbox id="has_prescription_glasses" checked={formData.has_prescription_glasses} onCheckedChange={(c) => handleInputChange('has_prescription_glasses', c as boolean)} />
-                <Label htmlFor="has_prescription_glasses">Usa óculos de prescrição?</Label>
+            <div className="space-y-2">
+                <Label>Usa óculos de prescrição?</Label>
+                <Select value={formData.has_prescription_glasses} onValueChange={(v) => handleInputChange('has_prescription_glasses', v)}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Sim">Sim</SelectItem>
+                        <SelectItem value="Não">Não</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
         </div>
 

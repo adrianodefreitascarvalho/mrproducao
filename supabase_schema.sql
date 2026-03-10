@@ -154,6 +154,13 @@ CREATE TABLE IF NOT EXISTS public.gunstock_dimensions (
     gunstock_recoil_pad2 NUMERIC(10, 2),
     gunstock_recoil_pad3 NUMERIC(10, 2),
 
+    gunstock_grip_measurements1 NUMERIC(10, 2),
+    gunstock_grip_measurements2 NUMERIC(10, 2),
+    gunstock_grip_measurements3 NUMERIC(10, 2),
+    gunstock_grip_measurements4 NUMERIC(10, 2),
+    gunstock_grip_measurements5 NUMERIC(10, 2),
+    gunstock_grip_measurements6 NUMERIC(10, 2),
+
     units TEXT DEFAULT 'cm' CHECK (units IN ('cm', 'inches')),
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,

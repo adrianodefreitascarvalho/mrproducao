@@ -1,0 +1,28 @@
+{
+  "fields": [
+    { "pdf_field": "ClientName", "db_field": "client_name" },
+    { "pdf_field": "OrderNumber", "db_field": "order_number" },
+    { "pdf_field": "CreationDate", "db_field": "creation_date" },
+    { "pdf_field": "Units", "db_field": "units" },
+
+    { "pdf_field": "OpenPalm1", "db_field": "body_measurements_open_palm1" },
+    { "pdf_field": "OpenPalm2", "db_field": "body_measurements_open_palm2" },
+    { "pdf_field": "OpenPalm3", "db_field": "body_measurements_open_palm3" },
+    { "pdf_field": "OpenPalm4", "db_field": "body_measurements_open_palm4" },
+    { "pdf_field": "OpenPalm5", "db_field": "body_measurements_open_palm5" },
+    { "pdf_field": "OpenPalm6", "db_field": "body_measurements_open_palm6" },
+
+    { "pdf_field": "Body1", "db_field": "body_measurements_body1" },
+    { "pdf_field": "Body2", "db_field": "body_measurements_body2" },
+    { "pdf_field": "Body3", "db_field": "body_measurements_body3" },
+
+    { "pdf_field": "Weight", "db_field": "body_measurements_weight" },
+    { "pdf_field": "Age", "db_field": "body_measurements_age" },
+
+    { "pdf_field": "HandInPosition1", "db_field": "body_measurements_hand_in_position1" },
+    { "pdf_field": "HandInPosition2", "db_field": "body_measurements_hand_in_position2" },
+    { "pdf_field": "HandInPosition3", "db_field": "body_measurements_hand_in_position3" },
+
+    { "pdf_field": "BetweenHands", "db_field": "body_measurements_between_hands" }
+  ]
+}

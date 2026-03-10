@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, X, Save } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Save, FileDown } from "lucide-react";
 import { useProductionStore, type Client, type Weapon, type ProductionOrder } from "@/lib/store";
+import { generatePdf } from "@/lib/pdfGenerator";
 
 type BodyMeasurement = {
   id: string;
@@ -144,6 +145,37 @@ const BodyMeasurements = () => {
         resetForm();
         fetchBodyMeasurements();
       }
+    }
+  };
+
+  const handleGeneratePdf = async (itemId: string) => {
+    const item = measurements.find(d => d.id === itemId);
+    if (!item) {
+      toast.error("Registo não encontrado para gerar PDF.");
+      return;
+    }
+
+    const client = clients.find(c => c.id === item.client_id);
+    const order = orders.find(o => o.id === item.order_id);
+
+    const fullData = {
+      ...item,
+      client_name: client ? `${client.first_name} ${client.last_name}`.trim() : 'N/A',
+      order_number: order?.order_number || 'N/A',
+      creation_date: item.created_at ? new Date(item.created_at).toLocaleDateString('pt-PT') : 'N/A',
+    };
+
+    const templatePath = '/pdf-templates/body_measurements.pdf';
+    const schemaPath = '/pdf-templates/body_measurements_schema.json';
+    const clientName = client ? `${client.first_name}_${client.last_name}`.replace(/\s+/g, '_') : 'desconhecido';
+    const outputFileName = `FolhaObra_MedidasCorpo_${clientName}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+    toast.info("A gerar PDF...");
+    try {
+      await generatePdf(templatePath, schemaPath, fullData, outputFileName);
+    } catch (e) {
+      console.error("PDF Generation Error:", e);
+      toast.error("Falha ao gerar PDF.");
     }
   };
 
@@ -296,6 +328,9 @@ const BodyMeasurements = () => {
                                     <TableCell className="text-right">
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}>
                                             <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" onClick={() => handleGeneratePdf(item.id)} title="Gerar PDF">
+                                            <FileDown className="h-4 w-4 text-muted-foreground" />
                                         </Button>
                                         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
                                             <Trash2 className="h-4 w-4" />

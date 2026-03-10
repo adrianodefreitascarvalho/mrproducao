@@ -1,0 +1,34 @@
+{
+  "fields": [
+    { "pdf_field": "ClientName", "db_field": "client_name" },
+    { "pdf_field": "OrderNumber", "db_field": "order_number" },
+    { "pdf_field": "CreationDate", "db_field": "creation_date" },
+    { "pdf_field": "Units", "db_field": "units" },
+
+    { "pdf_field": "Measurement1", "db_field": "gunstock_measurements" },
+    { "pdf_field": "Measurement2", "db_field": "gunstock_measurements2" },
+    { "pdf_field": "Measurement3", "db_field": "gunstock_measurements3" },
+    { "pdf_field": "Measurement4", "db_field": "gunstock_measurements4" },
+    { "pdf_field": "Measurement5", "db_field": "gunstock_measurements5" },
+    { "pdf_field": "Measurement6", "db_field": "gunstock_measurements6" },
+    { "pdf_field": "Measurement7", "db_field": "gunstock_measurements7" },
+
+    { "pdf_field": "CastOn1", "db_field": "gunstock_cast_on1" },
+    { "pdf_field": "CastOn2", "db_field": "gunstock_cast_on2" },
+    { "pdf_field": "CastOn3", "db_field": "gunstock_cast_on3" },
+    { "pdf_field": "CastOn4", "db_field": "gunstock_cast_on4" },
+
+    { "pdf_field": "CastOff1", "db_field": "gunstock_cast_off1" },
+    { "pdf_field": "CastOff2", "db_field": "gunstock_cast_off2" },
+    { "pdf_field": "CastOff3", "db_field": "gunstock_cast_off3" },
+    { "pdf_field": "CastOff4", "db_field": "gunstock_cast_off4" },
+
+    { "pdf_field": "Width1", "db_field": "gunstock_width1" },
+    { "pdf_field": "Width2", "db_field": "gunstock_width2" },
+    { "pdf_field": "Width3", "db_field": "gunstock_width3" },
+
+    { "pdf_field": "RecoilPad1", "db_field": "gunstock_recoil_pad1" },
+    { "pdf_field": "RecoilPad2", "db_field": "gunstock_recoil_pad2" },
+    { "pdf_field": "RecoilPad3", "db_field": "gunstock_recoil_pad3" }
+  ]
+}

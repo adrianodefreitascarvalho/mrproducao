@@ -1,0 +1,107 @@
+{
+  "_comentario": "Schema de dados para preenchimento das Folhas MR. Preencha os campos necessários.",
+
+  "cliente": {
+    "id_cliente": "CLI-2024-001",
+    "nome": "João Silva",
+    "morada": "Rua das Flores, 42, Lisboa",
+    "tlm": "912 345 678",
+    "email": "joao.silva@email.com"
+  },
+
+  "arma": {
+    "id_arma": "ARM-2024-007",
+    "arma": "Browning",
+    "modelo": "B725 Sporter",
+    "fita": "2.5mm",
+    "modalidade": "Trap",
+    "calibre": "12",
+    "comp_canos": "76cm",
+    "peso_canos": "1.850kg",
+    "peso_fuste": "1.200kg",
+    "peso_arma": "3.050kg",
+    "tem_mala": true,
+    "tem_saco": false,
+    "tem_aloquete": true
+  },
+
+  "servico": {
+    "tipo_servico": "Ajuste de coronha",
+    "anatomia": "Destro"
+  },
+
+  "trabalho": {
+    "crista_de_regular": "Subir 3mm",
+    "punho": "Afinar lateral esquerda 2mm",
+    "fuste": "Manter original",
+    "calco": "Acrescentar 10mm",
+    "serrilhado": "Renovar grip total",
+    "acabamento": "Óleo de linhaça natural",
+    "linhas": "Dupla linha paralela",
+    "gravacao": "Iniciais J.S.",
+    "obs_trabalho": "",
+    "madeira": "Nogueira grau 5"
+  },
+
+  "analise": {
+    "mao_dominante": "Direita",
+    "olho_dominante": "Direito",
+    "olhos_a_atirar": "Binocular",
+    "oculos_prescricao": "Não",
+    "ve_fita_rasa": "Sim",
+    "teste_moedas": "3 moedas",
+    "freq_treino": "2x semana",
+    "freq_competicao": "Mensal",
+    "modalidades_tiro": "Trap / Skeet",
+    "opiniao_altura": "Coronha demasiado baixa, bola visível acima da fita",
+    "opiniao_comprimento": "Comprimento adequado, não necessita alteração",
+    "opiniao_punho": "Punho largo, dificulta posicionamento do polegar",
+    "opiniao_cast": "Cast ON insuficiente para olho dominante direito",
+    "opiniao_actual": "Coronha standard de fábrica, sem ajustes anteriores"
+  },
+
+  "medidas_coronha": {
+    "m1": "370",
+    "m2": "355",
+    "m3": "340",
+    "m5": "42",
+    "m6": "38",
+    "m7": "35"
+  },
+
+  "cast": {
+    "on_1": "3",
+    "on_2": "5",
+    "on_3": "7",
+    "on_4": "2",
+    "off_1": "3",
+    "off_2": "5",
+    "off_3": "7",
+    "off_4": "2"
+  },
+
+  "grip_width": {
+    "gw1": "85",
+    "gw2": "80",
+    "gw3": "75"
+  },
+
+  "grip_measurements": {
+    "gm1": "55",
+    "gm2": "60",
+    "gm3": "65",
+    "gm4": "45",
+    "gm5": "50",
+    "gm6": "40"
+  },
+
+  "recoil_pad": {
+    "rp1": "20",
+    "rp2": "18",
+    "rp3": "22"
+  },
+
+  "pitch": "5",
+
+  "obs_geral": "Cliente prefere acabamento mais escuro. Entrega prevista em 3 semanas."
+}

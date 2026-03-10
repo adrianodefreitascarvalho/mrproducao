@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, X, Save } from "lucide-react";
 import { useProductionStore, type Client, type Weapon, type ProductionOrder } from "@/lib/store";
+import { FileDown } from "lucide-react";
+import { generatePdf } from "@/lib/pdfGenerator";
 
 type GunstockDimension = {
   id: string;
@@ -152,6 +154,41 @@ const GunstockDimensions = () => {
         resetForm();
         fetchGunstockDimensions();
       }
+    }
+  };
+
+  const handleGeneratePdf = async (itemId: string) => {
+    const item = dimensions.find(d => d.id === itemId);
+    if (!item) {
+      toast.error("Registo não encontrado para gerar PDF.");
+      return;
+    }
+
+    // Encontrar dados relacionados no store
+    const client = clients.find(c => c.id === item.client_id);
+    const order = orders.find(o => o.id === item.order_id);
+
+    // Aplaina os dados para o gerador de PDF
+    const fullData = {
+      ...item,
+      client_name: client ? `${client.first_name} ${client.last_name}`.trim() : 'N/A',
+      client_email: client?.email || 'N/A',
+      client_phone: client?.phone || 'N/A',
+      order_number: order?.order_number || 'N/A',
+      creation_date: item.created_at ? new Date(item.created_at).toLocaleDateString('pt-PT') : 'N/A',
+    };
+
+    const templatePath = '/pdf-templates/gunstock_dimensions.pdf';
+    const schemaPath = '/pdf-templates/gunstock_dimensions_schema.json';
+    const clientName = client ? `${client.first_name}_${client.last_name}`.replace(/\s+/g, '_') : 'desconhecido';
+    const outputFileName = `FolhaObra_Coronha_${clientName}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+    toast.info("A gerar PDF...");
+    try {
+      await generatePdf(templatePath, schemaPath, fullData, outputFileName);
+    } catch (e) {
+      toast.error("Falha ao gerar PDF.");
+      console.error("PDF Generation Error:", e);
     }
   };
 
@@ -312,6 +349,9 @@ const GunstockDimensions = () => {
                                         <Button variant="ghost" size="icon" onClick={() => handleEdit(item)}>
                                             <Pencil className="h-4 w-4" />
                                         </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleGeneratePdf(item.id)} title="Gerar PDF">
+                                        <FileDown className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
                                         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>

@@ -14,6 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
+      body_measurements: {
+        Row: {
+          body_measurements_age: number | null
+          body_measurements_between_hands: number | null
+          body_measurements_body1: number | null
+          body_measurements_body2: number | null
+          body_measurements_body3: number | null
+          body_measurements_hand_in_position1: number | null
+          body_measurements_hand_in_position2: number | null
+          body_measurements_hand_in_position3: number | null
+          body_measurements_open_palm1: number | null
+          body_measurements_open_palm2: number | null
+          body_measurements_open_palm3: number | null
+          body_measurements_open_palm4: number | null
+          body_measurements_open_palm5: number | null
+          body_measurements_open_palm6: number | null
+          body_measurements_weight: number | null
+          client_id: string | null
+          created_at: string
+          id: string
+          order_id: string | null
+          units: string | null
+          updated_at: string
+          weapon_id: string | null
+        }
+        Insert: {
+          body_measurements_age?: number | null
+          body_measurements_between_hands?: number | null
+          body_measurements_body1?: number | null
+          body_measurements_body2?: number | null
+          body_measurements_body3?: number | null
+          body_measurements_hand_in_position1?: number | null
+          body_measurements_hand_in_position2?: number | null
+          body_measurements_hand_in_position3?: number | null
+          body_measurements_open_palm1?: number | null
+          body_measurements_open_palm2?: number | null
+          body_measurements_open_palm3?: number | null
+          body_measurements_open_palm4?: number | null
+          body_measurements_open_palm5?: number | null
+          body_measurements_open_palm6?: number | null
+          body_measurements_weight?: number | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          units?: string | null
+          updated_at?: string
+          weapon_id?: string | null
+        }
+        Update: {
+          body_measurements_age?: number | null
+          body_measurements_between_hands?: number | null
+          body_measurements_body1?: number | null
+          body_measurements_body2?: number | null
+          body_measurements_body3?: number | null
+          body_measurements_hand_in_position1?: number | null
+          body_measurements_hand_in_position2?: number | null
+          body_measurements_hand_in_position3?: number | null
+          body_measurements_open_palm1?: number | null
+          body_measurements_open_palm2?: number | null
+          body_measurements_open_palm3?: number | null
+          body_measurements_open_palm4?: number | null
+          body_measurements_open_palm5?: number | null
+          body_measurements_open_palm6?: number | null
+          body_measurements_weight?: number | null
+          client_id?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          units?: string | null
+          updated_at?: string
+          weapon_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "body_measurements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "body_measurements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calibers: {
         Row: {
           created_at: string | null
@@ -176,6 +266,72 @@ export type Database = {
         }
         Relationships: []
       }
+      forehand_dimensions: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          forehand_dimensions_side_view4: number | null
+          forehand_dimensions_side_view5: number | null
+          forehand_dimensions_side_view6: number | null
+          forehand_dimensions_side_view7: number | null
+          forehand_dimensions_top_view1: number | null
+          forehand_dimensions_top_view2: number | null
+          forehand_dimensions_top_view3: number | null
+          id: string
+          order_id: string | null
+          units: string | null
+          updated_at: string
+          weapon_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          forehand_dimensions_side_view4?: number | null
+          forehand_dimensions_side_view5?: number | null
+          forehand_dimensions_side_view6?: number | null
+          forehand_dimensions_side_view7?: number | null
+          forehand_dimensions_top_view1?: number | null
+          forehand_dimensions_top_view2?: number | null
+          forehand_dimensions_top_view3?: number | null
+          id?: string
+          order_id?: string | null
+          units?: string | null
+          updated_at?: string
+          weapon_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          forehand_dimensions_side_view4?: number | null
+          forehand_dimensions_side_view5?: number | null
+          forehand_dimensions_side_view6?: number | null
+          forehand_dimensions_side_view7?: number | null
+          forehand_dimensions_top_view1?: number | null
+          forehand_dimensions_top_view2?: number | null
+          forehand_dimensions_top_view3?: number | null
+          id?: string
+          order_id?: string | null
+          units?: string | null
+          updated_at?: string
+          weapon_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forehand_dimensions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forehand_dimensions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grip_types: {
         Row: {
           created_at: string | null
@@ -193,6 +349,114 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      gunstock_dimensions: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          gunstock_cast_off1: number | null
+          gunstock_cast_off2: number | null
+          gunstock_cast_off3: number | null
+          gunstock_cast_off4: number | null
+          gunstock_cast_on1: number | null
+          gunstock_cast_on2: number | null
+          gunstock_cast_on3: number | null
+          gunstock_cast_on4: number | null
+          gunstock_measurements: number | null
+          gunstock_measurements2: number | null
+          gunstock_measurements3: number | null
+          gunstock_measurements4: number | null
+          gunstock_measurements5: number | null
+          gunstock_measurements6: number | null
+          gunstock_measurements7: number | null
+          gunstock_recoil_pad1: number | null
+          gunstock_recoil_pad2: number | null
+          gunstock_recoil_pad3: number | null
+          gunstock_width1: number | null
+          gunstock_width2: number | null
+          gunstock_width3: number | null
+          id: string
+          order_id: string | null
+          units: string | null
+          updated_at: string
+          weapon_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          gunstock_cast_off1?: number | null
+          gunstock_cast_off2?: number | null
+          gunstock_cast_off3?: number | null
+          gunstock_cast_off4?: number | null
+          gunstock_cast_on1?: number | null
+          gunstock_cast_on2?: number | null
+          gunstock_cast_on3?: number | null
+          gunstock_cast_on4?: number | null
+          gunstock_measurements?: number | null
+          gunstock_measurements2?: number | null
+          gunstock_measurements3?: number | null
+          gunstock_measurements4?: number | null
+          gunstock_measurements5?: number | null
+          gunstock_measurements6?: number | null
+          gunstock_measurements7?: number | null
+          gunstock_recoil_pad1?: number | null
+          gunstock_recoil_pad2?: number | null
+          gunstock_recoil_pad3?: number | null
+          gunstock_width1?: number | null
+          gunstock_width2?: number | null
+          gunstock_width3?: number | null
+          id?: string
+          order_id?: string | null
+          units?: string | null
+          updated_at?: string
+          weapon_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          gunstock_cast_off1?: number | null
+          gunstock_cast_off2?: number | null
+          gunstock_cast_off3?: number | null
+          gunstock_cast_off4?: number | null
+          gunstock_cast_on1?: number | null
+          gunstock_cast_on2?: number | null
+          gunstock_cast_on3?: number | null
+          gunstock_cast_on4?: number | null
+          gunstock_measurements?: number | null
+          gunstock_measurements2?: number | null
+          gunstock_measurements3?: number | null
+          gunstock_measurements4?: number | null
+          gunstock_measurements5?: number | null
+          gunstock_measurements6?: number | null
+          gunstock_measurements7?: number | null
+          gunstock_recoil_pad1?: number | null
+          gunstock_recoil_pad2?: number | null
+          gunstock_recoil_pad3?: number | null
+          gunstock_width1?: number | null
+          gunstock_width2?: number | null
+          gunstock_width3?: number | null
+          id?: string
+          order_id?: string | null
+          units?: string | null
+          updated_at?: string
+          weapon_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gunstock_dimensions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gunstock_dimensions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "production_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       operations: {
         Row: {

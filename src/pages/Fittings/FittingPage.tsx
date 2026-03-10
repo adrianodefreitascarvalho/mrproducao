@@ -137,9 +137,12 @@ export function FittingPage<T extends Omit<FittingData, 'id' | 'created_at'>>({
     }
   };
 
-  const handleGeneratePdf = async (itemId: string) => {
+  const handleGeneratePdf = async (itemId: string): Promise<void> => {
     const item = dimensions.find(d => d.id === itemId);
-    if (!item) return toast.error("Registo não encontrado para gerar PDF.");
+    if (!item) {
+      toast.error("Registo não encontrado para gerar PDF.");
+      return;
+    }
 
     const client = clients.find(c => c.id === item.client_id);
     const order = orders.find(o => o.id === item.order_id);

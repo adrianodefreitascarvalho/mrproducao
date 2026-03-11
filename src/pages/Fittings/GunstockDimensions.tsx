@@ -23,6 +23,12 @@ type GunstockFormData = Omit<FittingData, 'id' | 'created_at'> & {
   gunstock_cast_on2?: number | null;
   gunstock_cast_on3?: number | null;
   gunstock_cast_on4?: number | null;
+  gunstock_grip_measurements1?: number | null;
+  gunstock_grip_measurements2?: number | null;
+  gunstock_grip_measurements3?: number | null;
+  gunstock_grip_measurements4?: number | null;
+  gunstock_grip_measurements5?: number | null;
+  gunstock_grip_measurements6?: number | null;
 };
 
 const emptyFormData: GunstockFormData = {
@@ -56,6 +62,20 @@ export default function GunstockDimensions() {
             {renderField('Medida 6', 'gunstock_measurements6')}
             {renderField('Medida 7', 'gunstock_measurements7')}
           </div>
+          <CardTitle className="text-lg pt-4">Cast On</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {renderField('Cast On 1', 'gunstock_cast_on1')}
+            {renderField('Cast On 2', 'gunstock_cast_on2')}
+            {renderField('Cast On 3', 'gunstock_cast_on3')}
+            {renderField('Cast On 4', 'gunstock_cast_on4')}
+          </div>
+          <CardTitle className="text-lg pt-4">Cast Off</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {renderField('Cast Off 1', 'gunstock_cast_off1')}
+            {renderField('Cast Off 2', 'gunstock_cast_off2')}
+            {renderField('Cast Off 3', 'gunstock_cast_off3')}
+            {renderField('Cast Off 4', 'gunstock_cast_off4')}
+          </div>
           <CardTitle className="text-lg pt-4">Largura do Punho</CardTitle>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {renderField('Largura 1', 'gunstock_width1')}
@@ -68,28 +88,14 @@ export default function GunstockDimensions() {
             {renderField('Recoil Pad 2', 'gunstock_recoil_pad2')}
             {renderField('Recoil Pad 3', 'gunstock_recoil_pad3')}
           </div>
-          <CardTitle className="text-lg pt-4">Cast Off</CardTitle>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {renderField('Cast Off 1', 'gunstock_cast_off1')}
-            {renderField('Cast Off 2', 'gunstock_cast_off2')}
-            {renderField('Cast Off 3', 'gunstock_cast_off3')}
-            {renderField('Cast Off 4', 'gunstock_cast_off4')}
-          </div>
-          <CardTitle className="text-lg pt-4">Cast On</CardTitle>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {renderField('Cast On 1', 'gunstock_cast_on1')}
-            {renderField('Cast On 2', 'gunstock_cast_on2')}
-            {renderField('Cast On 3', 'gunstock_cast_on3')}
-            {renderField('Cast On 4', 'gunstock_cast_on4')}
-          </div>
           <CardTitle className="text-lg pt-4">Medidas do Punho</CardTitle>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderField('Medida Punho 1', 'gunstock_grip_measurements1')}
-            {renderField('Medida Punho 2', 'gunstock_grip_measurements2')}
-            {renderField('Medida Punho 3', 'gunstock_grip_measurements3')}
-            {renderField('Medida Punho 4', 'gunstock_grip_measurements4')}
-            {renderField('Medida Punho 5', 'gunstock_grip_measurements5')}
-            {renderField('Medida Punho 6', 'gunstock_grip_measurements6')}
+            {renderField('Punho 1', 'gunstock_grip_measurements1')}
+            {renderField('Punho 2', 'gunstock_grip_measurements2')}
+            {renderField('Punho 3', 'gunstock_grip_measurements3')}
+            {renderField('Punho 4', 'gunstock_grip_measurements4')}
+            {renderField('Punho 5', 'gunstock_grip_measurements5')}
+            {renderField('Punho 6', 'gunstock_grip_measurements6')}
           </div>
         </>
       )}

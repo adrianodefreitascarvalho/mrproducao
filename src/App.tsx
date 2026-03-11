@@ -39,7 +39,7 @@ import Users from "./pages/Users";
 import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import GunstockPage from "./pages/fittings/GunstockPage";
+import GunstockDimensions from "./pages/fittings/GunstockDimensions";
 import BodyMeasurementsPage from "./pages/fittings/BodyMeasurementsPage";
 import ForehandDimensionsPage from "./pages/fittings/ForehandDimensionsPage";
 const queryClient = new QueryClient();
@@ -108,7 +108,7 @@ const App = () => {
             <MainLayout>
               <Routes>
                 <Route path="/" element={<Index />} />
-                 <Route path="/fittings/gunstock" element={<GunstockPage />} />
+                 <Route path="/fittings/gunstock" element={<GunstockDimensions />} />
                 <Route path="/fittings/body" element={<BodyMeasurementsPage />} />
                 <Route path="/fittings/forehand" element={<ForehandDimensionsPage />} />
                 <Route path="/dashboard" element={<Dashboard />} />

@@ -85,10 +85,15 @@ export function FittingPage<T extends Omit<FittingData, 'id' | 'created_at'>>({
   };
 
   const handleEdit = (item: FittingData) => {
-    setFormData({
-        ...emptyFormData,
-        ...Object.fromEntries(Object.entries(item).map(([key, value]) => [key, value === null ? undefined : value]))
-    } as T);
+    const formValues: Partial<T> = {};
+    for (const key in emptyFormData) {
+      if (Object.prototype.hasOwnProperty.call(item, key)) {
+        const value = item[key as keyof FittingData];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (formValues as any)[key] = value === null ? undefined : value;
+      }
+    }
+    setFormData({ ...emptyFormData, ...formValues } as T);
     setEditingId(item.id);
     setIsFormOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -112,20 +117,31 @@ export function FittingPage<T extends Omit<FittingData, 'id' | 'created_at'>>({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = { ...formData };
-    for (const key in payload) {
-        const value = payload[key as keyof typeof payload];
-        if (value === undefined || value === '') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (payload as any)[key] = null;
+
+    const payload: { [key: string]: unknown } = {};
+    // Iterate over the keys defined in the form template for safety, not the entire state
+    for (const key in emptyFormData) {
+      if (Object.prototype.hasOwnProperty.call(formData, key)) {
+        const value = formData[key as keyof T];
+
+        if (['client_id', 'order_id', 'weapon_id', 'units'].includes(key)) {
+          payload[key] = value || null;
+        } else {
+          if (value === '' || value === null || value === undefined) {
+            payload[key] = null;
+          } else {
+            const num = parseFloat(String(value));
+            payload[key] = isNaN(num) ? null : num;
+          }
         }
+      }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const table = supabase.from(tableName) as any;
     const { error } = editingId
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ? await (supabase.from(tableName) as any).update(payload).eq('id', editingId)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      : await (supabase.from(tableName) as any).insert(payload);
+      ? await table.update(payload).eq('id', editingId)
+      : await table.insert(payload);
 
     if (error) {
       toast.error(`Erro ao ${editingId ? 'actualizar' : 'criar'} o registo.`);
@@ -137,7 +153,7 @@ export function FittingPage<T extends Omit<FittingData, 'id' | 'created_at'>>({
     }
   };
 
-  const handleGeneratePdf = async (itemId: string): Promise<void> => {
+  const handleGeneratePdf = async (itemId: string) => {
     const item = dimensions.find(d => d.id === itemId);
     if (!item) {
       toast.error("Registo não encontrado para gerar PDF.");

@@ -362,7 +362,7 @@ export type Database = {
           gunstock_cast_on2: number | null
           gunstock_cast_on3: number | null
           gunstock_cast_on4: number | null
-          gunstock_measurements: number | null
+          gunstock_measurements1: number | null
           gunstock_measurements2: number | null
           gunstock_measurements3: number | null
           gunstock_measurements4: number | null
@@ -392,7 +392,7 @@ export type Database = {
           gunstock_cast_on2?: number | null
           gunstock_cast_on3?: number | null
           gunstock_cast_on4?: number | null
-          gunstock_measurements?: number | null
+          gunstock_measurements1?: number | null
           gunstock_measurements2?: number | null
           gunstock_measurements3?: number | null
           gunstock_measurements4?: number | null
@@ -422,7 +422,7 @@ export type Database = {
           gunstock_cast_on2?: number | null
           gunstock_cast_on3?: number | null
           gunstock_cast_on4?: number | null
-          gunstock_measurements?: number | null
+          gunstock_measurements1?: number | null
           gunstock_measurements2?: number | null
           gunstock_measurements3?: number | null
           gunstock_measurements4?: number | null

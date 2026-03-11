@@ -23,16 +23,28 @@ type GunstockFormData = Omit<FittingData, 'id' | 'created_at'> & {
   gunstock_cast_on2?: number | null;
   gunstock_cast_on3?: number | null;
   gunstock_cast_on4?: number | null;
+  gunstock_grip_measurements1?: number | null;
+  gunstock_grip_measurements2?: number | null;
+  gunstock_grip_measurements3?: number | null;
+  gunstock_grip_measurements4?: number | null;
+  gunstock_grip_measurements5?: number | null;
+  gunstock_grip_measurements6?: number | null;
 };
 
 const emptyFormData: GunstockFormData = {
   client_id: null, order_id: null, weapon_id: null, units: 'cm',
-  gunstock_measurements: null, gunstock_measurements2: null, gunstock_measurements3: null,
+  gunstock_measurements1: null, gunstock_measurements2: null, gunstock_measurements3: null,
   gunstock_measurements4: null, gunstock_measurements5: null, gunstock_measurements6: null,
   gunstock_measurements7: null, gunstock_width1: null, gunstock_width2: null, gunstock_width3: null,
   gunstock_recoil_pad1: null, gunstock_recoil_pad2: null, gunstock_recoil_pad3: null,
   gunstock_cast_off1: null, gunstock_cast_off2: null, gunstock_cast_off3: null, gunstock_cast_off4: null,
   gunstock_cast_on1: null, gunstock_cast_on2: null, gunstock_cast_on3: null, gunstock_cast_on4: null,
+  gunstock_grip_measurements1: null,
+  gunstock_grip_measurements2: null,
+  gunstock_grip_measurements3: null,
+  gunstock_grip_measurements4: null,
+  gunstock_grip_measurements5: null,
+  gunstock_grip_measurements6: null,
 };
 
 export default function GunstockDimensions() {
@@ -46,7 +58,7 @@ export default function GunstockDimensions() {
         <>
           <CardTitle className="text-lg pt-4">Medidas</CardTitle>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {renderField('Medida 1', 'gunstock_measurements')}
+            {renderField('Medida 1', 'gunstock_measurements1')}
             {renderField('Medida 2', 'gunstock_measurements2')}
             {renderField('Medida 3', 'gunstock_measurements3')}
             {renderField('Medida 4', 'gunstock_measurements4')}
@@ -79,6 +91,15 @@ export default function GunstockDimensions() {
             {renderField('Recoil Pad 1', 'gunstock_recoil_pad1')}
             {renderField('Recoil Pad 2', 'gunstock_recoil_pad2')}
             {renderField('Recoil Pad 3', 'gunstock_recoil_pad3')}
+          </div>
+          <CardTitle className="text-lg pt-4">Medidas do Punho</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {renderField('Punho 1', 'gunstock_grip_measurements1')}
+            {renderField('Punho 2', 'gunstock_grip_measurements2')}
+            {renderField('Punho 3', 'gunstock_grip_measurements3')}
+            {renderField('Punho 4', 'gunstock_grip_measurements4')}
+            {renderField('Punho 5', 'gunstock_grip_measurements5')}
+            {renderField('Punho 6', 'gunstock_grip_measurements6')}
           </div>
         </>
       )}

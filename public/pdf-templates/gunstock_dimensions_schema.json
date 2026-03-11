@@ -5,7 +5,7 @@
     { "pdf_field": "CreationDate", "db_field": "creation_date" },
     { "pdf_field": "Units", "db_field": "units" },
 
-    { "pdf_field": "Measurement1", "db_field": "gunstock_measurements" },
+    { "pdf_field": "Measurement1", "db_field": "gunstock_measurements1" },
     { "pdf_field": "Measurement2", "db_field": "gunstock_measurements2" },
     { "pdf_field": "Measurement3", "db_field": "gunstock_measurements3" },
     { "pdf_field": "Measurement4", "db_field": "gunstock_measurements4" },

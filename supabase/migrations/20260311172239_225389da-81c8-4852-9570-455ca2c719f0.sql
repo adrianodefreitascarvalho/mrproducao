@@ -1,0 +1,1 @@
+ALTER TABLE public.gunstock_dimensions RENAME COLUMN gunstock_measurements TO gunstock_measurements1;

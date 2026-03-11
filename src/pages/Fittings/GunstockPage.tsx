@@ -3,7 +3,7 @@ import { FittingPage, FittingData } from "./FittingPage";
 
 // Define the specific data structure for Gunstock fittings
 type GunstockFittingData = Omit<FittingData, 'id' | 'created_at'> & {
-    gunstock_measurements?: number | null;
+    gunstock_measurements1?: number | null;
     gunstock_measurements2?: number | null;
     gunstock_measurements3?: number | null;
     gunstock_measurements4?: number | null;
@@ -30,7 +30,7 @@ type GunstockFittingData = Omit<FittingData, 'id' | 'created_at'> & {
 const emptyFormData: GunstockFittingData = {
     units: 'cm',
     client_id: null, order_id: null, weapon_id: null,
-    gunstock_measurements: null, gunstock_measurements2: null, gunstock_measurements3: null,
+    gunstock_measurements1: null, gunstock_measurements2: null, gunstock_measurements3: null,
     gunstock_measurements4: null, gunstock_measurements5: null, gunstock_measurements6: null,
     gunstock_measurements7: null, gunstock_width1: null, gunstock_width2: null, gunstock_width3: null,
     gunstock_recoil_pad1: null, gunstock_recoil_pad2: null, gunstock_recoil_pad3: null,
@@ -47,7 +47,7 @@ const renderFormFields = (
     <>
         <h3 className="text-lg font-medium pt-4 col-span-1 md:col-span-3">Medidas da Coronha</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {renderField('Medida 1', 'gunstock_measurements')}
+            {renderField('Medida 1', 'gunstock_measurements1')}
             {renderField('Medida 2', 'gunstock_measurements2')}
             {renderField('Medida 3', 'gunstock_measurements3')}
             {renderField('Medida 4', 'gunstock_measurements4')}

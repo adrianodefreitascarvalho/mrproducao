@@ -2,7 +2,7 @@ import { FittingPage, type FittingData } from "./FittingPage";
 import { CardTitle } from "@/components/ui/card";
 
 type GunstockFormData = Omit<FittingData, 'id' | 'created_at'> & {
-  gunstock_measurements?: number | null;
+  gunstock_measurements1?: number | null;
   gunstock_measurements2?: number | null;
   gunstock_measurements3?: number | null;
   gunstock_measurements4?: number | null;
@@ -33,7 +33,7 @@ type GunstockFormData = Omit<FittingData, 'id' | 'created_at'> & {
 
 const emptyFormData: GunstockFormData = {
   client_id: null, order_id: null, weapon_id: null, units: 'cm',
-  gunstock_measurements: null, gunstock_measurements2: null, gunstock_measurements3: null,
+  gunstock_measurements1: null, gunstock_measurements2: null, gunstock_measurements3: null,
   gunstock_measurements4: null, gunstock_measurements5: null, gunstock_measurements6: null,
   gunstock_measurements7: null, gunstock_width1: null, gunstock_width2: null, gunstock_width3: null,
   gunstock_recoil_pad1: null, gunstock_recoil_pad2: null, gunstock_recoil_pad3: null,
@@ -54,7 +54,7 @@ export default function GunstockDimensions() {
         <>
           <CardTitle className="text-lg pt-4">Medidas</CardTitle>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {renderField('Medida 1', 'gunstock_measurements')}
+            {renderField('Medida 1', 'gunstock_measurements1')}
             {renderField('Medida 2', 'gunstock_measurements2')}
             {renderField('Medida 3', 'gunstock_measurements3')}
             {renderField('Medida 4', 'gunstock_measurements4')}

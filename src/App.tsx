@@ -39,9 +39,9 @@ import Users from "./pages/Users";
 import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import GunstockDimensions from "./pages/fittings/GunstockDimensions";
-import BodyMeasurementsPage from "./pages/fittings/BodyMeasurementsPage";
-import ForehandDimensionsPage from "./pages/fittings/ForehandDimensionsPage";
+import GunstockDimensions from "./pages/Fittings/GunstockDimensions";
+import BodyMeasurementsPage from "./pages/Fittings/BodyMeasurementsPage";
+import ForehandDimensionsPage from "./pages/Fittings/ForehandDimensionsPage";
 const queryClient = new QueryClient();
 
 const App = () => {

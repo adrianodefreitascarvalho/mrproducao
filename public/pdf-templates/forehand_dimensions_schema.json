@@ -1,17 +1,13 @@
 {
   "fields": [
-    { "pdf_field": "ClientName", "db_field": "client_name" },
-    { "pdf_field": "OrderNumber", "db_field": "order_number" },
-    { "pdf_field": "CreationDate", "db_field": "creation_date" },
-    { "pdf_field": "Units", "db_field": "units" },
-
-    { "pdf_field": "TopView1", "db_field": "forehand_dimensions_top_view1" },
-    { "pdf_field": "TopView2", "db_field": "forehand_dimensions_top_view2" },
-    { "pdf_field": "TopView3", "db_field": "forehand_dimensions_top_view3" },
-
-    { "pdf_field": "SideView4", "db_field": "forehand_dimensions_side_view4" },
-    { "pdf_field": "SideView5", "db_field": "forehand_dimensions_side_view5" },
-    { "pdf_field": "SideView6", "db_field": "forehand_dimensions_side_view6" },
-    { "pdf_field": "SideView7", "db_field": "forehand_dimensions_side_view7" }
+    { "db_field": "client_name", "pdf_field": "NOME" },
+    { "db_field": "weapon_id", "pdf_field": "ID_ARMA" },
+    { "db_field": "forehand_dimensions_top_view1", "pdf_field": "fuste_cima_1" },
+    { "db_field": "forehand_dimensions_top_view2", "pdf_field": "fuste_cima_2" },
+    { "db_field": "forehand_dimensions_top_view3", "pdf_field": "fuste_cima_3" },
+    { "db_field": "forehand_dimensions_side_view4", "pdf_field": "fuste_lado_4" },
+    { "db_field": "forehand_dimensions_side_view5", "pdf_field": "fuste_lado_5" },
+    { "db_field": "forehand_dimensions_side_view6", "pdf_field": "fuste_lado_6" },
+    { "db_field": "forehand_dimensions_side_view7", "pdf_field": "fuste_lado_7" }
   ]
 }

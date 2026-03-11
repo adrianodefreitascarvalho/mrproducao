@@ -26,84 +26,106 @@ from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, BooleanObject, ArrayObject, TextStringObject
 
 
-# ─── Mapeamento: campo JSON → field_id no PDF ────────────────────────────────
+# ─── MAPAS DE CAMPOS: campo JSON → (field_id no PDF, tipo) ───────────────────
 
-# Mapeamento para FOLHA DE OBRA (ficheiro standalone de 1 página)
-OBRA_MAP = {
-    # Cabeçalho - Mapeado para os campos flat enviados pelo frontend
-    "client_id":                 ("TextField_21",   "text"),
-    "client_name":               ("NOME_1",          "text"),
-    "weapon_id":                 ("TextField_16",    "text"),
-
-    # Medidas da coronha
-    "gunstock_measurements1":    ("1_1",             "text"),
-    "gunstock_measurements2":    ("2_1",             "text"),
-    "gunstock_measurements3":    ("3_1",             "text"),
-    "gunstock_measurements5":    ("TextField_32",    "text"),
-    "gunstock_measurements6":    ("6_1",             "text"),
-    "gunstock_measurements7":    ("7_1",             "text"),
-
-    # CAST ON
-    "gunstock_cast_on1":         ("1_2",             "text"),
-    "gunstock_cast_on2":         ("2_2",             "text"),
-    "gunstock_cast_on3":         ("3_2",             "text"),
-    "gunstock_cast_on4":         ("TextField_35",    "text"),
-
-    # CAST OFF
-    "gunstock_cast_off1":        ("TextField_30",    "text"),
-    "gunstock_cast_off2":        ("TextField_33",    "text"),
-    "gunstock_cast_off3":        ("TextField_34",    "text"),
-    "gunstock_cast_off4":        ("TextField_36",    "text"),
-
-    # Largura do Punho (Grip Width)
-    "gunstock_width1":           ("TextField_42",    "text"),
-    "gunstock_width2":           ("TextField_45",    "text"),
-    "gunstock_width3":           ("TextField_48",    "text"),
-
-    # Medidas do Punho (Grip Measurements)
-    "gunstock_grip_measurements1": ("2_3",             "text"),
-    "gunstock_grip_measurements2": ("1_3",             "text"),
-    "gunstock_grip_measurements3": ("3_3",             "text"),
-    "gunstock_grip_measurements4": ("2_4",             "text"),
-    "gunstock_grip_measurements5": ("5_2",             "text"),
-    "gunstock_grip_measurements6": ("6_2",             "text"),
-
-    # Calço (Recoil Pad)
-    "gunstock_recoil_pad1":      ("1_4",             "text"),
-    "gunstock_recoil_pad2":      ("3_4",             "text"),
-    "gunstock_recoil_pad3":      ("4",               "text"),
-
-    # Pitch
-    "pitch":                     ("PITCH",           "text"),
+FORM_MAPS = {
+    "coronha": {
+        # Cabeçalho
+        "client_name": ("NOME_1", "text"),
+        "weapon_id": ("TextField_16", "text"),
+        # Medidas da coronha
+        "gunstock_measurements1": ("1_1", "text"),
+        "gunstock_measurements2": ("2_1", "text"),
+        "gunstock_measurements3": ("3_1", "text"),
+        "gunstock_measurements4": ("4_1", "text"), # Assumido, estava em falta
+        "gunstock_measurements5": ("TextField_32", "text"),
+        "gunstock_measurements6": ("6_1", "text"),
+        "gunstock_measurements7": ("7_1", "text"),
+        # CAST ON
+        "gunstock_cast_on1": ("1_2", "text"),
+        "gunstock_cast_on2": ("2_2", "text"),
+        "gunstock_cast_on3": ("3_2", "text"),
+        "gunstock_cast_on4": ("TextField_35", "text"),
+        # CAST OFF
+        "gunstock_cast_off1": ("TextField_30", "text"),
+        "gunstock_cast_off2": ("TextField_33", "text"),
+        "gunstock_cast_off3": ("TextField_34", "text"),
+        "gunstock_cast_off4": ("TextField_36", "text"),
+        # Largura do Punho (Grip Width)
+        "gunstock_width1": ("TextField_42", "text"),
+        "gunstock_width2": ("TextField_45", "text"),
+        "gunstock_width3": ("TextField_48", "text"),
+        # Medidas do Punho (Grip Measurements)
+        "gunstock_grip_measurements1": ("2_3", "text"),
+        "gunstock_grip_measurements2": ("1_3", "text"),
+        "gunstock_grip_measurements3": ("3_3", "text"),
+        "gunstock_grip_measurements4": ("2_4", "text"),
+        "gunstock_grip_measurements5": ("5_2", "text"),
+        "gunstock_grip_measurements6": ("6_2", "text"),
+        # Calço (Recoil Pad)
+        "gunstock_recoil_pad1": ("1_4", "text"),
+        "gunstock_recoil_pad2": ("3_4", "text"),
+        "gunstock_recoil_pad3": ("4", "text"),
+        # Pitch
+        "pitch": ("PITCH", "text"),
+    },
+    "medidas_corpo": {
+        # TODO: É NECESSÁRIO PREENCHER OS NOMES DOS CAMPOS DO PDF 'Corpo.pdf'
+        # Medidas (Mão Aberta)
+        "body_measurements_open_palm1": ("NOME_CAMPO_PDF_1", "text"),
+        "body_measurements_open_palm2": ("NOME_CAMPO_PDF_2", "text"),
+        "body_measurements_open_palm3": ("NOME_CAMPO_PDF_3", "text"),
+        "body_measurements_open_palm4": ("NOME_CAMPO_PDF_4", "text"),
+        "body_measurements_open_palm5": ("NOME_CAMPO_PDF_5", "text"),
+        "body_measurements_open_palm6": ("NOME_CAMPO_PDF_6", "text"),
+        # Medidas (Corpo)
+        "body_measurements_body1": ("NOME_CAMPO_PDF_7", "text"),
+        "body_measurements_body2": ("NOME_CAMPO_PDF_8", "text"),
+        "body_measurements_body3": ("NOME_CAMPO_PDF_9", "text"),
+        "body_measurements_weight": ("NOME_CAMPO_PDF_10", "text"),
+        "body_measurements_age": ("NOME_CAMPO_PDF_11", "text"),
+        # Medidas (Mão em Posição)
+        "body_measurements_hand_in_position1": ("NOME_CAMPO_PDF_12", "text"),
+        "body_measurements_hand_in_position2": ("NOME_CAMPO_PDF_13", "text"),
+        "body_measurements_hand_in_position3": ("NOME_CAMPO_PDF_14", "text"),
+        "body_measurements_between_hands": ("NOME_CAMPO_PDF_15", "text"),
+    },
+    "medidas_fuste": {
+        # TODO: É NECESSÁRIO PREENCHER OS NOMES DOS CAMPOS DO PDF 'Fuste.pdf'
+        # Medidas do Fuste (Vista de Cima)
+        "forehand_dimensions_top_view1": ("NOME_CAMPO_PDF_A", "text"),
+        "forehand_dimensions_top_view2": ("NOME_CAMPO_PDF_B", "text"),
+        "forehand_dimensions_top_view3": ("NOME_CAMPO_PDF_C", "text"),
+        # Medidas do Fuste (Vista de Lado)
+        "forehand_dimensions_side_view4": ("NOME_CAMPO_PDF_D", "text"),
+        "forehand_dimensions_side_view5": ("NOME_CAMPO_PDF_E", "text"),
+        "forehand_dimensions_side_view6": ("NOME_CAMPO_PDF_F", "text"),
+        "forehand_dimensions_side_view7": ("NOME_CAMPO_PDF_G", "text"),
+    },
+    "analise": {
+        # Cabeçalho cliente
+        "client_id": ("Texto1", "text"),
+        "client_name": ("NOME", "text"),
+        "address": ("MORADA", "text"),
+        # Cabeçalho arma
+        "weapon_id": ("ID ARMA", "text"),
+        "brand": ("ARMA", "text"),
+        "model": ("MODELO", "text"),
+        "rib": ("FITA", "text"),
+        "caliber": ("CALIBRE", "text"),
+        "barrel_length": ("CANOS", "text"),
+        "barrel_weight": ("PESO CANOS", "text"),
+        "forehand_weight": ("PESO FUSTE", "text"),
+        "total_weight": ("TextField_5", "text"),
+        # Medidas da coronha (secção análise)
+        "gunstock_measurements1": ("1", "text"),
+        "gunstock_measurements2": ("2", "text"),
+        "gunstock_measurements3": ("3", "text"),
+        "gunstock_measurements5": ("5", "text"),
+        "gunstock_measurements6": ("6", "text"),
+        "gunstock_measurements7": ("7", "text"),
+    }
 }
-
-# Mapeamento para FOLHA DE ANÁLISE (página 1 – análise do cliente)
-ANALISE_MAP = {
-    # Cabeçalho cliente
-    "client_id":                 ("Texto1",              "text"),
-    "client_name":               ("NOME",                "text"),
-    "address":                   ("MORADA",              "text"), # Mapeado de client.address
-    # Cabeçalho arma
-    "weapon_id":                 ("ID ARMA",             "text"),
-    "brand":                     ("ARMA",                "text"), # Mapeado de weapon.brand
-    "model":                     ("MODELO",              "text"), # Mapeado de weapon.model
-    "rib":                       ("FITA",                "text"), # Mapeado de weapon.rib
-    "caliber":                   ("CALIBRE",             "text"), # Mapeado de weapon.caliber
-    "barrel_length":             ("CANOS",               "text"), # Mapeado de weapon.barrel_length
-    "barrel_weight":             ("PESO CANOS",          "text"),
-    "forehand_weight":           ("PESO FUSTE",          "text"),
-    "total_weight":              ("TextField_5",         "text"),
-    # Medidas da coronha (secção análise)
-    "gunstock_measurements1":    ("1",                   "text"),
-    "gunstock_measurements2":    ("2",                   "text"),
-    "gunstock_measurements3":    ("3",                   "text"),
-    "gunstock_measurements5":    ("5",                   "text"),
-    "gunstock_measurements6":    ("6",                   "text"),
-    "gunstock_measurements7":    ("7",                   "text"),
-}
-
-# A página 2 da Folha de Análise é igual à Folha de Obra, mas com page=2
-ANALISE_OBRA_MAP = {k: (v[0], v[1], 2) for k, v in OBRA_MAP.items()}
 
 
 def resolve_fields(data: dict, field_map: dict) -> list[dict]:
@@ -194,26 +216,38 @@ def main():
         description="Preenche Folhas MR (Obra / Análise) a partir de um JSON."
     )
     parser.add_argument(
-        "--json", required=True,
+        "--json",
         help="Caminho para o ficheiro JSON com os dados"
     )
     parser.add_argument(
-        "--folha", required=True, choices=["obra", "analise", "ambas"],
-        help="Qual folha preencher: 'obra', 'analise' ou 'ambas'"
+        "--folha", choices=FORM_MAPS.keys(),
+        help="O tipo de folha a preencher (e.g., 'coronha', 'medidas_corpo')"
     )
     parser.add_argument(
-        "--output", required=True,
+        "--output",
         help="Caminho para o PDF de saída"
     )
     parser.add_argument(
-        "--template-obra", default=DEFAULT_TEMPLATE_OBRA,
-        help=f"Template Folha de Obra (default: {DEFAULT_TEMPLATE_OBRA})"
+        "--template", required=True,
+        help="Caminho para o template PDF"
     )
     parser.add_argument(
-        "--template-analise", default=DEFAULT_TEMPLATE_ANALISE,
-        help=f"Template Folha de Análise (default: {DEFAULT_TEMPLATE_ANALISE})"
+        "--inspect", action="store_true",
+        help="Lista os campos do template PDF e termina (para debug)"
     )
     args = parser.parse_args()
+
+    if not Path(args.template).exists():
+        print(f"ERRO: Template não encontrado: {args.template}")
+        sys.exit(1)
+
+    if args.inspect:
+        list_template_fields(args.template)
+        sys.exit(0)
+
+    # Validação manual dos argumentos obrigatórios para preenchimento
+    if not all([args.json, args.folha, args.output]):
+        parser.error("os argumentos --json, --folha e --output são obrigatórios (exceto se usar --inspect)")
 
     # Carregar JSON
     try:
@@ -231,44 +265,26 @@ def main():
     print(f"   Folha: {args.folha}")
     print(f"   Saída: {args.output}\n")
 
-    if args.folha == "obra":
-        if not Path(args.template_obra).exists():
-            print(f"ERRO: Template não encontrado: {args.template_obra}")
-            sys.exit(1)
-        fields = resolve_fields(data, OBRA_MAP)
-        fill_pdf(args.template_obra, fields, args.output)
+    # Seleciona o mapa de campos correto
+    field_map = FORM_MAPS.get(args.folha)
+    if not field_map:
+        # Este caso é prevenido pelo `choices` do argparse, mas é uma segurança extra
+        print(f"ERRO: Tipo de folha desconhecido: {args.folha}")
+        sys.exit(1)
 
-    elif args.folha == "analise":
-        if not Path(args.template_analise).exists():
-            print(f"ERRO: Template não encontrado: {args.template_analise}")
-            sys.exit(1)
-        # Página 1: análise
-        fields_p1 = resolve_fields(data, ANALISE_MAP)
-        # Página 2: folha de obra incorporada
-        fields_p2 = resolve_fields(data, ANALISE_OBRA_MAP)
-        fill_pdf(args.template_analise, fields_p1 + fields_p2, args.output)
+    # A folha de análise é especial (2 páginas) e reutiliza o mapa da coronha
+    if args.folha == 'analise':
+        analise_obra_map = {k: (v[0], v[1], 2) for k, v in FORM_MAPS["coronha"].items()}
+        fields_p1 = resolve_fields(data, field_map)
+        fields_p2 = resolve_fields(data, analise_obra_map)
+        fill_pdf(args.template, fields_p1 + fields_p2, args.output)
+    else:
+        # Folhas de 1 página (coronha, fuste, corpo)
+        fields = resolve_fields(data, field_map)
+        fill_pdf(args.template, fields, args.output)
 
-    elif args.folha == "ambas":
-        # Gera os dois ficheiros separados
-        base, ext = Path(args.output).stem, Path(args.output).suffix
-        out_dir   = Path(args.output).parent
-
-        out_obra    = out_dir / f"{base}_obra{ext}"
-        out_analise = out_dir / f"{base}_analise{ext}"
-
-        if not Path(args.template_obra).exists():
-            print(f"ERRO: Template não encontrado: {args.template_obra}")
-            sys.exit(1)
-        if not Path(args.template_analise).exists():
-            print(f"ERRO: Template não encontrado: {args.template_analise}")
-            sys.exit(1)
-
-        fields_obra = resolve_fields(data, OBRA_MAP)
-        fill_pdf(args.template_obra, fields_obra, str(out_obra))
-
-        fields_p1 = resolve_fields(data, ANALISE_MAP)
-        fields_p2 = resolve_fields(data, ANALISE_OBRA_MAP)
-        fill_pdf(args.template_analise, fields_p1 + fields_p2, str(out_analise))
+    # O modo "ambas" foi removido por simplicidade. A aplicação pode chamar
+    # o script duas vezes se necessitar de gerar ambos os PDFs.
 
     print("\n✅ Concluído!")
 

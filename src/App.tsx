@@ -40,8 +40,8 @@ import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import GunstockDimensions from "./pages/fittings/GunstockDimensions";
-import BodyMeasurementsPage from "./pages/fittings/BodyMeasurementsPage";
-import ForehandDimensionsPage from "./pages/fittings/ForehandDimensionsPage";
+import BodyMeasurements from "./pages/fittings/BodyMeasurements";
+import ForehandDimensions from "./pages/fittings/ForehandDimensions";
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -109,8 +109,8 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                  <Route path="/fittings/gunstock" element={<GunstockDimensions />} />
-                <Route path="/fittings/body" element={<BodyMeasurementsPage />} />
-                <Route path="/fittings/forehand" element={<ForehandDimensionsPage />} />
+                <Route path="/fittings/body" element={<BodyMeasurements />} />
+                <Route path="/fittings/forehand" element={<ForehandDimensions />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/release-orders" element={<ReleaseOrders />} />
                 <Route path="/workstations" element={<Workstations />} />

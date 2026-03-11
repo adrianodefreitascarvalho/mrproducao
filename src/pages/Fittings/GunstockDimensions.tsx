@@ -2,7 +2,7 @@ import { FittingPage, type FittingData } from "./FittingPage";
 import { CardTitle } from "@/components/ui/card";
 
 type GunstockFormData = Omit<FittingData, 'id' | 'created_at'> & {
-  gunstock_measurements?: number | null;
+  gunstock_measurements1?: number | null;
   gunstock_measurements2?: number | null;
   gunstock_measurements3?: number | null;
   gunstock_measurements4?: number | null;
@@ -23,12 +23,6 @@ type GunstockFormData = Omit<FittingData, 'id' | 'created_at'> & {
   gunstock_cast_on2?: number | null;
   gunstock_cast_on3?: number | null;
   gunstock_cast_on4?: number | null;
-  gunstock_grip_measurements1?: number | null;
-  gunstock_grip_measurements2?: number | null;
-  gunstock_grip_measurements3?: number | null;
-  gunstock_grip_measurements4?: number | null;
-  gunstock_grip_measurements5?: number | null;
-  gunstock_grip_measurements6?: number | null;
 };
 
 const emptyFormData: GunstockFormData = {
@@ -39,8 +33,6 @@ const emptyFormData: GunstockFormData = {
   gunstock_recoil_pad1: null, gunstock_recoil_pad2: null, gunstock_recoil_pad3: null,
   gunstock_cast_off1: null, gunstock_cast_off2: null, gunstock_cast_off3: null, gunstock_cast_off4: null,
   gunstock_cast_on1: null, gunstock_cast_on2: null, gunstock_cast_on3: null, gunstock_cast_on4: null,
-  gunstock_grip_measurements1: null, gunstock_grip_measurements2: null, gunstock_grip_measurements3: null,
-  gunstock_grip_measurements4: null, gunstock_grip_measurements5: null, gunstock_grip_measurements6: null,
 };
 
 export default function GunstockDimensions() {
@@ -87,15 +79,6 @@ export default function GunstockDimensions() {
             {renderField('Recoil Pad 1', 'gunstock_recoil_pad1')}
             {renderField('Recoil Pad 2', 'gunstock_recoil_pad2')}
             {renderField('Recoil Pad 3', 'gunstock_recoil_pad3')}
-          </div>
-          <CardTitle className="text-lg pt-4">Medidas do Punho</CardTitle>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {renderField('Punho 1', 'gunstock_grip_measurements1')}
-            {renderField('Punho 2', 'gunstock_grip_measurements2')}
-            {renderField('Punho 3', 'gunstock_grip_measurements3')}
-            {renderField('Punho 4', 'gunstock_grip_measurements4')}
-            {renderField('Punho 5', 'gunstock_grip_measurements5')}
-            {renderField('Punho 6', 'gunstock_grip_measurements6')}
           </div>
         </>
       )}

@@ -3,7 +3,7 @@ import { FittingPage, FittingData } from "./FittingPage";
 
 // Define the specific data structure for Gunstock fittings
 type GunstockFittingData = Omit<FittingData, 'id' | 'created_at'> & {
-    gunstock_measurements?: number | null;
+    gunstock_measurements1?: number | null;
     gunstock_measurements2?: number | null;
     gunstock_measurements3?: number | null;
     gunstock_measurements4?: number | null;

@@ -54,7 +54,7 @@ export default function GunstockDimensions() {
         <>
           <CardTitle className="text-lg pt-4">Medidas</CardTitle>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {renderField('Medida 1', 'gunstock_measurements')}
+            {renderField('Medida 1', 'gunstock_measurements1')}
             {renderField('Medida 2', 'gunstock_measurements2')}
             {renderField('Medida 3', 'gunstock_measurements3')}
             {renderField('Medida 4', 'gunstock_measurements4')}

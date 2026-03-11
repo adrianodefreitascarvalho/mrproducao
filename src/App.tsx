@@ -38,16 +38,10 @@ import SalesOrders from "./pages/SalesOrders";
 import Users from "./pages/Users";
 import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
-import NotFound from "./pages/NotFound";
-<<<<<<< HEAD
+import NotFound from "./pages/NotFound"; 
 import GunstockDimensions from "./pages/fittings/GunstockDimensions";
 import BodyMeasurements from "./pages/fittings/BodyMeasurements";
 import ForehandDimensions from "./pages/fittings/ForehandDimensions";
-=======
-import GunstockDimensions from "./pages/Fittings/GunstockDimensions";
-import BodyMeasurementsPage from "./pages/Fittings/BodyMeasurementsPage";
-import ForehandDimensionsPage from "./pages/Fittings/ForehandDimensionsPage";
->>>>>>> 55b37e5fd6fbec382c79fe9f7eb6681dad0b9e2a
 const queryClient = new QueryClient();
 
 const App = () => {

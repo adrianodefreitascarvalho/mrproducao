@@ -30,127 +30,80 @@ from pypdf.generic import NameObject, BooleanObject, ArrayObject, TextStringObje
 
 # Mapeamento para FOLHA DE OBRA (ficheiro standalone de 1 página)
 OBRA_MAP = {
-    # ── Cabeçalho cliente ──────────────────────────────────────────────────
-    "cliente.id_cliente":        ("TextField_21",   "text"),
-    "cliente.nome":              ("NOME_1",          "text"),
-    "cliente.morada":            ("MORADA_1",        "text"),
-    "cliente.tlm":               ("TLM",             "text"),
-    "cliente.email":             ("E-MAIL",          "text"),
-    "servico.tipo_servico":      ("TextField_17",    "text"),
-    "servico.anatomia":          ("ANATOMIA",        "text"),
-    # ── Cabeçalho arma ────────────────────────────────────────────────────
-    "arma.id_arma":              ("TextField_16",    "text"),
-    "arma.arma":                 ("TextField_14",    "text"),
-    "arma.fita":                 ("FITA_1",          "text"),
-    "arma.modalidade":           ("MODALIDADE",      "text"),
-    # Checkboxes equipamento
-    "arma.tem_mala":             ("Caixa de seleção1", "checkbox"),
-    "arma.tem_saco":             ("Caixa de seleção2", "checkbox"),
-    "arma.tem_aloquete":         ("Caixa de seleção3", "checkbox"),
-    # ── Observação geral ──────────────────────────────────────────────────
-    "obs_geral":                 ("OBS",             "text"),
-    # ── Campos de trabalho ────────────────────────────────────────────────
-    "trabalho.crista_de_regular": ("1 - CRISTA DE REGULAR", "text"),
-    "trabalho.punho":            ("2 - PUNHO",       "text"),
-    "trabalho.fuste":            ("3 - FUSTE",       "text"),
-    "trabalho.calco":            ("TextField_25",    "text"),
-    "trabalho.serrilhado":       ("6/7 - SERRILHADO","text"),
-    "trabalho.acabamento":       ("5 - ACABAMENTO",  "text"),
-    "trabalho.linhas":           ("8 - LINHAS",      "text"),
-    "trabalho.gravacao":         ("TextField_26",    "text"),
-    "trabalho.obs_trabalho":     ("10- OBS",         "text"),
-    "trabalho.madeira":          ("TextField_29",    "text"),
-    # ── Medidas da coronha ────────────────────────────────────────────────
-    "medidas_coronha.m1":        ("1_1",             "text"),
-    "medidas_coronha.m2":        ("2_1",             "text"),
-    "medidas_coronha.m3":        ("3_1",             "text"),
-    "medidas_coronha.m5":        ("TextField_32",    "text"),
-    "medidas_coronha.m6":        ("6_1",             "text"),
-    "medidas_coronha.m7":        ("7_1",             "text"),
-    # ── CAST ON / OFF ─────────────────────────────────────────────────────
-    "cast.on_1":                 ("1_2",             "text"),
-    "cast.on_2":                 ("2_2",             "text"),
-    "cast.on_3":                 ("3_2",             "text"),
-    "cast.on_4":                 ("TextField_35",    "text"),
-    "cast.off_1":                ("TextField_30",    "text"),
-    "cast.off_2":                ("TextField_33",    "text"),
-    "cast.off_3":                ("TextField_34",    "text"),
-    "cast.off_4":                ("TextField_36",    "text"),
-    # ── Grip Width ────────────────────────────────────────────────────────
-    "grip_width.gw1":            ("TextField_42",    "text"),
-    "grip_width.gw2":            ("TextField_45",    "text"),
-    "grip_width.gw3":            ("TextField_48",    "text"),
-    # ── Grip Measurements ─────────────────────────────────────────────────
-    "grip_measurements.gm1":     ("2_3",             "text"),
-    "grip_measurements.gm2":     ("1_3",             "text"),
-    "grip_measurements.gm3":     ("3_3",             "text"),
-    "grip_measurements.gm4":     ("2_4",             "text"),
-    "grip_measurements.gm5":     ("5_2",             "text"),
-    "grip_measurements.gm6":     ("6_2",             "text"),
-    # ── Recoil Pad ────────────────────────────────────────────────────────
-    "recoil_pad.rp1":            ("1_4",             "text"),
-    "recoil_pad.rp2":            ("3_4",             "text"),
-    "recoil_pad.rp3":            ("4",               "text"),
-    # ── Pitch ─────────────────────────────────────────────────────────────
+    # Cabeçalho - Mapeado para os campos flat enviados pelo frontend
+    "client_id":                 ("TextField_21",   "text"),
+    "client_name":               ("NOME_1",          "text"),
+    "weapon_id":                 ("TextField_16",    "text"),
+
+    # Medidas da coronha
+    "gunstock_measurements1":    ("1_1",             "text"),
+    "gunstock_measurements2":    ("2_1",             "text"),
+    "gunstock_measurements3":    ("3_1",             "text"),
+    "gunstock_measurements5":    ("TextField_32",    "text"),
+    "gunstock_measurements6":    ("6_1",             "text"),
+    "gunstock_measurements7":    ("7_1",             "text"),
+
+    # CAST ON
+    "gunstock_cast_on1":         ("1_2",             "text"),
+    "gunstock_cast_on2":         ("2_2",             "text"),
+    "gunstock_cast_on3":         ("3_2",             "text"),
+    "gunstock_cast_on4":         ("TextField_35",    "text"),
+
+    # CAST OFF
+    "gunstock_cast_off1":        ("TextField_30",    "text"),
+    "gunstock_cast_off2":        ("TextField_33",    "text"),
+    "gunstock_cast_off3":        ("TextField_34",    "text"),
+    "gunstock_cast_off4":        ("TextField_36",    "text"),
+
+    # Largura do Punho (Grip Width)
+    "gunstock_width1":           ("TextField_42",    "text"),
+    "gunstock_width2":           ("TextField_45",    "text"),
+    "gunstock_width3":           ("TextField_48",    "text"),
+
+    # Medidas do Punho (Grip Measurements)
+    "gunstock_grip_measurements1": ("2_3",             "text"),
+    "gunstock_grip_measurements2": ("1_3",             "text"),
+    "gunstock_grip_measurements3": ("3_3",             "text"),
+    "gunstock_grip_measurements4": ("2_4",             "text"),
+    "gunstock_grip_measurements5": ("5_2",             "text"),
+    "gunstock_grip_measurements6": ("6_2",             "text"),
+
+    # Calço (Recoil Pad)
+    "gunstock_recoil_pad1":      ("1_4",             "text"),
+    "gunstock_recoil_pad2":      ("3_4",             "text"),
+    "gunstock_recoil_pad3":      ("4",               "text"),
+
+    # Pitch
     "pitch":                     ("PITCH",           "text"),
 }
 
 # Mapeamento para FOLHA DE ANÁLISE (página 1 – análise do cliente)
 ANALISE_MAP = {
-    # ── Cabeçalho cliente ──────────────────────────────────────────────────
-    "cliente.id_cliente":        ("Texto1",              "text"),
-    "cliente.nome":              ("NOME",                "text"),
-    "cliente.morada":            ("MORADA",              "text"),
-    # ── Cabeçalho arma ────────────────────────────────────────────────────
-    "arma.id_arma":              ("ID ARMA",             "text"),
-    "arma.arma":                 ("ARMA",                "text"),
-    "arma.modelo":               ("MODELO",              "text"),
-    "arma.fita":                 ("FITA",                "text"),
-    "arma.calibre":              ("CALIBRE",             "text"),
-    "arma.comp_canos":           ("CANOS",               "text"),
-    "arma.peso_canos":           ("PESO CANOS",          "text"),
-    "arma.peso_fuste":           ("PESO FUSTE",          "text"),
-    "arma.peso_arma":            ("TextField_5",         "text"),
-    # ── Dados do atirador ─────────────────────────────────────────────────
-    "analise.mao_dominante":     ("MÃO DOMINANTE",       "text"),
-    "analise.olho_dominante":    ("TextField",           "text"),
-    "analise.olhos_a_atirar":    ("OLHOS A ATIRAR",      "text"),
-    "analise.oculos_prescricao": ("TextField_1",         "text"),
-    "analise.ve_fita_rasa":      ("VÊ FITA RASA?",       "text"),
-    "analise.teste_moedas":      ("TESTE MOEDAS",        "text"),
-    "analise.freq_treino":       ("TextField_3",         "text"),
-    "analise.freq_competicao":   ("TextField_4",         "text"),
-    "analise.modalidades_tiro":  ("MODALIDADES DE TIRO", "text"),
-    # ── Opinião do cliente sobre a coronha ────────────────────────────────
-    "analise.opiniao_altura":    ("TextField_7",         "text"),
-    "analise.opiniao_comprimento":("TextField_8",        "text"),
-    "analise.opiniao_punho":     ("TextField_10",        "text"),
-    "analise.opiniao_cast":      ("TextField_12",        "text"),
-    "analise.opiniao_actual":    ("Texto3",              "text"),
-    # ── Medidas da coronha (secção análise) ───────────────────────────────
-    "medidas_coronha.m1":        ("1",                   "text"),
-    "medidas_coronha.m2":        ("2",                   "text"),
-    "medidas_coronha.m3":        ("3",                   "text"),
-    "medidas_coronha.m5":        ("5",                   "text"),
-    "medidas_coronha.m6":        ("6",                   "text"),
-    "medidas_coronha.m7":        ("7",                   "text"),
+    # Cabeçalho cliente
+    "client_id":                 ("Texto1",              "text"),
+    "client_name":               ("NOME",                "text"),
+    "address":                   ("MORADA",              "text"), # Mapeado de client.address
+    # Cabeçalho arma
+    "weapon_id":                 ("ID ARMA",             "text"),
+    "brand":                     ("ARMA",                "text"), # Mapeado de weapon.brand
+    "model":                     ("MODELO",              "text"), # Mapeado de weapon.model
+    "rib":                       ("FITA",                "text"), # Mapeado de weapon.rib
+    "caliber":                   ("CALIBRE",             "text"), # Mapeado de weapon.caliber
+    "barrel_length":             ("CANOS",               "text"), # Mapeado de weapon.barrel_length
+    "barrel_weight":             ("PESO CANOS",          "text"),
+    "forehand_weight":           ("PESO FUSTE",          "text"),
+    "total_weight":              ("TextField_5",         "text"),
+    # Medidas da coronha (secção análise)
+    "gunstock_measurements1":    ("1",                   "text"),
+    "gunstock_measurements2":    ("2",                   "text"),
+    "gunstock_measurements3":    ("3",                   "text"),
+    "gunstock_measurements5":    ("5",                   "text"),
+    "gunstock_measurements6":    ("6",                   "text"),
+    "gunstock_measurements7":    ("7",                   "text"),
 }
 
 # A página 2 da Folha de Análise é igual à Folha de Obra, mas com page=2
 ANALISE_OBRA_MAP = {k: (v[0], v[1], 2) for k, v in OBRA_MAP.items()}
-
-
-# ─── Utilitários ──────────────────────────────────────────────────────────────
-
-def get_nested(data: dict, dotted_key: str):
-    """Obtém um valor de um dicionário usando notação com pontos (ex: 'cliente.nome')."""
-    keys = dotted_key.split(".")
-    val = data
-    for k in keys:
-        if not isinstance(val, dict):
-            return None
-        val = val.get(k)
-    return val
 
 
 def resolve_fields(data: dict, field_map: dict) -> list[dict]:
@@ -161,7 +114,7 @@ def resolve_fields(data: dict, field_map: dict) -> list[dict]:
         field_type = mapping[1]
         page = mapping[2] if len(mapping) > 2 else 1
 
-        value = get_nested(data, json_key)
+        value = data.get(json_key)
         if value is None:
             continue  # campo não fornecido → deixar em branco
 

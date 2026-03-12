@@ -50,9 +50,12 @@ const emptyFormData: GunstockFormData = {
 export default function GunstockDimensions() {
   return (
     <FittingPage<GunstockFormData>
-      pageTitle="Medidas Coronha" pageSubtitle="Gestão de medidas de coronha"
-      tableName="gunstock_dimensions" emptyFormData={emptyFormData}
-      pdfTemplatePath="/pdf-templates/Coronha.pdf" pdfSchemaPath="/pdf-templates/gunstock_dimensions_schema.json"
+      pageTitle="Medidas Coronha"
+      pageSubtitle="Gestão de medidas de coronha"
+      tableName="gunstock_dimensions"
+      emptyFormData={emptyFormData}
+      pdfTemplatePath="/pdf-templates/Coronha.pdf"
+      pdfSchemaPath="/pdf-templates/gunstock_dimensions_schema.json"
       pdfOutputNamePrefix="coronha"
       renderFormFields={(_formData, _handleInputChange, renderField) => (
         <>

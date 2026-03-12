@@ -44,6 +44,8 @@ const navigation: NavigationItem[] = [
       { name: "Medidas Coronha", href: "/fittings/gunstock" },
       { name: "Medidas Corporais", href: "/fittings/body" },
       { name: "Medidas Fuste", href: "/fittings/forehand" },
+      { name: "Folha de Obra", href: "/fittings/folha-de-obra" },
+      { name: "Folha de Análise", href: "/fittings/folha-de-analise" },
     ],
   },
   { name: "Madeiras", href: "/woodstock", icon: TreePine },

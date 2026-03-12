@@ -22,9 +22,12 @@ const emptyFormData: ForehandFormData = {
 export default function ForehandDimensions() {
   return (
     <FittingPage<ForehandFormData>
-      pageTitle="Medidas Fuste" pageSubtitle="Gestão de medidas de fuste"
-      tableName="forehand_dimensions" emptyFormData={emptyFormData}
-      pdfTemplatePath="/pdf-templates/Fuste.pdf" pdfSchemaPath="/pdf-templates/forehand_dimensions_schema.json"
+      pageTitle="Medidas Fuste"
+      pageSubtitle="Gestão de medidas de fuste"
+      tableName="forehand_dimensions"
+      emptyFormData={emptyFormData}
+      pdfTemplatePath="/pdf-templates/Fuste.pdf"
+      pdfSchemaPath="/pdf-templates/forehand_dimensions_schema.json"
       pdfOutputNamePrefix="fuste"
       renderFormFields={(_formData, _handleInputChange, renderField) => (
         <>

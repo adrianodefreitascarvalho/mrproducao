@@ -42,6 +42,8 @@ import NotFound from "./pages/NotFound";
 import GunstockDimensions from "./pages/fittings/GunstockDimensions";
 import BodyMeasurements from "./pages/fittings/BodyMeasurements";
 import ForehandDimensions from "./pages/fittings/ForehandDimensions";
+import FolhaDeObra from "./pages/fittings/FolhaDeObra";
+import FolhaDeAnalise from "./pages/fittings/FolhaDeAnalise";
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -111,6 +113,8 @@ const App = () => {
                  <Route path="/fittings/gunstock" element={<GunstockDimensions />} />
                 <Route path="/fittings/body" element={<BodyMeasurements />} />
                 <Route path="/fittings/forehand" element={<ForehandDimensions />} />
+                <Route path="/fittings/folha-de-obra" element={<FolhaDeObra />} />
+                <Route path="/fittings/folha-de-analise" element={<FolhaDeAnalise />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/release-orders" element={<ReleaseOrders />} />
                 <Route path="/workstations" element={<Workstations />} />

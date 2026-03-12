@@ -33,9 +33,12 @@ const emptyFormData: BodyFormData = {
 export default function BodyMeasurements() {
   return (
     <FittingPage<BodyFormData>
-      pageTitle="Medidas Corporais" pageSubtitle="Gestão de medidas corporais"
-      tableName="body_measurements" emptyFormData={emptyFormData}
-      pdfTemplatePath="/pdf-templates/Medidas_Corporais.pdf" pdfSchemaPath="/pdf-templates/body_measurements_schema.json"
+      pageTitle="Medidas Corporais"
+      pageSubtitle="Gestão de medidas corporais"
+      tableName="body_measurements"
+      emptyFormData={emptyFormData}
+      pdfTemplatePath="/pdf-templates/Medidas_Corporais.pdf"
+      pdfSchemaPath="/pdf-templates/body_measurements_schema.json"
       pdfOutputNamePrefix="medidas_corporais"
       renderFormFields={(_formData, _handleInputChange, renderField) => (
         <>

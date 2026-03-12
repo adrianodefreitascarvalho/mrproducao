@@ -34,24 +34,40 @@ export async function generatePdf(
   const form = pdfDoc.getForm();
 
   // 3. Mapear os dados para os campos do PDF
+  console.log("Iniciando mapeamento de dados para o PDF. Dados recebidos:", data);
   fieldMappings.forEach(mapping => {
+    const dbField = mapping.db_field;
+    const pdfField = mapping.pdf_field;
+    const value = data[dbField];
+
+    // Log da tentativa de mapeamento
+    console.log(`Mapeando: db_field='${dbField}' -> pdf_field='${pdfField}'. Valor encontrado:`, value);
+
     try {
-      const field = form.getField(mapping.pdf_field);
-      const value = data[mapping.db_field];
+      const field = form.getField(pdfField);
+
+      if (!field) {
+        console.warn(`AVISO: Campo do PDF não encontrado no template: '${pdfField}'`);
+        return; // Pula para o próximo campo do mapeamento
+      }
 
       if (field instanceof PDFTextField) {
         const textValue = value !== null && value !== undefined ? String(value) : '';
+        console.log(`  -> Preenchendo campo de texto '${pdfField}' com valor: "${textValue}"`);
         field.setText(textValue);
       } else if (field instanceof PDFCheckBox) {
+        console.log(`  -> Preenchendo checkbox '${pdfField}' com valor: ${!!value}`);
         if (value === true) {
           field.check();
         } else {
           field.uncheck();
         }
+      } else {
+        console.warn(`  -> Tipo de campo não suportado para '${pdfField}':`, field.constructor.name);
       }
 
     } catch (e) {
-      console.warn(`Campo do PDF não encontrado ou inválido: ${mapping.pdf_field}`, e);
+      console.error(`ERRO ao processar o campo do PDF '${pdfField}':`, e);
     }
   });
 

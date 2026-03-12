@@ -205,6 +205,26 @@ def fill_pdf(template_path: str, field_values: list[dict], output_path: str):
     return filled
 
 
+def list_template_fields(template_path: str):
+    """Lista todos os campos de formulário de um template PDF."""
+    print(f"🔍 Inspecionando campos do template: {template_path}")
+    try:
+        reader = PdfReader(template_path)
+        fields = reader.get_fields()
+        if not fields:
+            print("  -> Nenhum campo de formulário encontrado.")
+            return
+
+        print(f"  -> Encontrados {len(fields)} campos:")
+        # O método get_fields() devolve um dicionário.
+        for field_name, field_obj in fields.items():
+            field_type = field_obj.get("/FT")  # /FT é o tipo do campo (ex: /Tx para texto)
+            print(f"     - Nome: '{field_name}', Tipo: {field_type}")
+
+    except Exception as e:
+        print(f"  -> ERRO ao ler o template: {e}")
+
+
 # ─── Programa principal ───────────────────────────────────────────────────────
 
 DEFAULT_TEMPLATE_OBRA    = "Folha_de_obra_MR_final.pdf"
@@ -216,38 +236,22 @@ def main():
         description="Preenche Folhas MR (Obra / Análise) a partir de um JSON."
     )
     parser.add_argument(
-        "--json",
+        "--json", required=True,
         help="Caminho para o ficheiro JSON com os dados"
     )
     parser.add_argument(
-        "--folha", choices=FORM_MAPS.keys(),
+        "--folha", required=True, choices=FORM_MAPS.keys(),
         help="O tipo de folha a preencher (e.g., 'coronha', 'medidas_corpo')"
     )
     parser.add_argument(
-        "--output",
+        "--output", required=True,
         help="Caminho para o PDF de saída"
     )
     parser.add_argument(
         "--template", required=True,
         help="Caminho para o template PDF"
     )
-    parser.add_argument(
-        "--inspect", action="store_true",
-        help="Lista os campos do template PDF e termina (para debug)"
-    )
     args = parser.parse_args()
-
-    if not Path(args.template).exists():
-        print(f"ERRO: Template não encontrado: {args.template}")
-        sys.exit(1)
-
-    if args.inspect:
-        list_template_fields(args.template)
-        sys.exit(0)
-
-    # Validação manual dos argumentos obrigatórios para preenchimento
-    if not all([args.json, args.folha, args.output]):
-        parser.error("os argumentos --json, --folha e --output são obrigatórios (exceto se usar --inspect)")
 
     # Carregar JSON
     try:
@@ -264,6 +268,10 @@ def main():
     print(f"   JSON:  {args.json}")
     print(f"   Folha: {args.folha}")
     print(f"   Saída: {args.output}\n")
+
+    if not Path(args.template).exists():
+        print(f"ERRO: Template não encontrado: {args.template}")
+        sys.exit(1)
 
     # Seleciona o mapa de campos correto
     field_map = FORM_MAPS.get(args.folha)

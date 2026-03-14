@@ -254,7 +254,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       },
 
       updateProspect: async (id, updates) => {
-        const { data, error } = await supabase.from('prospects').update(updates).eq('id', id).select().single();
+        const { data, error } = await supabase.from('prospects').update(updates as any).eq('id', id).select().single();
         if (error) {
           console.error('Error updating prospect:', error.message);
           toast.error('Erro ao actualizar prospect', { description: getSafeErrorMessage(error, 'Prospect update') });

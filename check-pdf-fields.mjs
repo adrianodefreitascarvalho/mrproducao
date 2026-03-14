@@ -1,12 +1,6 @@
 // check-pdf-fields.mjs
-import {
-  PDFDocument,
-  PDFCheckBox,
-  PDFTextField,
-  PDFRadioGroup,
-  PDFDropdown,
-  PDFListBox,
-} from 'pdf-lib';
+import pdflib from 'pdf-lib';
+const { PDFDocument } = pdflib;
 import { readFileSync } from 'fs';
 import { argv } from 'process';
 

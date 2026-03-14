@@ -89,7 +89,7 @@ const EditProspectPage = () => {
 
   const handleSave = async (data: Partial<Prospect>) => {
     if (isNew) {
-      await addProspect(data as Database['public']['Tables']['prospects']['Insert']);
+      await addProspect(data as any);
     } else {
       await updateProspect(id, data);
     }

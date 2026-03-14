@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useProductionStore, type Database } from "@/lib/store";
+import { useProductionStore } from "@/lib/store";
 import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -82,17 +82,19 @@ const NewClient = () => {
     e.preventDefault();
     if (!firstName.trim() && !lastName.trim()) return;
     
-    const newClient = await addClient({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newClient: any = await addClient({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
       email: email.trim() || null,
       phone: phone.trim() || null,
       address: { street: address.trim(), notes: notes.trim() },
-    } as Database['public']['Tables']['clients']['Insert'], selectedWeapons);
+    }, selectedWeapons);
 
-    if (newClient) {
+    if (newClient && newClient.id) {
       // Create shooter profile
-      const { error } = await supabase.from('shooter_profiles').insert({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.from('shooter_profiles') as any).insert({
         client_id: newClient.id,
         dominant_hand: dominantHand,
         dominant_eye: dominantEye,

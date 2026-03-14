@@ -4,9 +4,10 @@ import { OrderStatus, ProductType, WoodGrade, WoodSpecies, woodSpecies as sample
 import { integrationService } from './integration';
 import { PRODUCTION_ROUTING } from '@/config';
 import { supabase, type Database, type Json } from './supabase';
+export type { Database };
 import { getSafeErrorMessage } from './errorHandler';
 export type Product = Database['public']['Tables']['products']['Row'];
-export type { Database, Json };
+export type { Json };
 
 // Define Operation and Workstation types based on the database schema
 export type Operation = Database['public']['Tables']['operations']['Row'];
@@ -15,33 +16,8 @@ export type ReleaseOrder = Database['public']['Tables']['release_orders']['Row']
 export type PriceItem = Database['public']['Tables']['price_items']['Row'];
 export type PriceTable = Database['public']['Tables']['price_tables']['Row'] & { price_items: PriceItem[] };
 export type Client = Database['public']['Tables']['clients']['Row'];
-export type Weapon = Database['public']['Tables']['weapons']['Row'] & {
-    brand?: string | null;
-    model?: string | null;
-    category?: string | null;
-    serial_number?: string | null;
-    caliber?: string | null;
-    dominant_hand?: string | null;
-    side_plates?: string | null;
-    barrel_length?: number | null;
-    barrel_weight?: number | null;
-    forend_weight?: number | null;
-    rib?: string | null;
-    total_weight?: number | null;
-    discipline?: string | null;
-    competition_frequency?: string | null;
-    observations?: string | null;
-    client?: {
-        id: string;
-        name: string;
-    };
-    products?: {
-        product_id: string;
-        quantity: number;
-    }[];
-};
-export type Prospect = Database['public']['Tables']['prospects']['Row'];
-export type ProspectInteraction = Database['public']['Tables']['prospect_interactions']['Row'];
+export type Weapon = Database['public']['Tables']['weapons']['Row'] & { category?: string | null };
+export type Prospect = any
 export type ClientWeapon = Database['public']['Tables']['client_weapons']['Row'];
 
 // Define ProductionOrder type based on the database schema for use within the app
@@ -68,7 +44,6 @@ interface ProductionStoreState {
   weapons: Weapon[];
   priceTables: PriceTable[];
   prospects: Prospect[];
-  prospectInteractions: ProspectInteraction[];
   isLoadingProspects: boolean;
   isLoadingProducts: boolean;
   isLoadingOrders: boolean;
@@ -96,10 +71,8 @@ interface ProductionStoreActions {
   fetchWeapons: () => Promise<void>;
   fetchPriceTables: () => Promise<void>;
   fetchProspects: () => Promise<void>;
-  fetchProspectInteractions: (prospectId: string) => Promise<void>;
-  addProspect: (prospect: Database['public']['Tables']['prospects']['Insert']) => Promise<void>;
-  updateProspect: (id: string, updates: Database['public']['Tables']['prospects']['Update']) => Promise<void>;
-  addProspectInteraction: (interaction: Database['public']['Tables']['prospect_interactions']['Insert']) => Promise<void>;
+  addProspect: (prospect: any) => Promise<void>;
+  updateProspect: (id: string, updates: any) => Promise<void>;
   fetchDropdowns: () => Promise<void>;
   importProductsFromPriceTables: () => Promise<void>;
   updateOrder: (id: string, updates: Partial<ProductionOrder>) => Promise<void>;
@@ -111,7 +84,7 @@ interface ProductionStoreActions {
   addWeapon: (weapon: Database['public']['Tables']['weapons']['Insert'] & { category?: string | null }) => Promise<Weapon | null>;
   updateWeapon: (id: string, updates: Database['public']['Tables']['weapons']['Update'] & { category?: string | null }) => Promise<void>;
   removeWeapon: (weaponId: string) => Promise<void>;
-  addClient: (client: Database['public']['Tables']['clients']['Insert'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<Client | null>;
+  addClient: (client: Database['public']['Tables']['clients']['Insert'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<void>;
   updateClient: (id: string, updates: Database['public']['Tables']['clients']['Update'], weapons?: { weapon_id: string; identification_number: string }[]) => Promise<void>;
   removeClient: (clientId: string) => Promise<void>;
   moveOrderToNextWorkstation: (orderId: string) => void;
@@ -147,7 +120,6 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       priceTables: [],
       isLoadingPriceTables: false,
       prospects: [],
-      prospectInteractions: [],
       isLoadingProspects: false,
       weaponCategories: [],
       calibers: [],
@@ -268,21 +240,8 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         set({ prospects: (data as Prospect[]) || [], isLoadingProspects: false });
       },
 
-      fetchProspectInteractions: async (prospectId) => {
-        const { data, error } = await supabase
-          .from('prospect_interactions')
-          .select('*')
-          .eq('prospect_id', prospectId)
-          .order('message_date', { ascending: false });
-        if (error) {
-          console.error('Error fetching interactions:', error.message);
-          return;
-        }
-        set({ prospectInteractions: data as ProspectInteraction[] || [] });
-      },
-
       addProspect: async (prospectData) => {
-        const { data, error } = await supabase.from('prospects').insert(prospectData).select().single();
+        const { data, error } = await supabase.from('prospects').insert(prospectData as any).select().single();
         if (error) {
           console.error('Error adding prospect:', error.message);
           toast.error('Erro ao adicionar prospect', { description: getSafeErrorMessage(error, 'Prospect creation') });
@@ -295,7 +254,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       },
 
       updateProspect: async (id, updates) => {
-        const { data, error } = await supabase.from('prospects').update(updates).eq('id', id).select().single();
+        const { data, error } = await (supabase as any).from('prospects').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating prospect:', error.message);
           toast.error('Erro ao actualizar prospect', { description: getSafeErrorMessage(error, 'Prospect update') });
@@ -311,19 +270,6 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
               get().fetchClients();
               get().fetchWeapons();
           }
-        }
-      },
-
-      addProspectInteraction: async (interaction) => {
-        const { data, error } = await supabase.from('prospect_interactions').insert(interaction).select().single();
-        if (error) {
-          console.error('Error adding interaction:', error.message);
-          toast.error('Erro ao registar interacção');
-          return;
-        }
-        if (data) {
-          set((state) => ({ prospectInteractions: [data as ProspectInteraction, ...state.prospectInteractions] }));
-          toast.success('Interacção registada!');
         }
       },
 
@@ -536,7 +482,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         if (error) {
           console.error('Error adding client:', error.message);
           toast.error('Erro ao adicionar cliente', { description: getSafeErrorMessage(error, 'Client creation') });
-          return null;
+          return;
         }
 
         if (client && weapons.length > 0) {
@@ -556,9 +502,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         if (client) {
           set((state) => ({ clients: [...state.clients, client as Client] }));
           toast.success('Cliente adicionado com sucesso!');
-          return client as Client;
         }
-        return null;
       },
 
       updateClient: async (id, updates, weapons) => {
@@ -744,7 +688,6 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       await get().addOrder({
         order_number: `OM-${orderToRelease.external_order_id}`,
         related_order_id: orderToRelease.external_order_id,
-        weapon_id: null,
         client: { id: 'unknown', name: `Cliente ${orderToRelease.external_order_id}` },
         products: ((orderToRelease.items || []) as OrderPayload['items']).map((item) => ({
           product_id: item.sku,

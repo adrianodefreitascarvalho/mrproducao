@@ -669,6 +669,287 @@ export type Database = {
         }
         Relationships: []
       }
+      prospect_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          message_content: string
+          message_date: string
+          prospect_id: string
+          reply_content: string | null
+          reply_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_content: string
+          message_date?: string
+          prospect_id: string
+          reply_content?: string | null
+          reply_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_content?: string
+          message_date?: string
+          prospect_id?: string
+          reply_content?: string | null
+          reply_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_interactions_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prospects: {
+        Row: {
+          addresses: Json | null
+          body_measurements_age: number | null
+          body_measurements_between_hands: number | null
+          body_measurements_body1: number | null
+          body_measurements_body2: number | null
+          body_measurements_body3: number | null
+          body_measurements_hand_in_position1: number | null
+          body_measurements_hand_in_position2: number | null
+          body_measurements_hand_in_position3: number | null
+          body_measurements_open_palm1: number | null
+          body_measurements_open_palm2: number | null
+          body_measurements_open_palm3: number | null
+          body_measurements_open_palm4: number | null
+          body_measurements_open_palm5: number | null
+          body_measurements_open_palm6: number | null
+          body_measurements_weight: number | null
+          body_units: string | null
+          created_at: string
+          email: string | null
+          first_name: string | null
+          forehand_dimensions_side_view4: number | null
+          forehand_dimensions_side_view5: number | null
+          forehand_dimensions_side_view6: number | null
+          forehand_dimensions_side_view7: number | null
+          forehand_dimensions_top_view1: number | null
+          forehand_dimensions_top_view2: number | null
+          forehand_dimensions_top_view3: number | null
+          forehand_units: string | null
+          gunstock_cast_off1: number | null
+          gunstock_cast_off2: number | null
+          gunstock_cast_off3: number | null
+          gunstock_cast_off4: number | null
+          gunstock_cast_on1: number | null
+          gunstock_cast_on2: number | null
+          gunstock_cast_on3: number | null
+          gunstock_cast_on4: number | null
+          gunstock_grip_measurements1: number | null
+          gunstock_grip_measurements2: number | null
+          gunstock_grip_measurements3: number | null
+          gunstock_grip_measurements4: number | null
+          gunstock_grip_measurements5: number | null
+          gunstock_grip_measurements6: number | null
+          gunstock_measurements1: number | null
+          gunstock_measurements2: number | null
+          gunstock_measurements3: number | null
+          gunstock_measurements4: number | null
+          gunstock_measurements5: number | null
+          gunstock_measurements6: number | null
+          gunstock_measurements7: number | null
+          gunstock_recoil_pad1: number | null
+          gunstock_recoil_pad2: number | null
+          gunstock_recoil_pad3: number | null
+          gunstock_units: string | null
+          gunstock_width1: number | null
+          gunstock_width2: number | null
+          gunstock_width3: number | null
+          id: string
+          last_name: string | null
+          nif: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          weapon_barrel_length: number | null
+          weapon_barrel_weight: number | null
+          weapon_brand: string | null
+          weapon_caliber: string | null
+          weapon_category: string | null
+          weapon_competition_frequency: string | null
+          weapon_discipline: string | null
+          weapon_dominant_hand: string | null
+          weapon_forend_weight: number | null
+          weapon_model: string | null
+          weapon_observations: string | null
+          weapon_rib: string | null
+          weapon_serial_number: string | null
+          weapon_side_plates: string | null
+          weapon_total_weight: number | null
+        }
+        Insert: {
+          addresses?: Json | null
+          body_measurements_age?: number | null
+          body_measurements_between_hands?: number | null
+          body_measurements_body1?: number | null
+          body_measurements_body2?: number | null
+          body_measurements_body3?: number | null
+          body_measurements_hand_in_position1?: number | null
+          body_measurements_hand_in_position2?: number | null
+          body_measurements_hand_in_position3?: number | null
+          body_measurements_open_palm1?: number | null
+          body_measurements_open_palm2?: number | null
+          body_measurements_open_palm3?: number | null
+          body_measurements_open_palm4?: number | null
+          body_measurements_open_palm5?: number | null
+          body_measurements_open_palm6?: number | null
+          body_measurements_weight?: number | null
+          body_units?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          forehand_dimensions_side_view4?: number | null
+          forehand_dimensions_side_view5?: number | null
+          forehand_dimensions_side_view6?: number | null
+          forehand_dimensions_side_view7?: number | null
+          forehand_dimensions_top_view1?: number | null
+          forehand_dimensions_top_view2?: number | null
+          forehand_dimensions_top_view3?: number | null
+          forehand_units?: string | null
+          gunstock_cast_off1?: number | null
+          gunstock_cast_off2?: number | null
+          gunstock_cast_off3?: number | null
+          gunstock_cast_off4?: number | null
+          gunstock_cast_on1?: number | null
+          gunstock_cast_on2?: number | null
+          gunstock_cast_on3?: number | null
+          gunstock_cast_on4?: number | null
+          gunstock_grip_measurements1?: number | null
+          gunstock_grip_measurements2?: number | null
+          gunstock_grip_measurements3?: number | null
+          gunstock_grip_measurements4?: number | null
+          gunstock_grip_measurements5?: number | null
+          gunstock_grip_measurements6?: number | null
+          gunstock_measurements1?: number | null
+          gunstock_measurements2?: number | null
+          gunstock_measurements3?: number | null
+          gunstock_measurements4?: number | null
+          gunstock_measurements5?: number | null
+          gunstock_measurements6?: number | null
+          gunstock_measurements7?: number | null
+          gunstock_recoil_pad1?: number | null
+          gunstock_recoil_pad2?: number | null
+          gunstock_recoil_pad3?: number | null
+          gunstock_units?: string | null
+          gunstock_width1?: number | null
+          gunstock_width2?: number | null
+          gunstock_width3?: number | null
+          id?: string
+          last_name?: string | null
+          nif?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          weapon_barrel_length?: number | null
+          weapon_barrel_weight?: number | null
+          weapon_brand?: string | null
+          weapon_caliber?: string | null
+          weapon_category?: string | null
+          weapon_competition_frequency?: string | null
+          weapon_discipline?: string | null
+          weapon_dominant_hand?: string | null
+          weapon_forend_weight?: number | null
+          weapon_model?: string | null
+          weapon_observations?: string | null
+          weapon_rib?: string | null
+          weapon_serial_number?: string | null
+          weapon_side_plates?: string | null
+          weapon_total_weight?: number | null
+        }
+        Update: {
+          addresses?: Json | null
+          body_measurements_age?: number | null
+          body_measurements_between_hands?: number | null
+          body_measurements_body1?: number | null
+          body_measurements_body2?: number | null
+          body_measurements_body3?: number | null
+          body_measurements_hand_in_position1?: number | null
+          body_measurements_hand_in_position2?: number | null
+          body_measurements_hand_in_position3?: number | null
+          body_measurements_open_palm1?: number | null
+          body_measurements_open_palm2?: number | null
+          body_measurements_open_palm3?: number | null
+          body_measurements_open_palm4?: number | null
+          body_measurements_open_palm5?: number | null
+          body_measurements_open_palm6?: number | null
+          body_measurements_weight?: number | null
+          body_units?: string | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          forehand_dimensions_side_view4?: number | null
+          forehand_dimensions_side_view5?: number | null
+          forehand_dimensions_side_view6?: number | null
+          forehand_dimensions_side_view7?: number | null
+          forehand_dimensions_top_view1?: number | null
+          forehand_dimensions_top_view2?: number | null
+          forehand_dimensions_top_view3?: number | null
+          forehand_units?: string | null
+          gunstock_cast_off1?: number | null
+          gunstock_cast_off2?: number | null
+          gunstock_cast_off3?: number | null
+          gunstock_cast_off4?: number | null
+          gunstock_cast_on1?: number | null
+          gunstock_cast_on2?: number | null
+          gunstock_cast_on3?: number | null
+          gunstock_cast_on4?: number | null
+          gunstock_grip_measurements1?: number | null
+          gunstock_grip_measurements2?: number | null
+          gunstock_grip_measurements3?: number | null
+          gunstock_grip_measurements4?: number | null
+          gunstock_grip_measurements5?: number | null
+          gunstock_grip_measurements6?: number | null
+          gunstock_measurements1?: number | null
+          gunstock_measurements2?: number | null
+          gunstock_measurements3?: number | null
+          gunstock_measurements4?: number | null
+          gunstock_measurements5?: number | null
+          gunstock_measurements6?: number | null
+          gunstock_measurements7?: number | null
+          gunstock_recoil_pad1?: number | null
+          gunstock_recoil_pad2?: number | null
+          gunstock_recoil_pad3?: number | null
+          gunstock_units?: string | null
+          gunstock_width1?: number | null
+          gunstock_width2?: number | null
+          gunstock_width3?: number | null
+          id?: string
+          last_name?: string | null
+          nif?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          weapon_barrel_length?: number | null
+          weapon_barrel_weight?: number | null
+          weapon_brand?: string | null
+          weapon_caliber?: string | null
+          weapon_category?: string | null
+          weapon_competition_frequency?: string | null
+          weapon_discipline?: string | null
+          weapon_dominant_hand?: string | null
+          weapon_forend_weight?: number | null
+          weapon_model?: string | null
+          weapon_observations?: string | null
+          weapon_rib?: string | null
+          weapon_serial_number?: string | null
+          weapon_side_plates?: string | null
+          weapon_total_weight?: number | null
+        }
+        Relationships: []
+      }
       release_orders: {
         Row: {
           created_at: string

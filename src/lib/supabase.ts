@@ -18,6 +18,7 @@ export interface Database {
           updated_at: string
           related_order_id: string | null
           order_number: string
+          weapon_id: string | null
           client: { id: string; name: string; }
           products: { product_id: string; quantity: number; }[]
           current_workstation: string
@@ -34,6 +35,7 @@ export interface Database {
           updated_at?: string
           related_order_id?: string | null
           order_number: string
+          weapon_id?: string | null
           client: { id: string; name: string; }
           products: { product_id: string; quantity: number; }[]
           current_workstation: string
@@ -91,6 +93,34 @@ export interface Database {
           address?: Json | null
         }
         Update: Partial<Database['public']['Tables']['clients']['Insert']>
+        Relationships: []
+      },
+      contacts: {
+        Row: {
+          id: string
+          first_name: string | null
+          last_name: string | null
+          email: string | null
+          phone: string | null
+          nif: string | null
+          address: Json | null
+          hearaboutus: string | null
+          created: string
+          updated: string
+        }
+        Insert: {
+          id?: string
+          first_name?: string | null
+          last_name?: string | null
+          email?: string | null
+          phone?: string | null
+          nif?: string | null
+          address?: Json | null
+          hearaboutus?: string | null
+          created?: string
+          updated?: string
+        }
+        Update: Partial<Database['public']['Tables']['contacts']['Insert']>
         Relationships: []
       },
       sales_orders: {
@@ -272,6 +302,7 @@ export interface Database {
           total_weight: number
           discipline: string
           competition_frequency: string
+          observations: string | null
           category: string | null
         }
         Insert: {
@@ -290,6 +321,7 @@ export interface Database {
           total_weight: number
           discipline: string
           competition_frequency: string
+          observations?: string | null
           category?: string | null
         }
         Update: Partial<Database['public']['Tables']['weapons']['Insert']>
@@ -425,6 +457,166 @@ export interface Database {
         Insert: { id?: string; name: string; created_at?: string }
         Update: { id?: string; name?: string; created_at?: string }
         Relationships: []
+      }
+      shooter_profiles: {
+        Row: {
+          id: string
+          client_id: string | null
+          contact_id: string | null
+          dominant_hand: string | null
+          dominant_eye: string | null
+          glasses: boolean | null
+          shooting_vision: string | null
+          shooting_discipline: string | null
+          practice_frequence: string | null
+          competition_frequence: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id?: string | null
+          contact_id?: string | null
+          dominant_hand?: string | null
+          dominant_eye?: string | null
+          glasses?: boolean | null
+          shooting_vision?: string | null
+          shooting_discipline?: string | null
+          practice_frequence?: string | null
+          competition_frequence?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['shooter_profiles']['Insert']>
+        Relationships: []
+      }
+      prospects: {
+        Row: {
+          id: string
+          status: string
+          first_name: string | null
+          last_name: string | null
+          email: string | null
+          phone: string | null
+          nif: string | null
+          addresses: Json | null
+          weapon_brand: string | null
+          weapon_model: string | null
+          weapon_category: string | null
+          weapon_serial_number: string | null
+          weapon_caliber: string | null
+          weapon_dominant_hand: string | null
+          weapon_side_plates: string | null
+          weapon_barrel_length: number | null
+          weapon_barrel_weight: number | null
+          weapon_forend_weight: number | null
+          weapon_rib: string | null
+          weapon_total_weight: number | null
+          weapon_discipline: string | null
+          weapon_competition_frequency: string | null
+          weapon_observations: string | null
+          gunstock_measurements1: number | null
+          gunstock_measurements2: number | null
+          gunstock_measurements3: number | null
+          gunstock_measurements4: number | null
+          gunstock_measurements5: number | null
+          gunstock_measurements6: number | null
+          gunstock_measurements7: number | null
+          gunstock_cast_on1: number | null
+          gunstock_cast_on2: number | null
+          gunstock_cast_on3: number | null
+          gunstock_cast_on4: number | null
+          gunstock_cast_off1: number | null
+          gunstock_cast_off2: number | null
+          gunstock_cast_off3: number | null
+          gunstock_cast_off4: number | null
+          gunstock_width1: number | null
+          gunstock_width2: number | null
+          gunstock_width3: number | null
+          gunstock_recoil_pad1: number | null
+          gunstock_recoil_pad2: number | null
+          gunstock_recoil_pad3: number | null
+          gunstock_grip_measurements1: number | null
+          gunstock_grip_measurements2: number | null
+          gunstock_grip_measurements3: number | null
+          gunstock_grip_measurements4: number | null
+          gunstock_grip_measurements5: number | null
+          gunstock_grip_measurements6: number | null
+          gunstock_units: string | null
+          body_measurements_open_palm1: number | null
+          body_measurements_open_palm2: number | null
+          body_measurements_open_palm3: number | null
+          body_measurements_open_palm4: number | null
+          body_measurements_open_palm5: number | null
+          body_measurements_open_palm6: number | null
+          body_measurements_body1: number | null
+          body_measurements_body2: number | null
+          body_measurements_body3: number | null
+          body_measurements_weight: number | null
+          body_measurements_age: number | null
+          body_measurements_hand_in_position1: number | null
+          body_measurements_hand_in_position2: number | null
+          body_measurements_hand_in_position3: number | null
+          body_measurements_between_hands: number | null
+          body_units: string | null
+          forehand_dimensions_top_view1: number | null
+          forehand_dimensions_top_view2: number | null
+          forehand_dimensions_top_view3: number | null
+          forehand_dimensions_side_view4: number | null
+          forehand_dimensions_side_view5: number | null
+          forehand_dimensions_side_view6: number | null
+          forehand_dimensions_side_view7: number | null
+          forehand_units: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          status?: string
+          first_name?: string | null
+          last_name?: string | null
+          email?: string | null
+          phone?: string | null
+          nif?: string | null
+          addresses?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['prospects']['Insert']>
+        Relationships: []
+      }
+      prospect_interactions: {
+        Row: {
+          id: string
+          prospect_id: string
+          message_content: string
+          message_date: string
+          reply_content: string | null
+          reply_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          prospect_id: string
+          message_content: string
+          message_date?: string
+          reply_content?: string | null
+          reply_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          message_content?: string
+          reply_content?: string | null
+          reply_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospect_interactions_prospect_id_fkey"
+            columns: ["prospect_id"]
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: Record<string, never>

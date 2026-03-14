@@ -41,8 +41,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
   const [discipline, setDiscipline] = useState(weapon.discipline ?? ''); 
   const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency | ''>((weapon.competition_frequency as CompetitionFrequency) || '');
   const [clientName, setClientName] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [observations, setObservations] = useState((weapon as any).observations || "");
+  const [observations, setObservations] = useState(weapon.observations || "");
 
   useEffect(() => {
     const fetchClient = async () => {
@@ -79,8 +78,7 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
       discipline: discipline.trim(),
       competition_frequency: competitionFrequency,
       observations: observations.trim() || null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
   };
 
   return (

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useProductionStore, type Client } from "@/lib/store";
+import { useProductionStore, type Client, type Database } from "@/lib/store";
 import type { Caliber, DominantHand, SidePlates, Rib, CompetitionFrequency } from "@/data/workstations";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -75,20 +75,20 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase.from('shooter_profiles') as any)
+      const { data } = await supabase.from('shooter_profiles')
         .select('*')
         .eq('client_id', client.id)
         .maybeSingle();
       
-      if (data) {
-        setDominantHand(data.dominant_hand || "");
-        setDominantEye(data.dominant_eye || "");
-        setGlasses(data.glasses || false);
-        setShootingVision(data.shooting_vision || "");
-        setShootingDiscipline(data.shooting_discipline || "");
-        setPracticeFrequence(data.practice_frequence || "");
-        setCompetitionFrequence(data.competition_frequence || "");
+      if (data && typeof data === 'object') {
+        const profile = data as Database['public']['Tables']['shooter_profiles']['Row'];
+        setDominantHand(profile.dominant_hand || "");
+        setDominantEye(profile.dominant_eye || "");
+        setGlasses(profile.glasses || false);
+        setShootingVision(profile.shooting_vision || "");
+        setShootingDiscipline(profile.shooting_discipline || "");
+        setPracticeFrequence(profile.practice_frequence || "");
+        setCompetitionFrequence(profile.competition_frequence || "");
       }
     };
     fetchProfile();
@@ -129,7 +129,7 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
     if (!firstName.trim() && !lastName.trim()) return;
 
     // Update shooter profile
-    const profileData = {
+    const profileData: Database['public']['Tables']['shooter_profiles']['Insert'] = {
       client_id: client.id,
       dominant_hand: dominantHand,
       dominant_eye: dominantEye,
@@ -139,8 +139,8 @@ const ClientForm = ({ client, onSave, onCancel }: ClientFormProps) => {
       practice_frequence: practiceFrequence,
       competition_frequence: competitionFrequence
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('shooter_profiles') as any).upsert(profileData, { onConflict: 'client_id' });
+
+    await supabase.from('shooter_profiles').upsert(profileData, { onConflict: 'client_id' });
 
     onSave({
       ...client,

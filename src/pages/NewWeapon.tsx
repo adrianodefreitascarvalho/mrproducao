@@ -62,8 +62,7 @@ const NewWeapon = () => {
       discipline: discipline.trim(),
       competition_frequency: competitionFrequency,
       observations: observations.trim() || null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
     navigate("/weapons"); 
   };
 

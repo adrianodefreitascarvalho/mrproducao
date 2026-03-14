@@ -1,4 +1,4 @@
-import { create } from 'zustand';import { type Database } from './supabase';
+import { create } from 'zustand';
 import { toast } from 'sonner';
 import { OrderStatus, ProductType, WoodGrade, WoodSpecies, woodSpecies as sampleWoodSpecies } from '@/data/workstations';
 import { integrationService } from './integration';
@@ -254,7 +254,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       },
 
       updateProspect: async (id, updates) => {
-        const { data, error } = await supabase.from('prospects').update(updates).eq('id', id).select().single();
+        const { data, error } = await (supabase as any).from('prospects').update(updates).eq('id', id).select().single();
         if (error) {
           console.error('Error updating prospect:', error.message);
           toast.error('Erro ao actualizar prospect', { description: getSafeErrorMessage(error, 'Prospect update') });

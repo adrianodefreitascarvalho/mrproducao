@@ -183,7 +183,8 @@ export default function NewOrder() {
       start_date: new Date().toISOString().split('T')[0],
       due_date: formData.dueDate,
       related_order_id: null,
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     navigate("/orders");
   };

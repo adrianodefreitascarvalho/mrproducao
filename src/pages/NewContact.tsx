@@ -89,11 +89,11 @@ const NewContact = () => {
     }
 
     if (isOrderPlaced) {
-      const { hearaboutus, ...clientPayload } = contactPayload; // 'hearaboutus' não é uma propriedade do cliente
-      await addClient({
+      const { hearaboutus: _hearaboutus, address, ...clientPayload } = contactPayload; // 'hearaboutus' não é uma propriedade do cliente
+      await addClient( {
         ...clientPayload,
+        addresses: address ? [address] : null,
         source_contact_id: newContact.id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       toast.success("Contacto criado e convertido para cliente com sucesso!");
     } else {

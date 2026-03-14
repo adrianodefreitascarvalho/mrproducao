@@ -145,31 +145,32 @@ def fill_pdf(template_path: str, field_values: list[dict], output_path: str):
     reader = PdfReader(template_path)
     writer = PdfWriter()
     writer.append(reader)
-
+    
+    fields_by_page = {}
+    for item in field_values:
+        page_idx = item["page"] - 1
+        if page_idx not in fields_by_page:
+            fields_by_page[page_idx] = {}
+        fields_by_page[page_idx][item["field_id"]] = item["value"]
+        
     filled = 0
     skipped = []
 
-    for item in field_values:
-        field_id = item["field_id"]
-        value = item["value"]
-        try:
-            writer.update_page_form_field_values(
-                writer.pages[item["page"] - 1],
-                {field_id: value}
-            )
-            filled += 1
-        except Exception as e:
-            skipped.append((field_id, str(e)))
-
-    # Flatten fields so they appear printed in all PDF viewers
-    for page in writer.pages:
-        if "/Annots" in page:
-            for annot in page["/Annots"]:
-                annot_obj = annot.get_object()
-                if annot_obj.get("/Subtype") == "/Widget":
-                    annot_obj.update({
-                        NameObject("/F"): BooleanObject(False)
-                    })
+    for page_idx, fields in fields_by_page.items():
+        if page_idx < len(writer.pages):
+            try:
+                writer.update_page_form_field_values(
+                    writer.pages[page_idx],
+                    fields,
+                    flatten=True
+                )
+                filled += len(fields)
+            except Exception as e:
+                for field_id in fields.keys():
+                    skipped.append((field_id, str(e)))
+        else:
+            for field_id in fields.keys():
+                skipped.append((field_id, f"Page index {page_idx} out of range."))
 
     with open(output_path, "wb") as f:
         writer.write(f)

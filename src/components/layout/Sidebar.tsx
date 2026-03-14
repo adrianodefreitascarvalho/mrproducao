@@ -35,6 +35,7 @@ const navigation: NavigationItem[] = [
   { name: "Início", href: "/", icon: LayoutDashboard },
   { name: "Dashboard Integrado", href: "/dashboard", icon: BarChart3 },
   { name: "Contactos", href: "/contacts", icon: Phone },
+  { name: "Prospects", href: "/prospects", icon: Users },
   { name: "Armas", href: "/weapons", icon: Crosshair }, 
   { name: "Clientes", href: "/clients", icon: Users },
   {

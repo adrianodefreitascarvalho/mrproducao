@@ -8,7 +8,6 @@ import { useProductionStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { MainLayout } from "@/components/layout/MainLayout";
 import type { Session } from "@supabase/supabase-js";
-import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -31,6 +30,8 @@ import EditClient from "./pages/EditClient";
 import Contacts from "./pages/Contacts";
 import NewContact from "./pages/NewContact";
 import EditContact from "./pages/EditContact";
+import Prospects from "@/pages/Prospects";
+import EditProspect from "@/pages/EditProspect";
 import Reports from "./pages/Reports";
 import WoodStock from "./pages/WoodStock";
 import PriceTablesPage from "./pages/PriceTable.tsx";
@@ -44,7 +45,7 @@ import BodyMeasurements from "./pages/fittings/BodyMeasurements";
 import ForehandDimensions from "./pages/fittings/ForehandDimensions";
 import FolhaDeObra from "./pages/fittings/FolhaDeObra";
 import FolhaDeAnalise from "./pages/fittings/FolhaDeAnalise";
-const queryClient = new QueryClient();
+import Login from "./pages/Login";const queryClient = new QueryClient();
 
 const App = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -135,6 +136,9 @@ const App = () => {
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/contacts/new" element={<NewContact />} />
                 <Route path="/contacts/edit/:id" element={<EditContact />} />
+                <Route path="/prospects" element={<Prospects />} />
+                <Route path="/prospects/new" element={<EditProspect />} />
+                <Route path="/prospects/:id/edit" element={<EditProspect />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/woodstock" element={<WoodStock />} />
                 <Route path="/price-tables" element={<PriceTablesPage />} />

@@ -26,20 +26,20 @@ const WeaponForm = ({ weapon, onSave, onCancel }: WeaponFormProps) => {
   const ribOptions = useProductionStore((state) => state.ribs);
   const competitionFrequencyOptions = useProductionStore((state) => state.competitionFrequencies);
 
-  const [brand, setBrand] = useState(weapon.brand);
-  const [model, setModel] = useState(weapon.model); 
+  const [brand, setBrand] = useState(weapon.brand ?? '');
+  const [model, setModel] = useState(weapon.model ?? ''); 
   const [category, setCategory] = useState(weapon.category || "");
-  const [serialNumber, setSerialNumber] = useState(weapon.serial_number); 
-  const [caliber, setCaliber] = useState<Caliber>(weapon.caliber as Caliber);
-  const [dominantHand, setDominantHand] = useState<DominantHand>(weapon.dominant_hand as DominantHand);
-  const [sidePlates, setSidePlates] = useState<SidePlates>(weapon.side_plates as SidePlates);
-  const [barrelLength, setBarrelLength] = useState(weapon.barrel_length.toString());
-  const [barrelWeight, setBarrelWeight] = useState(weapon.barrel_weight.toString());
-  const [forendWeight, setForendWeight] = useState(weapon.forend_weight.toString());
-  const [rib, setRib] = useState<Rib>(weapon.rib as Rib);
-  const [totalWeight, setTotalWeight] = useState(weapon.total_weight.toString());
-  const [discipline, setDiscipline] = useState(weapon.discipline); 
-  const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency>(weapon.competition_frequency as CompetitionFrequency);
+  const [serialNumber, setSerialNumber] = useState(weapon.serial_number ?? ''); 
+  const [caliber, setCaliber] = useState<Caliber | ''>((weapon.caliber as Caliber) || '');
+  const [dominantHand, setDominantHand] = useState<DominantHand | ''>((weapon.dominant_hand as DominantHand) || '');
+  const [sidePlates, setSidePlates] = useState<SidePlates | ''>((weapon.side_plates as SidePlates) || '');
+  const [barrelLength, setBarrelLength] = useState(weapon.barrel_length?.toString() ?? '');
+  const [barrelWeight, setBarrelWeight] = useState(weapon.barrel_weight?.toString() ?? '');
+  const [forendWeight, setForendWeight] = useState(weapon.forend_weight?.toString() ?? '');
+  const [rib, setRib] = useState<Rib | ''>((weapon.rib as Rib) || '');
+  const [totalWeight, setTotalWeight] = useState(weapon.total_weight?.toString() ?? '');
+  const [discipline, setDiscipline] = useState(weapon.discipline ?? ''); 
+  const [competitionFrequency, setCompetitionFrequency] = useState<CompetitionFrequency | ''>((weapon.competition_frequency as CompetitionFrequency) || '');
   const [clientName, setClientName] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [observations, setObservations] = useState((weapon as any).observations || "");

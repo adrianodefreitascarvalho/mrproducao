@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import express from "express";
 import cors from "cors";
+import pino from 'pino';
+import pinoHttp from 'pino-http';
 
 const ALLOWED_ORIGINS = [
   'http://localhost:8080',
@@ -9,6 +11,9 @@ const ALLOWED_ORIGINS = [
 ].filter(Boolean);
 
 const app = express();
+const logger = pino({ level: 'info' });
+const httpLogger = pinoHttp({ logger });
+
 const PORT = 4001;
 
 app.use(cors({
@@ -19,6 +24,7 @@ app.use(cors({
   },
   credentials: true,
 }));
+app.use(httpLogger);
 app.use(express.json());
 
 // Health check endpoint
@@ -42,24 +48,24 @@ app.post("/events", (req, res) => {
       return res.status(400).json({ error: "Invalid event data" });
     }
 
-    console.log("[EVENTS] ✅ Evento recebido:", event.type);
-    console.log("[EVENTS] ✅ Evento será processado pela aplicação React");
+    req.log.info({ event_type: event.type }, "[EVENTS] ✅ Evento recebido");
+    req.log.info("[EVENTS] ✅ Evento será processado pela aplicação React");
 
     res.json({ status: "success", message: "Event received" });
   } catch (error) {
-    console.error("[EVENTS] ❌ Erro ao processar evento");
+    req.log.error({ err: error }, "[EVENTS] ❌ Erro ao processar evento");
     res.status(500).json({ status: "error", message: "Failed to process event" });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`📦 Events server running on http://localhost:${PORT}`);
-  console.log(`   Health check: http://localhost:${PORT}/health`);
-  console.log(`   Waiting for OrderCreated and OrderReleased events...`);
+  logger.info(`📦 Events server running on http://localhost:${PORT}`);
+  logger.info(`   Health check: http://localhost:${PORT}/health`);
+  logger.info(`   Waiting for OrderCreated and OrderReleased events...`);
 });
 
 // Handle shutdown gracefully
 process.on("SIGINT", () => {
-  console.log("\n🛑 Events server stopping...");
+  logger.info("\n🛑 Events server stopping...");
   process.exit(0);
 });

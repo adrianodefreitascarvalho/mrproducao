@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS public.gunstock_dimensions (
     client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
     weapon_id UUID, -- FK para weapons(id) pode ser adicionada quando a tabela for formalmente definida no schema
     
-    gunstock_measurements NUMERIC(10, 2),
+    gunstock_measurements1 NUMERIC(10, 2),
     gunstock_measurements2 NUMERIC(10, 2),
     gunstock_measurements3 NUMERIC(10, 2),
     gunstock_measurements4 NUMERIC(10, 2),
@@ -230,3 +230,209 @@ CREATE TABLE IF NOT EXISTS public.forehand_dimensions (
 
 ALTER TABLE public.forehand_dimensions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Acesso total a forehand_dimensions" ON public.forehand_dimensions FOR ALL USING (true);
+
+-- Criação da tabela weapons (Armas)
+CREATE TABLE IF NOT EXISTS public.weapons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    brand TEXT,
+    model TEXT,
+    category TEXT,
+    serial_number TEXT,
+    caliber TEXT,
+    dominant_hand TEXT,
+    side_plates TEXT,
+    barrel_length NUMERIC(10, 2),
+    barrel_weight NUMERIC(10, 2),
+    forend_weight NUMERIC(10, 2),
+    rib TEXT,
+    total_weight NUMERIC(10, 2),
+    discipline TEXT,
+    competition_frequency TEXT,
+    observations TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.weapons ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a weapons" ON public.weapons FOR ALL USING (true);
+
+-- Tabela de associação entre clientes e armas
+CREATE TABLE IF NOT EXISTS public.client_weapons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    client_id UUID NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+    weapon_id UUID NOT NULL REFERENCES public.weapons(id) ON DELETE CASCADE,
+    identification_number TEXT, -- Número de série específico desta arma para este cliente
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE(client_id, weapon_id, identification_number)
+);
+
+ALTER TABLE public.client_weapons ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a client_weapons" ON public.client_weapons FOR ALL USING (true);
+
+
+-- Atualizar Foreign Keys para apontar para a nova tabela weapons
+-- Nota: Executar estes comandos pode falhar se já existirem dados.
+-- É uma correção de schema para novas instalações.
+
+-- Adicionar coluna de FK em production_orders para a nova tabela weapons
+ALTER TABLE public.production_orders DROP COLUMN IF EXISTS weapon_id;
+ALTER TABLE public.production_orders ADD COLUMN weapon_id UUID REFERENCES public.weapons(id) ON DELETE SET NULL;
+
+-- Adicionar coluna de FK em gunstock_dimensions
+ALTER TABLE public.gunstock_dimensions DROP COLUMN IF EXISTS weapon_id;
+ALTER TABLE public.gunstock_dimensions ADD COLUMN weapon_id UUID REFERENCES public.weapons(id) ON DELETE SET NULL;
+
+-- Adicionar coluna de FK em body_measurements
+ALTER TABLE public.body_measurements DROP COLUMN IF EXISTS weapon_id;
+ALTER TABLE public.body_measurements ADD COLUMN weapon_id UUID REFERENCES public.weapons(id) ON DELETE SET NULL;
+
+-- Adicionar coluna de FK em forehand_dimensions
+ALTER TABLE public.forehand_dimensions DROP COLUMN IF EXISTS weapon_id;
+ALTER TABLE public.forehand_dimensions ADD COLUMN weapon_id UUID REFERENCES public.weapons(id) ON DELETE SET NULL;
+
+-- Tabela para Prospects (Leads) com dados completos para recolha de informação
+CREATE TABLE IF NOT EXISTS public.prospects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    status TEXT NOT NULL DEFAULT 'prospect' CHECK (status IN ('prospect', 'converted')),
+
+    -- Dados do Prospect (semelhante a clients)
+    first_name TEXT,
+    last_name TEXT,
+    email TEXT,
+    phone TEXT,
+    nif TEXT,
+    addresses JSONB,
+
+    -- Dados da Arma Potencial (semelhante a weapons)
+    weapon_brand TEXT,
+    weapon_model TEXT,
+    weapon_category TEXT,
+    weapon_serial_number TEXT,
+    weapon_caliber TEXT,
+    weapon_dominant_hand TEXT,
+    weapon_side_plates TEXT,
+    weapon_barrel_length NUMERIC(10, 2),
+    weapon_barrel_weight NUMERIC(10, 2),
+    weapon_forend_weight NUMERIC(10, 2),
+    weapon_rib TEXT,
+    weapon_total_weight NUMERIC(10, 2),
+    weapon_discipline TEXT,
+    weapon_competition_frequency TEXT,
+    weapon_observations TEXT,
+
+    -- Medidas da Coronha (de gunstock_dimensions)
+    gunstock_measurements1 NUMERIC(10, 2),
+    gunstock_measurements2 NUMERIC(10, 2),
+    gunstock_measurements3 NUMERIC(10, 2),
+    gunstock_measurements4 NUMERIC(10, 2),
+    gunstock_measurements5 NUMERIC(10, 2),
+    gunstock_measurements6 NUMERIC(10, 2),
+    gunstock_measurements7 NUMERIC(10, 2),
+    gunstock_cast_on1 NUMERIC(10, 2),
+    gunstock_cast_on2 NUMERIC(10, 2),
+    gunstock_cast_on3 NUMERIC(10, 2),
+    gunstock_cast_on4 NUMERIC(10, 2),
+    gunstock_cast_off1 NUMERIC(10, 2),
+    gunstock_cast_off2 NUMERIC(10, 2),
+    gunstock_cast_off3 NUMERIC(10, 2),
+    gunstock_cast_off4 NUMERIC(10, 2),
+    gunstock_width1 NUMERIC(10, 2),
+    gunstock_width2 NUMERIC(10, 2),
+    gunstock_width3 NUMERIC(10, 2),
+    gunstock_recoil_pad1 NUMERIC(10, 2),
+    gunstock_recoil_pad2 NUMERIC(10, 2),
+    gunstock_recoil_pad3 NUMERIC(10, 2),
+    gunstock_grip_measurements1 NUMERIC(10, 2),
+    gunstock_grip_measurements2 NUMERIC(10, 2),
+    gunstock_grip_measurements3 NUMERIC(10, 2),
+    gunstock_grip_measurements4 NUMERIC(10, 2),
+    gunstock_grip_measurements5 NUMERIC(10, 2),
+    gunstock_grip_measurements6 NUMERIC(10, 2),
+    gunstock_units TEXT DEFAULT 'cm',
+
+    -- Medidas Corporais (de body_measurements)
+    body_measurements_open_palm1 NUMERIC(10, 2),
+    body_measurements_open_palm2 NUMERIC(10, 2),
+    body_measurements_open_palm3 NUMERIC(10, 2),
+    body_measurements_open_palm4 NUMERIC(10, 2),
+    body_measurements_open_palm5 NUMERIC(10, 2),
+    body_measurements_open_palm6 NUMERIC(10, 2),
+    body_measurements_body1 NUMERIC(10, 2),
+    body_measurements_body2 NUMERIC(10, 2),
+    body_measurements_body3 NUMERIC(10, 2),
+    body_measurements_weight NUMERIC(10, 2),
+    body_measurements_age NUMERIC(10, 2),
+    body_measurements_hand_in_position1 NUMERIC(10, 2),
+    body_measurements_hand_in_position2 NUMERIC(10, 2),
+    body_measurements_hand_in_position3 NUMERIC(10, 2),
+    body_measurements_between_hands NUMERIC(10, 2),
+    body_units TEXT DEFAULT 'cm',
+
+    -- Medidas do Fuste (de forehand_dimensions)
+    forehand_dimensions_top_view1 NUMERIC(10, 2),
+    forehand_dimensions_top_view2 NUMERIC(10, 2),
+    forehand_dimensions_top_view3 NUMERIC(10, 2),
+    forehand_dimensions_side_view4 NUMERIC(10, 2),
+    forehand_dimensions_side_view5 NUMERIC(10, 2),
+    forehand_dimensions_side_view6 NUMERIC(10, 2),
+    forehand_dimensions_side_view7 NUMERIC(10, 2),
+    forehand_units TEXT DEFAULT 'cm',
+
+    -- Timestamps
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.prospects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Acesso total a prospects" ON public.prospects FOR ALL USING (true);
+
+-- Função para converter um Prospect num Cliente, Arma e Medidas
+CREATE OR REPLACE FUNCTION public.convert_prospect_to_client()
+RETURNS TRIGGER AS $$
+DECLARE
+    new_client_id UUID;
+    new_weapon_id UUID;
+BEGIN
+    -- Apenas executar se o status for alterado para 'converted'
+    IF NEW.status = 'converted' AND OLD.status = 'prospect' THEN
+        -- 1. Inserir na tabela de clientes
+        INSERT INTO public.clients (first_name, last_name, email, phone, nif, addresses, created_at, updated_at)
+        VALUES (NEW.first_name, NEW.last_name, NEW.email, NEW.phone, NEW.nif, NEW.addresses, NEW.created_at, NOW())
+        RETURNING id INTO new_client_id;
+
+        -- 2. Inserir na tabela de armas (se houver dados da arma)
+        IF NEW.weapon_brand IS NOT NULL OR NEW.weapon_model IS NOT NULL THEN
+            INSERT INTO public.weapons (brand, model, category, serial_number, caliber, dominant_hand, side_plates, barrel_length, barrel_weight, forend_weight, rib, total_weight, discipline, competition_frequency, observations)
+            VALUES (NEW.weapon_brand, NEW.weapon_model, NEW.weapon_category, NEW.weapon_serial_number, NEW.weapon_caliber, NEW.weapon_dominant_hand, NEW.weapon_side_plates, NEW.weapon_barrel_length, NEW.weapon_barrel_weight, NEW.weapon_forend_weight, NEW.weapon_rib, NEW.weapon_total_weight, NEW.weapon_discipline, NEW.weapon_competition_frequency, NEW.weapon_observations)
+            RETURNING id INTO new_weapon_id;
+
+            -- Associar a nova arma ao novo cliente
+            INSERT INTO public.client_weapons (client_id, weapon_id, identification_number)
+            VALUES (new_client_id, new_weapon_id, NEW.weapon_serial_number);
+        END IF;
+
+        -- 3. Inserir medidas (se existirem e se uma arma foi criada)
+        IF new_weapon_id IS NOT NULL THEN
+            -- Medidas da coronha
+            INSERT INTO public.gunstock_dimensions (client_id, weapon_id, gunstock_measurements1, gunstock_measurements2, gunstock_measurements3, gunstock_measurements4, gunstock_measurements5, gunstock_measurements6, gunstock_measurements7, gunstock_cast_on1, gunstock_cast_on2, gunstock_cast_on3, gunstock_cast_on4, gunstock_cast_off1, gunstock_cast_off2, gunstock_cast_off3, gunstock_cast_off4, gunstock_width1, gunstock_width2, gunstock_width3, gunstock_recoil_pad1, gunstock_recoil_pad2, gunstock_recoil_pad3, gunstock_grip_measurements1, gunstock_grip_measurements2, gunstock_grip_measurements3, gunstock_grip_measurements4, gunstock_grip_measurements5, gunstock_grip_measurements6, units)
+            VALUES (new_client_id, new_weapon_id, NEW.gunstock_measurements1, NEW.gunstock_measurements2, NEW.gunstock_measurements3, NEW.gunstock_measurements4, NEW.gunstock_measurements5, NEW.gunstock_measurements6, NEW.gunstock_measurements7, NEW.gunstock_cast_on1, NEW.gunstock_cast_on2, NEW.gunstock_cast_on3, NEW.gunstock_cast_on4, NEW.gunstock_cast_off1, NEW.gunstock_cast_off2, NEW.gunstock_cast_off3, NEW.gunstock_cast_off4, NEW.gunstock_width1, NEW.gunstock_width2, NEW.gunstock_width3, NEW.gunstock_recoil_pad1, NEW.gunstock_recoil_pad2, NEW.gunstock_recoil_pad3, NEW.gunstock_grip_measurements1, NEW.gunstock_grip_measurements2, NEW.gunstock_grip_measurements3, NEW.gunstock_grip_measurements4, NEW.gunstock_grip_measurements5, NEW.gunstock_grip_measurements6, NEW.gunstock_units);
+
+            -- Medidas corporais
+            INSERT INTO public.body_measurements (client_id, weapon_id, body_measurements_open_palm1, body_measurements_open_palm2, body_measurements_open_palm3, body_measurements_open_palm4, body_measurements_open_palm5, body_measurements_open_palm6, body_measurements_body1, body_measurements_body2, body_measurements_body3, body_measurements_weight, body_measurements_age, body_measurements_hand_in_position1, body_measurements_hand_in_position2, body_measurements_hand_in_position3, body_measurements_between_hands, units)
+            VALUES (new_client_id, new_weapon_id, NEW.body_measurements_open_palm1, NEW.body_measurements_open_palm2, NEW.body_measurements_open_palm3, NEW.body_measurements_open_palm4, NEW.body_measurements_open_palm5, NEW.body_measurements_open_palm6, NEW.body_measurements_body1, NEW.body_measurements_body2, NEW.body_measurements_body3, NEW.body_measurements_weight, NEW.body_measurements_age, NEW.body_measurements_hand_in_position1, NEW.body_measurements_hand_in_position2, NEW.body_measurements_hand_in_position3, NEW.body_measurements_between_hands, NEW.body_units);
+
+            -- Medidas do fuste
+            INSERT INTO public.forehand_dimensions (client_id, weapon_id, forehand_dimensions_top_view1, forehand_dimensions_top_view2, forehand_dimensions_top_view3, forehand_dimensions_side_view4, forehand_dimensions_side_view5, forehand_dimensions_side_view6, forehand_dimensions_side_view7, units)
+            VALUES (new_client_id, new_weapon_id, NEW.forehand_dimensions_top_view1, NEW.forehand_dimensions_top_view2, NEW.forehand_dimensions_top_view3, NEW.forehand_dimensions_side_view4, NEW.forehand_dimensions_side_view5, NEW.forehand_dimensions_side_view6, NEW.forehand_dimensions_side_view7, NEW.forehand_units);
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para executar a função quando o status de um prospect é atualizado
+CREATE TRIGGER on_prospect_converted
+    AFTER UPDATE ON public.prospects
+    FOR EACH ROW
+    WHEN (OLD.status IS DISTINCT FROM NEW.status)
+    EXECUTE FUNCTION public.convert_prospect_to_client();

@@ -149,10 +149,9 @@ const EditContact = () => {
         last_name: lastName.trim(),
         email: email.trim() || null,
         phone: phone.trim() || null,
-        nif: nif.trim() || null,
-        address: { street: address.trim() },
+       nif: nif.trim() || null,
+        address: address.trim() ? { street: address.trim() } : null,
         source_contact_id: id,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
       toast.success("Contacto actualizado e cliente criado com sucesso!");

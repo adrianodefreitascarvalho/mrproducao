@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from 'zustand';import { type Database } from './supabase';
 import { toast } from 'sonner';
 import { OrderStatus, ProductType, WoodGrade, WoodSpecies, woodSpecies as sampleWoodSpecies } from '@/data/workstations';
 import { integrationService } from './integration';
@@ -17,6 +17,7 @@ export type PriceItem = Database['public']['Tables']['price_items']['Row'];
 export type PriceTable = Database['public']['Tables']['price_tables']['Row'] & { price_items: PriceItem[] };
 export type Client = Database['public']['Tables']['clients']['Row'];
 export type Weapon = Database['public']['Tables']['weapons']['Row'] & { category?: string | null };
+export type Prospect = any
 export type ClientWeapon = Database['public']['Tables']['client_weapons']['Row'];
 
 // Define ProductionOrder type based on the database schema for use within the app
@@ -42,6 +43,8 @@ interface ProductionStoreState {
   clients: Client[];
   weapons: Weapon[];
   priceTables: PriceTable[];
+  prospects: Prospect[];
+  isLoadingProspects: boolean;
   isLoadingProducts: boolean;
   isLoadingOrders: boolean;
   isLoadingWorkstations: boolean;
@@ -67,6 +70,9 @@ interface ProductionStoreActions {
   fetchClients: () => Promise<void>;
   fetchWeapons: () => Promise<void>;
   fetchPriceTables: () => Promise<void>;
+  fetchProspects: () => Promise<void>;
+  addProspect: (prospect: any) => Promise<void>;
+  updateProspect: (id: string, updates: any) => Promise<void>;
   fetchDropdowns: () => Promise<void>;
   importProductsFromPriceTables: () => Promise<void>;
   updateOrder: (id: string, updates: Partial<ProductionOrder>) => Promise<void>;
@@ -113,6 +119,8 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
       isLoadingWeapons: false,
       priceTables: [],
       isLoadingPriceTables: false,
+      prospects: [],
+      isLoadingProspects: false,
       weaponCategories: [],
       calibers: [],
       dominantHands: [],
@@ -218,6 +226,51 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
         }
         console.log(`[store] Tabelas de preços carregadas: ${data?.length ?? 0} (Contagem da base de dados: ${count})`);
         set({ priceTables: (data as PriceTable[]) || [], isLoadingPriceTables: false });
+      },
+
+      fetchProspects: async () => {
+        set({ isLoadingProspects: true });
+        const { data, error } = await supabase.from('prospects').select('*').order('created_at', { ascending: false });
+        if (error) {
+          console.error('Error fetching prospects:', error.message);
+          toast.error('Erro ao carregar prospects');
+          set({ isLoadingProspects: false });
+          return;
+        }
+        set({ prospects: (data as Prospect[]) || [], isLoadingProspects: false });
+      },
+
+      addProspect: async (prospectData) => {
+        const { data, error } = await supabase.from('prospects').insert(prospectData as any).select().single();
+        if (error) {
+          console.error('Error adding prospect:', error.message);
+          toast.error('Erro ao adicionar prospect', { description: getSafeErrorMessage(error, 'Prospect creation') });
+          return;
+        }
+        if (data) {
+          set((state) => ({ prospects: [data as Prospect, ...state.prospects] }));
+          toast.success('Prospect adicionado com sucesso!');
+        }
+      },
+
+      updateProspect: async (id, updates) => {
+        const { data, error } = await supabase.from('prospects').update(updates).eq('id', id).select().single();
+        if (error) {
+          console.error('Error updating prospect:', error.message);
+          toast.error('Erro ao actualizar prospect', { description: getSafeErrorMessage(error, 'Prospect update') });
+          return;
+        }
+        if (data) {
+          set((state) => ({
+            prospects: state.prospects.map((p) => (p.id === id ? (data as Prospect) : p)),
+          }));
+          toast.success('Prospect actualizado com sucesso!');
+          if (updates.status === 'converted') {
+              toast.info('Prospect convertido em cliente! A actualizar listas...');
+              get().fetchClients();
+              get().fetchWeapons();
+          }
+        }
       },
 
       fetchDropdowns: async () => {
@@ -361,7 +414,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
 
         // Fallback for missing 'category' column (Postgres error 42703 or PostgREST schema error)
         if (error && (error.code === '42703' || error.message.includes('Could not find the \'category\' column')) && 'category' in payload) {
-          const { category, ...fallbackPayload } = payload;
+          const { category : _category, ...fallbackPayload } = payload;
           const retry = await supabase.from('weapons').insert(fallbackPayload).select().single();
           if (!retry.error) {
             data = retry.data;
@@ -388,7 +441,7 @@ export const useProductionStore = create<ProductionStore>((set, get) => ({
 
         // Fallback for missing 'category' column (Postgres error 42703 or PostgREST schema error)
         if (error && (error.code === '42703' || error.message.includes('Could not find the \'category\' column')) && 'category' in updates) {
-          const { category, ...fallbackUpdates } = updates;
+          const { category: _category, ...fallbackUpdates } = updates;
           const retry = await supabase.from('weapons').update(fallbackUpdates).eq('id', id).select().single();
           if (!retry.error) {
             data = retry.data;

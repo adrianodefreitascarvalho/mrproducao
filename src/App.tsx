@@ -40,11 +40,11 @@ import Users from "./pages/Users";
 import EditUser from "./pages/EditUser";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound"; 
-import GunstockDimensions from "./pages/fittings/GunstockDimensions";
-import BodyMeasurements from "./pages/fittings/BodyMeasurements";
-import ForehandDimensions from "./pages/fittings/ForehandDimensions";
-import FolhaDeObra from "./pages/fittings/FolhaDeObra";
-import FolhaDeAnalise from "./pages/fittings/FolhaDeAnalise";
+import GunstockDimensions from "./pages/Fittings/GunstockDimensions";
+import BodyMeasurements from "./pages/Fittings/BodyMeasurementsPage";
+import ForehandDimensions from "./pages/Fittings/ForehandDimensionsPage";
+import FolhaDeObra from "./pages/Fittings/FolhaDeObra";
+import FolhaDeAnalise from "./pages/Fittings/FolhaDeAnalise";
 import Login from "./pages/Login";const queryClient = new QueryClient();
 
 const App = () => {

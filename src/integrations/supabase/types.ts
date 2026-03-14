@@ -362,6 +362,12 @@ export type Database = {
           gunstock_cast_on2: number | null
           gunstock_cast_on3: number | null
           gunstock_cast_on4: number | null
+          gunstock_grip_measurements1: number | null
+          gunstock_grip_measurements2: number | null
+          gunstock_grip_measurements3: number | null
+          gunstock_grip_measurements4: number | null
+          gunstock_grip_measurements5: number | null
+          gunstock_grip_measurements6: number | null
           gunstock_measurements1: number | null
           gunstock_measurements2: number | null
           gunstock_measurements3: number | null
@@ -369,6 +375,7 @@ export type Database = {
           gunstock_measurements5: number | null
           gunstock_measurements6: number | null
           gunstock_measurements7: number | null
+          gunstock_pitch: number | null
           gunstock_recoil_pad1: number | null
           gunstock_recoil_pad2: number | null
           gunstock_recoil_pad3: number | null
@@ -392,6 +399,12 @@ export type Database = {
           gunstock_cast_on2?: number | null
           gunstock_cast_on3?: number | null
           gunstock_cast_on4?: number | null
+          gunstock_grip_measurements1?: number | null
+          gunstock_grip_measurements2?: number | null
+          gunstock_grip_measurements3?: number | null
+          gunstock_grip_measurements4?: number | null
+          gunstock_grip_measurements5?: number | null
+          gunstock_grip_measurements6?: number | null
           gunstock_measurements1?: number | null
           gunstock_measurements2?: number | null
           gunstock_measurements3?: number | null
@@ -399,6 +412,7 @@ export type Database = {
           gunstock_measurements5?: number | null
           gunstock_measurements6?: number | null
           gunstock_measurements7?: number | null
+          gunstock_pitch?: number | null
           gunstock_recoil_pad1?: number | null
           gunstock_recoil_pad2?: number | null
           gunstock_recoil_pad3?: number | null
@@ -422,6 +436,12 @@ export type Database = {
           gunstock_cast_on2?: number | null
           gunstock_cast_on3?: number | null
           gunstock_cast_on4?: number | null
+          gunstock_grip_measurements1?: number | null
+          gunstock_grip_measurements2?: number | null
+          gunstock_grip_measurements3?: number | null
+          gunstock_grip_measurements4?: number | null
+          gunstock_grip_measurements5?: number | null
+          gunstock_grip_measurements6?: number | null
           gunstock_measurements1?: number | null
           gunstock_measurements2?: number | null
           gunstock_measurements3?: number | null
@@ -429,6 +449,7 @@ export type Database = {
           gunstock_measurements5?: number | null
           gunstock_measurements6?: number | null
           gunstock_measurements7?: number | null
+          gunstock_pitch?: number | null
           gunstock_recoil_pad1?: number | null
           gunstock_recoil_pad2?: number | null
           gunstock_recoil_pad3?: number | null
@@ -883,7 +904,7 @@ export type Database = {
           created_at: string
           discipline: string
           dominant_hand: string
-          forend_weight: number
+          forehand_weight: number
           id: string
           model: string
           rib: string
@@ -901,7 +922,7 @@ export type Database = {
           created_at?: string
           discipline: string
           dominant_hand: string
-          forend_weight: number
+          forehand_weight: number
           id?: string
           model: string
           rib: string
@@ -919,7 +940,7 @@ export type Database = {
           created_at?: string
           discipline?: string
           dominant_hand?: string
-          forend_weight?: number
+          forehand_weight?: number
           id?: string
           model?: string
           rib?: string

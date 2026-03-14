@@ -1,4 +1,4 @@
-import { create } from 'zustand';import { type Database } from './supabase';
+import { create } from 'zustand';
 import { toast } from 'sonner';
 import { OrderStatus, ProductType, WoodGrade, WoodSpecies, woodSpecies as sampleWoodSpecies } from '@/data/workstations';
 import { integrationService } from './integration';

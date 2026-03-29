@@ -189,13 +189,21 @@ const PriceTable = () => {
       const importedTables: FormValues["tables"] = [];
 
       workbook.eachSheet((worksheet) => {
+<<<<<<< HEAD
         const newItems: any[] = [];
+=======
+        const newItems: z.infer<typeof tableItemSchema>[] = [];
+>>>>>>> b8cfae24d95499e24d7f9c6a4e31cc1a74bb3818
         const headerRow = worksheet.getRow(1);
 
         worksheet.eachRow((row, rowNumber) => {
           if (rowNumber === 1) return; // Saltar cabeçalho
 
+<<<<<<< HEAD
           const rowData: any = {};
+=======
+          const rowData: Record<string, ExcelJS.CellValue> = {};
+>>>>>>> b8cfae24d95499e24d7f9c6a4e31cc1a74bb3818
           row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
             const header = headerRow.getCell(colNumber).value?.toString();
             if (header) {
@@ -203,7 +211,11 @@ const PriceTable = () => {
             }
           });
 
+<<<<<<< HEAD
           const description = rowData["Descrição"] || rowData["description"] || "";
+=======
+          const description = String(rowData["Descrição"] || rowData["description"] || "");
+>>>>>>> b8cfae24d95499e24d7f9c6a4e31cc1a74bb3818
           const price = parseFloat(String(rowData["Preço"] || rowData["price"] || 0)) || 0;
 
           if (description) {

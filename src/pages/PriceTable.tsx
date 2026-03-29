@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Trash2, PlusCircle, Upload, PackageOpen } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "../lib/supabase";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { useProductionStore } from "../lib/store";
 
 // 1. Definir os schemas de validação para a nova estrutura
@@ -176,59 +176,63 @@ const PriceTable = () => {
     }
   };
 
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setIsLoading(true);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: "array" });
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
 
-        const importedTables: FormValues["tables"] = [];
+      const importedTables: FormValues["tables"] = [];
 
-        workbook.SheetNames.forEach((sheetName) => {
-          const worksheet = workbook.Sheets[sheetName];
-          const itemsJson = XLSX.utils.sheet_to_json<{
-            "Descrição"?: string;
-            description?: string;
-            "Preço"?: string | number;
-            price?: string | number;
-          }>(worksheet);
+      workbook.eachSheet((worksheet) => {
+        const newItems: any[] = [];
+        const headerRow = worksheet.getRow(1);
 
-          const newItems = itemsJson
-            .map((row) => ({
-              description: row["Descrição"] || row["description"] || "",
-              price: parseFloat(String(row["Preço"] || row["price"] || 0)) || 0,
-            }))
-            .filter((item) => item.description); // Apenas items com descrição
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return; // Saltar cabeçalho
 
-          if (newItems.length > 0) {
-            importedTables.push({
-              id: crypto.randomUUID(),
-              name: sheetName,
-              price_items: newItems,
-            });
+          const rowData: any = {};
+          row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+            const header = headerRow.getCell(colNumber).value?.toString();
+            if (header) {
+              rowData[header] = cell.value;
+            }
+          });
+
+          const description = rowData["Descrição"] || rowData["description"] || "";
+          const price = parseFloat(String(rowData["Preço"] || rowData["price"] || 0)) || 0;
+
+          if (description) {
+            newItems.push({ description, price });
           }
         });
 
-        if (importedTables.length > 0) {
-          reset({ tables: importedTables });
-          setActiveTab(importedTables[0].id);
-          alert(`${importedTables.length} tabelas importadas com sucesso! Clique em 'Salvar Alterações' para persistir os dados.`);
-        } else {
-          alert("Nenhuma tabela válida foi encontrada no ficheiro Excel.");
+        if (newItems.length > 0) {
+          importedTables.push({
+            id: crypto.randomUUID(),
+            name: worksheet.name,
+            price_items: newItems,
+          });
         }
-      } catch (error) {
-        console.error("Erro ao importar o ficheiro:", error);
-        alert("Ocorreu um erro ao processar o ficheiro. Verifique se o formato está correcto.");
-      } finally {
-        setIsLoading(false);
+      });
+
+      if (importedTables.length > 0) {
+        reset({ tables: importedTables });
+        setActiveTab(importedTables[0].id);
+        alert(`${importedTables.length} tabelas importadas com sucesso! Clique em 'Salvar Alterações' para persistir os dados.`);
+      } else {
+        alert("Nenhuma tabela válida foi encontrada no ficheiro Excel.");
       }
-    };
-    reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error("Erro ao importar o ficheiro:", error);
+      alert("Ocorreu um erro ao processar o ficheiro. Verifique se o formato está correcto.");
+    } finally {
+      setIsLoading(false);
+    }
     event.target.value = ""; // Limpa o input para permitir re-upload
   };
 

@@ -189,11 +189,7 @@ const PriceTable = () => {
       const importedTables: FormValues["tables"] = [];
 
       workbook.eachSheet((worksheet) => {
-<<<<<<< HEAD
-        const newItems: any[] = [];
-=======
-        const newItems: z.infer<typeof tableItemSchema>[] = [];
->>>>>>> b8cfae24d95499e24d7f9c6a4e31cc1a74bb3818
+const newItems: z.infer<typeof tableItemSchema>[] = [];
         const headerRow = worksheet.getRow(1);
 
         worksheet.eachRow((row, rowNumber) => {
